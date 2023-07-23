@@ -332,6 +332,11 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (NSComparisonResult)compare:(id)other { // NSString*
+    msg![env; this compare:other mask:0]
+}
+
+- (NSComparisonResult)compare:(id)other options:(NSUInteger)_mask { // NSString*
+    //assert_eq!(mask, 0);
     // TODO: support foreign subclasses (perhaps via a helper function that
     // copies the string first)
     let a_iter = env.objc.borrow::<StringHostObject>(this).iter_code_units();
@@ -436,6 +441,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (ConstPtr<u8>)UTF8String {
     // TODO: avoid copying
     let string = to_rust_string(env, this);
+    //log!("UTF8String {}", string);
     let c_string = env.mem.alloc_and_write_cstr(string.as_bytes()).cast_const();
     let length: NSUInteger = (string.len() + 1).try_into().unwrap();
     // NSData will handle releasing the string (it is autoreleased)
@@ -609,6 +615,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new_string)
 }
 
+- (id)stringByStandardizingPath { // NSString*
+    // TODO: implement
+    let string = to_rust_string(env, this).into_owned();
+    log!("stringByStandardizingPath {}", string);
+
+    let res = from_rust_string(env, string);
+    autorelease(env, res)
+}
+
 // These come from a category in UIKit (UIStringDrawing).
 // TODO: Implement categories so we can completely move the code to UIFont.
 // TODO: More `sizeWithFont:` variants
@@ -714,6 +729,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     *env.objc.borrow_mut(this) = host_object;
 
     this
+}
+
+- (id)initWithString:(id)aString { // NSString*
+    let tmp: ConstPtr<u8> = msg![env; aString UTF8String];
+    msg![env; this initWithUTF8String:tmp]
 }
 
 @end

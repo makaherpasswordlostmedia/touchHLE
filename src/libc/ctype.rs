@@ -149,6 +149,10 @@ pub const CONSTANTS: ConstantExports = &[
         "___stdoutp",
         HostConstant::Custom(|mem| mem.alloc_and_write(0).cast().cast_const()),
     ),
+    (
+        "___stderrp",
+        HostConstant::Custom(|mem| mem.alloc_and_write(0).cast().cast_const()),
+    ),
 ];
 
 pub const FUNCTIONS: FunctionExports =

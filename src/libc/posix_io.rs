@@ -61,6 +61,7 @@ pub const O_ACCMODE: OpenFlag = O_RDWR | O_WRONLY | O_RDONLY;
 
 pub const O_NONBLOCK: OpenFlag = 0x4;
 pub const O_APPEND: OpenFlag = 0x8;
+pub const O_SHLOCK: OpenFlag = 0x10;
 pub const O_NOFOLLOW: OpenFlag = 0x100;
 pub const O_CREAT: OpenFlag = 0x200;
 pub const O_TRUNC: OpenFlag = 0x400;
@@ -73,9 +74,23 @@ fn open(env: &mut Environment, path: ConstPtr<u8>, flags: i32, _args: DotDotDot)
 
 /// Special extension for host code: [open] without the [DotDotDot].
 pub fn open_direct(env: &mut Environment, path: ConstPtr<u8>, flags: i32) -> FileDescriptor {
+    log!(
+        "pre-open({:?}, {:#x})",
+        env.mem.cstr_at_utf8(path).unwrap(),
+        flags
+    );
     // TODO: support more flags, this list is not complete
-    assert!(
-        flags & !(O_ACCMODE | O_NONBLOCK | O_APPEND | O_NOFOLLOW | O_CREAT | O_TRUNC | O_EXCL) == 0
+    assert_eq!(
+        flags
+            & !(O_ACCMODE
+                | O_NONBLOCK
+                | O_APPEND
+                | O_NOFOLLOW
+                | O_CREAT
+                | O_TRUNC
+                | O_EXCL
+                | O_SHLOCK),
+        0
     );
     // TODO: symlinks don't exist in the FS yet, so we can't "not follow" them.
     // (Should we just ignore this?)
@@ -252,10 +267,16 @@ pub fn lseek(env: &mut Environment, fd: FileDescriptor, offset: off_t, whence: i
 }
 
 pub fn close(env: &mut Environment, fd: FileDescriptor) -> i32 {
+    if fd == -1 {
+        return -1;
+    }
     // TODO: error handling for unknown fd?
-    let file = env.libc_state.posix_io.files[fd_to_file_idx(fd)]
-        .take()
-        .unwrap();
+    let maybe_file = env.libc_state.posix_io.files[fd_to_file_idx(fd)].take();
+    if maybe_file.is_none() {
+        log!("Unknown fd {:?}, returning -1", fd);
+        return -1;
+    }
+    let file = maybe_file.unwrap();
     // The actual closing of the file happens implicitly when `file` falls out
     // of scope. The return value is about whether flushing succeeds.
     match file.file.sync_all() {

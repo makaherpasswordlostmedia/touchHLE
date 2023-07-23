@@ -67,6 +67,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     false
 }
 
+- (id)uniqueIdentifier {
+    ns_string::get_static_str(env, "XXXX21f1f19edff198e2a2356bf4XXXX")
+}
+
 @end
 
 };

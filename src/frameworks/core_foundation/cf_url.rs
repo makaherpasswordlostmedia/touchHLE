@@ -26,7 +26,7 @@ pub fn CFURLGetFileSystemRepresentation(
     buffer: MutPtr<u8>,
     buffer_size: CFIndex,
 ) -> bool {
-    assert!(!resolve_against_base); // unimplemented
+    //assert!(!resolve_against_base); // unimplemented
     let buffer_size: NSUInteger = buffer_size.try_into().unwrap();
 
     msg![env; url getFileSystemRepresentation:buffer

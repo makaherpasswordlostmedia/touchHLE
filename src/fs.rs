@@ -390,7 +390,7 @@ pub fn files_prefix() -> &'static str {
 #[derive(Debug)]
 pub struct Fs {
     root: FsNode,
-    current_directory: GuestPathBuf,
+    pub current_directory: GuestPathBuf,
     home_directory: GuestPathBuf,
 }
 impl Fs {
@@ -535,16 +535,21 @@ impl Fs {
         )
     }
 
-    #[allow(dead_code)]
     /// Get an iterator over the names of files/directories in a directory.
-    pub fn enumerate<P: AsRef<GuestPath>>(
-        &self,
-        path: P,
-    ) -> Result<impl Iterator<Item = &str>, ()> {
+    pub fn enumerate<P: AsRef<GuestPath>>(&self, path: P) -> Result<Vec<GuestPathBuf>, ()> {
         let Some(FsNode::Directory { children, .. }) = self.lookup_node(path.as_ref()) else {
             return Err(());
         };
-        Ok(children.keys().map(|name| name.as_str()))
+        let mut paths = Vec::new();
+        let mut iter = children.keys().map(|name| name.as_str());
+        loop {
+            if let Some(name) = iter.next() {
+                paths.push(GuestPathBuf::from(GuestPath::new(name)));
+            } else {
+                break;
+            }
+        }
+        Ok(paths)
     }
 
     /// Recursively list the paths of files/directories in a directory.

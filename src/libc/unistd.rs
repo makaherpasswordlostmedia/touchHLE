@@ -6,6 +6,8 @@
 //! Miscellaneous parts of `unistd.h`
 
 use crate::dyld::{export_c_func, FunctionExports};
+use crate::fs::{GuestPath, GuestPathBuf};
+use crate::mem::ConstPtr;
 use crate::Environment;
 use std::time::Duration;
 
@@ -25,4 +27,21 @@ pub fn usleep(env: &mut Environment, useconds: useconds_t) -> i32 {
     0 // success
 }
 
-pub const FUNCTIONS: FunctionExports = &[export_c_func!(sleep(_)), export_c_func!(usleep(_))];
+fn chdir(env: &mut Environment, path: ConstPtr<u8>) -> i32 {
+    log!("chdir {}", env.mem.cstr_at_utf8(path).unwrap());
+    //todo!();
+    let str = env.mem.cstr_at_utf8(path).unwrap();
+    if str.starts_with('/') {
+        env.fs.current_directory = GuestPathBuf::from(GuestPath::new(&str));
+    } else {
+        env.fs.current_directory = env.fs.current_directory.join(str);
+    }
+    assert!(env.fs.exists(&env.fs.current_directory));
+    0
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(sleep(_)),
+    export_c_func!(usleep(_)),
+    export_c_func!(chdir(_)),
+];

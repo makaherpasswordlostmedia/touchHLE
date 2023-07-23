@@ -92,7 +92,9 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
             b's' => {
                 let c_string: ConstPtr<u8> = args.next(env);
                 //assert!(pad_char == ' ' && pad_width == 0); // TODO
-                res.extend_from_slice(env.mem.cstr_at(c_string));
+                if !c_string.is_null() {
+                    res.extend_from_slice(env.mem.cstr_at(c_string));
+                }
             }
             b'd' | b'i' | b'u' => {
                 let int: i64 = if specifier == b'u' {
@@ -322,11 +324,12 @@ fn setbuf(_env: &mut Environment, _stream: MutPtr<FILE>, _buf: ConstPtr<u8>) {
 
 fn fprintf(
     env: &mut Environment,
-    _stream: MutPtr<FILE>,
+    stream: MutPtr<FILE>,
     format: ConstPtr<u8>,
     args: DotDotDot,
 ) -> i32 {
     // TODO: assert that stream is stdio
+    assert!(stream.is_null());
     printf(env, format, args)
 }
 

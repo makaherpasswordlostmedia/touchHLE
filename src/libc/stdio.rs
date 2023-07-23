@@ -148,6 +148,37 @@ fn ftell(env: &mut Environment, file_ptr: MutPtr<FILE>) -> i32 {
     }
 }
 
+fn fsetpos(env: &mut Environment, file_ptr: MutPtr<FILE>, pos: ConstPtr<i64>) -> i32 {
+    let res = i32::try_from(env.mem.read(pos)).unwrap();
+    fseek(env, file_ptr, res, SEEK_SET)
+}
+
+fn fgetpos(env: &mut Environment, file_ptr: MutPtr<FILE>, pos: MutPtr<i64>) -> i32 {
+    let res = ftell(env, file_ptr);
+    env.mem.write(pos, res.into());
+    res
+}
+
+fn feof(env: &mut Environment, file_ptr: MutPtr<FILE>) -> i32 {
+    let old_offset = ftell(env, file_ptr);
+    assert_ne!(old_offset, -1);
+
+    fseek(env, file_ptr, 0, SEEK_END);
+    let eof_offest = ftell(env, file_ptr);
+    assert_ne!(eof_offest, -1);
+
+    fseek(env, file_ptr, old_offset, SEEK_SET);
+    let current = ftell(env, file_ptr);
+    assert_ne!(current, -1);
+
+    //log!("feof old_offset {} eof_offset {} current {}", old_offset, eof_offest, current);
+    if old_offset == eof_offest {
+        1
+    } else {
+        0
+    }
+}
+
 fn fclose(env: &mut Environment, file_ptr: MutPtr<FILE>) -> i32 {
     let FILE { fd } = env.mem.read(file_ptr);
 
@@ -201,6 +232,9 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fwrite(_, _, _, _)),
     export_c_func!(fseek(_, _, _)),
     export_c_func!(ftell(_)),
+    export_c_func!(fsetpos(_, _)),
+    export_c_func!(fgetpos(_, _)),
+    export_c_func!(feof(_)),
     export_c_func!(fclose(_)),
     export_c_func!(puts(_)),
     export_c_func!(remove(_)),
