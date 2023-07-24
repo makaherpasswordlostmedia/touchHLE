@@ -95,6 +95,9 @@ pub fn strlen(env: &mut Environment, s: ConstPtr<u8>) -> GuestUSize {
 fn strcpy(env: &mut Environment, dest: MutPtr<u8>, src: ConstPtr<u8>) -> MutPtr<u8> {
     GenericChar::<u8>::strcpy(env, dest, src)
 }
+fn __strcpy_chk(env: &mut Environment, dest: MutPtr<u8>, src: ConstPtr<u8>, _size: GuestUSize) -> MutPtr<u8> {
+    strcpy(env, dest, src)
+}
 fn strcat(env: &mut Environment, dest: MutPtr<u8>, src: ConstPtr<u8>) -> MutPtr<u8> {
     GenericChar::<u8>::strcat(env, dest, src)
 }
@@ -208,6 +211,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(memcmp(_, _, _)),
     export_c_func!(strlen(_)),
     export_c_func!(strcpy(_, _)),
+    export_c_func!(__strcpy_chk(_, _, _)),
     export_c_func!(strcat(_, _)),
     export_c_func!(strncat(_, _, _)),
     export_c_func!(strncpy(_, _, _)),

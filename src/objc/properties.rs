@@ -74,6 +74,6 @@ pub(super) fn objc_copyStruct(
     _hasStrong: bool,
 ) {
     // TODO: implement atomic support
-    assert!(!atomic);
+    //assert!(!atomic);
     env.mem.memmove(dest, src, size);
 }

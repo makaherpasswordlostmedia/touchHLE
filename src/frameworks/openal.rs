@@ -119,6 +119,11 @@ fn alcMakeContextCurrent(env: &mut Environment, context: MutPtr<GuestALCcontext>
     res != al::ALC_FALSE
 }
 
+fn alcSuspendContext(env: &mut Environment, context: MutPtr<GuestALCcontext>) {
+    let host_context = State::get(env).contexts.get(&context).copied().unwrap();
+    unsafe { al::alcSuspendContext(host_context) };
+}
+
 fn alcGetProcAddress(
     env: &mut Environment,
     _device: ConstPtr<GuestALCdevice>,
@@ -390,9 +395,6 @@ fn alcIsExtensionPresent(
     0
 }
 fn alcProcessContext(_env: &mut Environment, _context: MutPtr<GuestALCcontext>) {
-    todo!();
-}
-fn alcSuspendContext(_env: &mut Environment, _context: MutPtr<GuestALCcontext>) {
     todo!();
 }
 fn alIsBuffer(_env: &mut Environment, _buffer: ALuint) -> ALboolean {

@@ -58,6 +58,8 @@ extern "C" {
     pub fn alcMakeContextCurrent(context: *mut ALCcontext) -> ALCboolean;
     pub fn alcGetCurrentContext() -> *mut ALCcontext;
 
+    pub fn alcSuspendContext(context: *mut ALCcontext);
+
     pub fn alcGetError(device: *mut ALCdevice) -> ALCenum;
 }
 

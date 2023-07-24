@@ -19,7 +19,7 @@ use super::NSUInteger;
 use crate::mem::MutVoidPtr;
 use crate::objc::{
     id, msg, msg_class, msg_send, objc_classes, Class, ClassExports, NSZonePtr, ObjC,
-    TrivialHostObject,
+    SEL, TrivialHostObject,
 };
 
 pub const CLASSES: ClassExports = objc_classes! {
@@ -92,6 +92,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (bool)isKindOfClass:(Class)class {
     let this_class: Class = msg![env; this class];
     env.objc.class_is_subclass_of(this_class, class)
+}
+
+- (bool)respondsToSelector:(SEL)aSelector {
+    true
 }
 
 - (NSUInteger)hash {
