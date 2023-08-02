@@ -18,7 +18,7 @@ use crate::frameworks::foundation::ns_url::to_rust_path;
 use crate::mem::{guest_size_of, GuestUSize, MutPtr, MutVoidPtr, SafeRead};
 use crate::Environment;
 use std::collections::HashMap;
-use crate::audio::{AudioFile, AudioFileInner};
+use crate::abi::{CallFromHost, GuestFunction};
 
 #[derive(Default)]
 pub struct State {
@@ -61,8 +61,6 @@ const kAudioFilePropertyPacketSizeUpperBound: AudioFilePropertyID = fourcc(b"pku
 const kAudioFilePropertyMagicCookieData: AudioFilePropertyID = fourcc(b"mgic");
 const kAudioFilePropertyChannelLayout: AudioFilePropertyID = fourcc(b"cmap");
 
-// OSStatus AudioFileOpenURL(CFURLRef inFileRef, AudioFilePermissions inPermissions, AudioFileTypeID inFileTypeHint, AudioFileID  _Nullable *outAudioFile);
-
 fn AudioFileOpenURL(
     env: &mut Environment,
     in_file_ref: CFURLRef,
@@ -78,10 +76,12 @@ fn AudioFileOpenURL(
     assert!(in_file_type_hint == 0);
 
     let path = to_rust_path(env, in_file_ref);
-    let Ok(audio_file) = audio::AudioFile::open_for_reading(path, &env.fs) else {
+    let bytes = env.fs.read(path.as_ref());
+    if bytes.is_err() {
         log!("Warning: AudioFileOpenURL() for path {:?} failed", in_file_ref);
         return kAudioFileFileNotFoundError;
     };
+    let audio_file = audio::AudioFile::open_for_reading(bytes.unwrap()).unwrap();
 
     let host_object = AudioFileHostObject { audio_file };
 
@@ -101,12 +101,18 @@ fn AudioFileOpenURL(
     0 // success
 }
 
+/// typedef SInt64 (*AudioFile_GetSizeProc)(void *inClientData)
+type AudioFile_GetSizeProc = GuestFunction;
+
+/// typedef OSStatus (*AudioFile_ReadProc)(void *inClientData, SInt64 inPosition, UInt32 requestCount, void *buffer, UInt32 *actualCount);
+type AudioFile_ReadProc = GuestFunction;
+
 fn AudioFileOpenWithCallbacks(
     env: &mut Environment,
     in_client_data: MutVoidPtr,
-    in_read_func: MutVoidPtr,
+    in_read_func: AudioFile_ReadProc,
     in_write_func: MutVoidPtr,
-    in_get_size_func: MutVoidPtr,
+    in_get_size_func: AudioFile_GetSizeProc,
     in_set_size_func: MutVoidPtr,
     in_file_type_hint: AudioFileTypeID,
     out_audio_file: MutPtr<AudioFileID>,
@@ -119,7 +125,23 @@ fn AudioFileOpenWithCallbacks(
 
     assert_eq!(in_file_type_hint, 0);
 
-    let audio_file = AudioFile(AudioFileInner::InMemory());
+    let size: i64 = in_get_size_func.call_from_host(env, (in_client_data,));
+    log!("AudioFileOpenWithCallbacks callback get size {}", size);
+
+    let guest_size: GuestUSize = size.try_into().unwrap();
+    let guest_buffer = env.mem.alloc(guest_size);
+    let actual_count: MutPtr<u32> = env.mem.alloc(guest_size_of::<u32>()).cast();
+    let status: OSStatus = in_read_func.call_from_host(env, (in_client_data, 0i64, guest_size, guest_buffer, actual_count));
+    log!("AudioFileOpenWithCallbacks callback read status {}", status);
+    assert_eq!(status, 0);
+    assert_eq!(guest_size, env.mem.read(actual_count));
+    env.mem.free(actual_count.cast());
+
+    let mut audio_data: Vec<u8> = Vec::new();
+    audio_data.extend_from_slice(env.mem.bytes_at(guest_buffer.cast(), guest_size));
+    env.mem.free(guest_buffer.cast());
+
+    let audio_file = audio::AudioFile::open_for_reading(audio_data).unwrap();
 
     let host_object = AudioFileHostObject { audio_file };
 

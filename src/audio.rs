@@ -18,7 +18,6 @@ pub use ima4::decode_ima4;
 use touchHLE_dr_mp3_wrapper as dr_mp3;
 pub use touchHLE_openal_soft_wrapper as openal;
 
-use crate::fs::{Fs, GuestPath};
 use std::io::Cursor;
 
 #[derive(Debug)]
@@ -43,18 +42,17 @@ pub struct AudioDescription {
     pub bits_per_channel: u32,
 }
 
-pub struct AudioFile(pub AudioFileInner);
+pub struct AudioFile(AudioFileInner);
 pub enum AudioFileInner {
     Wave(hound::WavReader<Cursor<Vec<u8>>>),
     Caf(caf::CafPacketReader<Cursor<Vec<u8>>>),
     Mp3(dr_mp3::Mp3DecodedToPcm),
-    InMemory()
 }
 
 impl AudioFile {
-    pub fn open_for_reading<P: AsRef<GuestPath>>(path: P, fs: &Fs) -> Result<Self, ()> {
+    pub fn open_for_reading(bytes: Vec<u8>) -> Result<Self, ()> {
         // TODO: it would be better not to load the whole file at once
-        let bytes = fs.read(path.as_ref())?;
+        //let bytes = fs.read(path.as_ref())?;
 
         // Both WavReader::new() and CafPacketReader::new() consume the reader
         // (in this case, a Cursor) passed to them. This is a bit annoying
@@ -79,8 +77,7 @@ impl AudioFile {
             // We may eventually want to return an error here, this is just more
             // useful currently.
             panic!(
-                "Could not decode audio file at path {:?}, likely an unimplemented file format.",
-                path.as_ref()
+                "Could not decode audio file, likely an unimplemented file format.",
             );
         }
     }
@@ -166,17 +163,6 @@ impl AudioFile {
                 channels_per_frame: channels,
                 bits_per_channel: 16,
             },
-            AudioFileInner::InMemory() => AudioDescription {
-                sample_rate: 0.0,
-                format: AudioFormat::LinearPcm {
-                    is_float: false,
-                    is_little_endian: true,
-                },
-                bytes_per_packet: 1,
-                frames_per_packet: 1,
-                channels_per_frame: 0,
-                bits_per_channel: 0,
-            },
         }
     }
 
@@ -205,7 +191,6 @@ impl AudioFile {
                 u64::from(self.packet_size_fixed()) * self.packet_count()
             }
             AudioFileInner::Mp3(dr_mp3::Mp3DecodedToPcm { ref bytes, .. }) => bytes.len() as u64,
-            AudioFileInner::InMemory() => todo!()
         }
     }
 
@@ -218,7 +203,6 @@ impl AudioFile {
             AudioFileInner::Caf(ref caf_reader) => {
                 caf_reader.get_packet_count().unwrap().try_into().unwrap()
             }
-            AudioFileInner::InMemory() => 0
         }
     }
 
@@ -297,7 +281,6 @@ impl AudioFile {
                 buffer[..bytes_to_read].copy_from_slice(bytes);
                 Ok(bytes_to_read)
             }
-            AudioFileInner::InMemory() => Ok(0)
         }
     }
 }
