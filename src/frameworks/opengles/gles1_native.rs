@@ -188,6 +188,10 @@ impl GLES for GLES1Native {
         assert!(target == gles11::ARRAY_BUFFER || target == gles11::ELEMENT_ARRAY_BUFFER);
         gles11::BindBuffer(target, buffer)
     }
+    unsafe fn BufferData(&mut self, target: GLenum, size: GLsizei, data: *const GLvoid, usage: GLenum) {
+        assert_eq!(target, gles11::ARRAY_BUFFER);
+        gles11::BufferData(target, size as GLsizeiptr, data, usage)
+    }
 
     // Non-pointers
     unsafe fn Color4f(&mut self, red: GLfloat, green: GLfloat, blue: GLfloat, alpha: GLfloat) {

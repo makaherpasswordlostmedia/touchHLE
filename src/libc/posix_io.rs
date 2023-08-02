@@ -117,8 +117,17 @@ pub fn open_direct(env: &mut Environment, path: ConstPtr<u8>, flags: i32) -> Fil
         options.truncate();
     }
 
+    let path_str = env.mem.cstr_at_utf8(path).unwrap();
+    let prefix = if path_str.starts_with("User/") {
+        "/"
+    } else {
+        ""
+    };
+    let bind = GuestPath::new(&(prefix.to_owned() + path_str)).to_owned();
+    let ppath = bind.as_ref();
+
     let res = match env.fs.open_with_options(
-        GuestPath::new(&env.mem.cstr_at_utf8(path).unwrap()),
+        ppath,
         options,
     ) {
         Ok(file) => {

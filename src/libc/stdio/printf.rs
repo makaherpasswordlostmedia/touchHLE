@@ -298,6 +298,10 @@ fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: 
         let specifier = env.mem.read(format + format_char_idx);
         format_char_idx += 1;
 
+        if specifier == b'l' {
+            continue;
+        }
+
         match specifier {
             b'd' => {
                 let mut val: i32 = 0;

@@ -10,6 +10,7 @@ use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
     NSZonePtr,
 };
+use crate::frameworks::foundation::NSInteger;
 use crate::Environment;
 use std::collections::HashMap;
 
@@ -166,6 +167,34 @@ pub const CLASSES: ClassExports = objc_classes! {
     let res = host_obj.lookup(env, key);
     *env.objc.borrow_mut(this) = host_obj;
     res
+}
+
+- (())setInteger:(NSInteger)value forKey:(id)defaultName {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let value_id: id = msg_class![env; NSNumber numberWithInteger:value];
+    host_obj.insert(env, defaultName, value_id, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (())setFloat:(f32)value forKey:(id)defaultName {
+    todo!();
+}
+
+- (id)stringForKey:(id)defaultName {
+    msg![env; this objectForKey:defaultName]
+}
+
+- (NSInteger)integerForKey:(id)defaultName {
+    let val: id = msg![env; this objectForKey:defaultName];
+    msg![env; val integerValue]
+}
+
+@end
+
+@implementation NSMutableDictionary: _touchHLE_NSDictionary
+
++ (id)dictionaryWithCapacity:(NSUInteger)_capacity {
+    msg_class![env; NSMutableDictionary dictionary]
 }
 
 @end

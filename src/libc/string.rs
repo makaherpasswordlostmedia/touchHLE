@@ -93,6 +93,7 @@ pub fn strlen(env: &mut Environment, s: ConstPtr<u8>) -> GuestUSize {
     GenericChar::<u8>::strlen(env, s)
 }
 fn strcpy(env: &mut Environment, dest: MutPtr<u8>, src: ConstPtr<u8>) -> MutPtr<u8> {
+    // log!("COPY {}", env.mem.cstr_at_utf8(src).unwrap());
     GenericChar::<u8>::strcpy(env, dest, src)
 }
 fn __strcpy_chk(env: &mut Environment, dest: MutPtr<u8>, src: ConstPtr<u8>, _size: GuestUSize) -> MutPtr<u8> {

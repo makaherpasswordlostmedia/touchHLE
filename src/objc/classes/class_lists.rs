@@ -43,6 +43,7 @@ pub const CLASS_LISTS: &[super::ClassExports] = &[
     opengles::eagl::CLASSES,
     uikit::ui_accelerometer::CLASSES,
     uikit::ui_application::CLASSES,
+    uikit::ui_button::CLASSES,
     uikit::ui_color::CLASSES,
     uikit::ui_control::CLASSES,
     uikit::ui_device::CLASSES,
@@ -57,6 +58,10 @@ pub const CLASS_LISTS: &[super::ClassExports] = &[
     uikit::ui_text_field::CLASSES,
     uikit::ui_touch::CLASSES,
     uikit::ui_view::CLASSES,
+    uikit::ui_label::CLASSES,
+    uikit::ui_scroll_view::CLASSES,
+    uikit::ui_text_view::CLASSES,
+    uikit::ui_switch::CLASSES,
     uikit::ui_view_controller::CLASSES,
     uikit::ui_window::CLASSES,
 ];

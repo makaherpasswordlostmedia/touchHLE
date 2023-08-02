@@ -18,6 +18,7 @@ use crate::frameworks::foundation::ns_url::to_rust_path;
 use crate::mem::{guest_size_of, GuestUSize, MutPtr, MutVoidPtr, SafeRead};
 use crate::Environment;
 use std::collections::HashMap;
+use crate::audio::{AudioFile, AudioFileInner};
 
 #[derive(Default)]
 pub struct State {
@@ -60,6 +61,8 @@ const kAudioFilePropertyPacketSizeUpperBound: AudioFilePropertyID = fourcc(b"pku
 const kAudioFilePropertyMagicCookieData: AudioFilePropertyID = fourcc(b"mgic");
 const kAudioFilePropertyChannelLayout: AudioFilePropertyID = fourcc(b"cmap");
 
+// OSStatus AudioFileOpenURL(CFURLRef inFileRef, AudioFilePermissions inPermissions, AudioFileTypeID inFileTypeHint, AudioFileID  _Nullable *outAudioFile);
+
 fn AudioFileOpenURL(
     env: &mut Environment,
     in_file_ref: CFURLRef,
@@ -98,13 +101,50 @@ fn AudioFileOpenURL(
     0 // success
 }
 
+fn AudioFileOpenWithCallbacks(
+    env: &mut Environment,
+    in_client_data: MutVoidPtr,
+    in_read_func: MutVoidPtr,
+    in_write_func: MutVoidPtr,
+    in_get_size_func: MutVoidPtr,
+    in_set_size_func: MutVoidPtr,
+    in_file_type_hint: AudioFileTypeID,
+    out_audio_file: MutPtr<AudioFileID>,
+) -> OSStatus {
+    //assert!(in_client_data.is_null());
+    //assert!(in_read_func.is_null());
+    assert!(in_write_func.is_null());
+    //assert!(in_get_size_func.is_null());
+    assert!(in_set_size_func.is_null());
+
+    assert_eq!(in_file_type_hint, 0);
+
+    let audio_file = AudioFile(AudioFileInner::InMemory());
+
+    let host_object = AudioFileHostObject { audio_file };
+
+    let guest_audio_file = env.mem.alloc_and_write(OpaqueAudioFileID { _filler: 0 });
+    State::get(&mut env.framework_state)
+        .audio_files
+        .insert(guest_audio_file, host_object);
+
+    env.mem.write(out_audio_file, guest_audio_file);
+
+    log_dbg!(
+        "AudioFileOpenWithCallbacks(), new audio file handle: {:?}",
+        guest_audio_file
+    );
+
+    -1 // success
+}
+
 fn property_size(property_id: AudioFilePropertyID) -> GuestUSize {
     match property_id {
         kAudioFilePropertyDataFormat => guest_size_of::<AudioStreamBasicDescription>(),
         kAudioFilePropertyAudioDataByteCount => guest_size_of::<u64>(),
         kAudioFilePropertyAudioDataPacketCount => guest_size_of::<u64>(),
         kAudioFilePropertyPacketSizeUpperBound => guest_size_of::<u32>(),
-        _ => unimplemented!("Unimplemented property ID: {}", debug_fourcc(property_id)),
+        _ => 0 //unimplemented!("Unimplemented property ID: {}", debug_fourcc(property_id)),
     }
 }
 
@@ -148,6 +188,8 @@ fn AudioFileGetProperty(
     out_property_data: MutVoidPtr,
 ) -> OSStatus {
     return_if_null!(in_audio_file);
+
+    log!("in_property_id {}", debug_fourcc(in_property_id));
 
     let required_size = property_size(in_property_id);
     if env.mem.read(io_data_size) != required_size {
@@ -303,6 +345,19 @@ fn AudioFileReadPackets(
     res
 }
 
+fn AudioFileReadPacketData(
+    env: &mut Environment,
+    in_audio_file: AudioFileID,
+    in_use_cache: bool,
+    out_num_bytes: MutPtr<u32>,
+    out_packet_descriptions: MutVoidPtr, // unimplemented
+    in_starting_packet: i64,
+    io_num_packets: MutPtr<u32>,
+    out_buffer: MutVoidPtr,
+) -> OSStatus {
+    AudioFileReadPackets(env, in_audio_file, in_use_cache, out_num_bytes, out_packet_descriptions, in_starting_packet, io_num_packets, out_buffer)
+}
+
 fn AudioFileClose(env: &mut Environment, in_audio_file: AudioFileID) -> OSStatus {
     return_if_null!(in_audio_file);
 
@@ -320,9 +375,11 @@ fn AudioFileClose(env: &mut Environment, in_audio_file: AudioFileID) -> OSStatus
 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(AudioFileOpenURL(_, _, _, _)),
+    export_c_func!(AudioFileOpenWithCallbacks(_, _, _, _, _, _, _)),
     export_c_func!(AudioFileGetPropertyInfo(_, _, _, _)),
     export_c_func!(AudioFileGetProperty(_, _, _, _)),
     export_c_func!(AudioFileReadBytes(_, _, _, _, _)),
     export_c_func!(AudioFileReadPackets(_, _, _, _, _, _, _)),
+    export_c_func!(AudioFileReadPacketData(_, _, _, _, _, _, _)),
     export_c_func!(AudioFileClose(_)),
 ];

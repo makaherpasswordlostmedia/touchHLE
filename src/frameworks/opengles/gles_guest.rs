@@ -267,6 +267,13 @@ fn glDeleteBuffers(env: &mut Environment, n: GLsizei, buffers: ConstPtr<GLuint>)
 fn glBindBuffer(env: &mut Environment, target: GLenum, buffer: GLuint) {
     with_ctx_and_mem(env, |gles, _mem| unsafe { gles.BindBuffer(target, buffer) })
 }
+fn glBufferData(env: &mut Environment, target: GLenum, size: GLsizei, data: ConstPtr<GLubyte>, usage: GLenum) {
+    with_ctx_and_mem(env, |gles, mem| {
+        let size_usize: GuestUSize = size.try_into().unwrap();
+        let data = mem.ptr_at(data, size_usize).cast();
+        unsafe { gles.BufferData(target, size, data, usage) }
+    })
+}
 
 // Non-pointers
 fn glColor4f(env: &mut Environment, red: GLfloat, green: GLfloat, blue: GLfloat, alpha: GLfloat) {
@@ -850,6 +857,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(glGenBuffers(_, _)),
     export_c_func!(glDeleteBuffers(_, _)),
     export_c_func!(glBindBuffer(_, _)),
+    export_c_func!(glBufferData(_, _, _, _)),
     // Non-pointers
     export_c_func!(glColor4f(_, _, _, _)),
     export_c_func!(glColor4x(_, _, _, _)),
