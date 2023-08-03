@@ -205,6 +205,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; val integerValue]
 }
 
+- (())synchronize {
+
+}
+
 @end
 
 @implementation NSMutableDictionary: _touchHLE_NSDictionary

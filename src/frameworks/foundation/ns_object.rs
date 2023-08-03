@@ -145,7 +145,7 @@ pub const CLASSES: ClassExports = objc_classes! {
         }
     }
 
-    unimplemented!("TODO: object {:?} does not have simple setter method for {}, use fallback", this, key);
+    //unimplemented!("TODO: object {:?} does not have simple setter method for {}, use fallback", this, key);
 }
 
 - (bool)respondsToSelector:(SEL)selector {

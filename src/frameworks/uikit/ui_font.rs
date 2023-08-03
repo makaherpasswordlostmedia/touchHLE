@@ -11,7 +11,7 @@ use crate::frameworks::core_graphics::cg_bitmap_context::CGBitmapContextDrawer;
 use crate::frameworks::core_graphics::{CGFloat, CGRect, CGSize};
 use crate::frameworks::foundation::NSInteger;
 use crate::objc::{autorelease, id, objc_classes, ClassExports, HostObject};
-use crate::Environment;
+use crate::{Environment, msg_class};
 
 #[derive(Default)]
 pub(super) struct State {
@@ -101,6 +101,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     };
     let new = env.objc.alloc_object(this, Box::new(host_object), &mut env.mem);
     autorelease(env, new)
+}
+
++ (id)fontWithName:(id)fontName size:(CGFloat)size {
+    msg_class![env; UIFont systemFontOfSize:size]
 }
 
 @end

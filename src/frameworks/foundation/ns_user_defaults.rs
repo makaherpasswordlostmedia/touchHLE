@@ -43,6 +43,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 }
 
+- (())synchronize {
+
+}
+
 // TODO: plist methods etc
 
 @end
