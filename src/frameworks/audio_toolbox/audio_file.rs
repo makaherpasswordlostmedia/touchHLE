@@ -8,11 +8,7 @@
 use crate::audio; // Keep this module namespaced to avoid confusion
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::frameworks::carbon_core::OSStatus;
-use crate::frameworks::core_audio_types::{
-    debug_fourcc, fourcc, kAudioFormatAppleIMA4, kAudioFormatFlagIsBigEndian,
-    kAudioFormatFlagIsFloat, kAudioFormatFlagIsPacked, kAudioFormatFlagIsSignedInteger,
-    kAudioFormatLinearPCM, AudioStreamBasicDescription,
-};
+use crate::frameworks::core_audio_types::{debug_fourcc, fourcc, kAudioFormatAppleIMA4, kAudioFormatFlagIsBigEndian, kAudioFormatFlagIsFloat, kAudioFormatFlagIsPacked, kAudioFormatFlagIsSignedInteger, kAudioFormatLinearPCM, AudioStreamBasicDescription, kAudioFormatMPEG4AAC};
 use crate::frameworks::core_foundation::cf_url::CFURLRef;
 use crate::frameworks::foundation::ns_url::to_rust_path;
 use crate::mem::{guest_size_of, GuestUSize, MutPtr, MutVoidPtr, SafeRead};
@@ -141,6 +137,9 @@ fn AudioFileOpenWithCallbacks(
     audio_data.extend_from_slice(env.mem.bytes_at(guest_buffer.cast(), guest_size));
     env.mem.free(guest_buffer.cast());
 
+    // let path  = "fn_track_0.bin";
+    // std::fs::write(path, audio_data.clone()).unwrap();
+
     let audio_file = audio::AudioFile::open_for_reading(audio_data).unwrap();
 
     let host_object = AudioFileHostObject { audio_file };
@@ -262,6 +261,19 @@ fn AudioFileGetProperty(
                     AudioStreamBasicDescription {
                         sample_rate,
                         format_id: kAudioFormatAppleIMA4,
+                        format_flags: 0,
+                        bytes_per_packet,
+                        frames_per_packet,
+                        bytes_per_frame: 0, // compressed
+                        channels_per_frame,
+                        bits_per_channel,
+                        _reserved: 0,
+                    }
+                }
+                audio::AudioFormat::Mpeg4Aac => {
+                    AudioStreamBasicDescription {
+                        sample_rate,
+                        format_id: kAudioFormatMPEG4AAC,
                         format_flags: 0,
                         bytes_per_packet,
                         frames_per_packet,
