@@ -29,6 +29,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (())setTextColor:(id)_color { // UIColor*
     // TODO: implement this once views are actually rendered
 }
+- (())setTransform:(id)_transform {
+}
+- (())setFont:(id)_font {  // UIFont*
+}
 
 - (())setClearsOnBeginEditing:(bool)_clear {
     // TODO

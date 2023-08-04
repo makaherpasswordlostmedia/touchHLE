@@ -9,7 +9,7 @@ use super::CGFloat;
 use crate::abi::GuestArg;
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
 use crate::mem::SafeRead;
-use crate::Environment;
+use crate::{Environment, impl_GuestRet_for_large_struct};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C, packed)]
@@ -23,6 +23,7 @@ pub struct CGAffineTransform {
     pub tx: CGFloat,
     pub ty: CGFloat,
 }
+impl_GuestRet_for_large_struct!(CGAffineTransform);
 unsafe impl SafeRead for CGAffineTransform {}
 impl GuestArg for CGAffineTransform {
     const REG_COUNT: usize = 6;
@@ -67,4 +68,15 @@ fn CGAffineTransformIsIdentity(_env: &mut Environment, transform: CGAffineTransf
     transform == CGAffineTransformIdentity
 }
 
-pub const FUNCTIONS: FunctionExports = &[export_c_func!(CGAffineTransformIsIdentity(_))];
+fn CGAffineTransformMakeRotation(_env: &mut Environment, angle: CGFloat) -> CGAffineTransform {
+    CGAffineTransform {
+        a: angle.cos(), c: -angle.sin(), tx: 0.0,
+        b: angle.sin(), d: angle.cos(), ty: 0.0,
+        // 0.0, 0.0, 1.0,
+    }
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(CGAffineTransformIsIdentity(_)),
+    export_c_func!(CGAffineTransformMakeRotation(_)),
+];

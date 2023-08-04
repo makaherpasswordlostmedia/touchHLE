@@ -27,6 +27,7 @@ pub mod core_audio_types;
 pub mod core_foundation;
 pub mod core_graphics;
 pub mod foundation;
+pub mod av_audio;
 pub mod media_player;
 pub mod openal;
 pub mod opengles;
