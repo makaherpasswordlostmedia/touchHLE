@@ -616,6 +616,9 @@ impl GLES for GLES1OnGL2 {
         assert!([gl21::FASTEST, gl21::NICEST, gl21::DONT_CARE].contains(&mode));
         gl21::Hint(target, mode);
     }
+    unsafe fn Flush(&mut self) {
+        gl21::Flush();
+    }
     unsafe fn GetString(&mut self, name: GLenum) -> *const GLubyte {
         gl21::GetString(name)
     }
@@ -805,7 +808,7 @@ impl GLES for GLES1OnGL2 {
         gl21::BindBuffer(target, buffer)
     }
     unsafe fn BufferData(&mut self, target: GLenum, size: GLsizei, data: *const GLvoid, usage: GLenum) {
-        assert_eq!(target, gles11::ARRAY_BUFFER);
+        assert!(target == gl21::ARRAY_BUFFER || target == gl21::ELEMENT_ARRAY_BUFFER);
         gl21::BufferData(target, size as GLsizeiptr, data, usage)
     }
 

@@ -89,6 +89,9 @@ impl GLES for GLES1Native {
     unsafe fn Hint(&mut self, target: GLenum, mode: GLenum) {
         gles11::Hint(target, mode)
     }
+    unsafe fn Flush(&mut self) {
+        gles11::Flush()
+    }
     unsafe fn GetString(&mut self, name: GLenum) -> *const GLubyte {
         gles11::GetString(name)
     }
@@ -190,7 +193,7 @@ impl GLES for GLES1Native {
         gles11::BindBuffer(target, buffer)
     }
     unsafe fn BufferData(&mut self, target: GLenum, size: GLsizei, data: *const GLvoid, usage: GLenum) {
-        assert_eq!(target, gles11::ARRAY_BUFFER);
+        assert!(target == gles11::ARRAY_BUFFER || target == gles11::ELEMENT_ARRAY_BUFFER);
         gles11::BufferData(target, size as GLsizeiptr, data, usage)
     }
 

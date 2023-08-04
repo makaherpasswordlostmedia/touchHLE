@@ -62,6 +62,10 @@ pub fn CGColorSpaceCreateDeviceRGB(env: &mut Environment) -> CGColorSpaceRef {
     )
 }
 
+fn CGColorSpaceCreateDeviceGray(env: &mut Environment) -> CGColorSpaceRef {
+    CGColorSpaceCreateDeviceRGB(env)
+}
+
 pub fn CGColorSpaceRelease(env: &mut Environment, cs: CGColorSpaceRef) {
     if !cs.is_null() {
         CFRelease(env, cs);
@@ -85,6 +89,7 @@ pub const CONSTANTS: ConstantExports = &[(
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGColorSpaceCreateWithName(_)),
     export_c_func!(CGColorSpaceCreateDeviceRGB()),
+    export_c_func!(CGColorSpaceCreateDeviceGray()),
     export_c_func!(CGColorSpaceRetain(_)),
     export_c_func!(CGColorSpaceRelease(_)),
 ];

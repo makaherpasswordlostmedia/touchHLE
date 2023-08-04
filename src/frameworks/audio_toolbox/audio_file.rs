@@ -189,7 +189,7 @@ fn AudioFileGetProperty(
 ) -> OSStatus {
     return_if_null!(in_audio_file);
 
-    log!("in_property_id {}", debug_fourcc(in_property_id));
+    //log!("in_property_id {}", debug_fourcc(in_property_id));
 
     let required_size = property_size(in_property_id);
     if env.mem.read(io_data_size) != required_size {
@@ -292,7 +292,7 @@ fn AudioFileReadBytes(
     let bytes_read = host_object
         .audio_file
         .read_bytes(in_starting_byte.try_into().unwrap(), buffer_slice)
-        .unwrap(); // TODO: handle seek error?
+        .unwrap_or(0); // TODO: handle seek error?
     //assert!((bytes_read as u64) == (bytes_to_read as u64)); // TODO: return eofErr
     env.mem.write(io_num_bytes, bytes_read.try_into().unwrap());
 

@@ -65,6 +65,18 @@ fn CGContextSetRGBFillColor(
         .rgb_fill_color = color;
 }
 
+fn CGContextSetGrayFillColor(
+    env: &mut Environment,
+    context: CGContextRef,
+    gray: CGFloat,
+    alpha: CGFloat,
+) {
+    let color = (0.5 * gray, 0.5 * gray, 0.5 * gray, alpha);
+    env.objc
+        .borrow_mut::<CGContextHostObject>(context)
+        .rgb_fill_color = color;
+}
+
 fn CGContextFillRect(env: &mut Environment, context: CGContextRef, rect: CGRect) {
     cg_bitmap_context::fill_rect(env, context, rect, /* clear: */ false);
 }
@@ -77,6 +89,10 @@ fn CGContextTranslateCTM(env: &mut Environment, context: CGContextRef, tx: CGFlo
     let context = env.objc.borrow_mut::<CGContextHostObject>(context);
     context.translation.0 += tx;
     context.translation.1 += ty;
+}
+
+fn CGContextScaleCTM(env: &mut Environment, context: CGContextRef, sx: CGFloat, sy: CGFloat) {
+
 }
 
 fn CGContextDrawImage(
@@ -92,8 +108,10 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGContextRetain(_)),
     export_c_func!(CGContextRelease(_)),
     export_c_func!(CGContextSetRGBFillColor(_, _, _, _, _)),
+    export_c_func!(CGContextSetGrayFillColor(_, _, _)),
     export_c_func!(CGContextFillRect(_, _)),
     export_c_func!(CGContextClearRect(_, _)),
     export_c_func!(CGContextTranslateCTM(_, _, _)),
+    export_c_func!(CGContextScaleCTM(_, _, _)),
     export_c_func!(CGContextDrawImage(_, _, _)),
 ];
