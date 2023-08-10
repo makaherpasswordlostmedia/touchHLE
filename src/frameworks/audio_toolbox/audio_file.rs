@@ -189,7 +189,7 @@ fn AudioFileGetProperty(
 ) -> OSStatus {
     return_if_null!(in_audio_file);
 
-    log!("in_property_id {}", debug_fourcc(in_property_id));
+    //log!("in_property_id {}", debug_fourcc(in_property_id));
 
     let required_size = property_size(in_property_id);
     if env.mem.read(io_data_size) != required_size {

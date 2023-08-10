@@ -615,6 +615,9 @@ impl GLES for GLES1OnGL2 {
         assert!([gl21::FASTEST, gl21::NICEST, gl21::DONT_CARE].contains(&mode));
         gl21::Hint(target, mode);
     }
+    unsafe fn Flush(&mut self) {
+        gl21::Flush();
+    }
     unsafe fn GetString(&mut self, name: GLenum) -> *const GLubyte {
         gl21::GetString(name)
     }
@@ -804,7 +807,7 @@ impl GLES for GLES1OnGL2 {
         gl21::BindBuffer(target, buffer)
     }
     unsafe fn BufferData(&mut self, target: GLenum, size: GLsizei, data: *const GLvoid, usage: GLenum) {
-        assert_eq!(target, gles11::ARRAY_BUFFER);
+        assert!(target == gl21::ARRAY_BUFFER || target == gl21::ELEMENT_ARRAY_BUFFER);
         gl21::BufferData(target, size as GLsizeiptr, data, usage)
     }
 
@@ -1197,10 +1200,7 @@ impl GLES for GLES1OnGL2 {
                 let index = if index_is_nibble {
                     (indices[i / 2] >> ((1 - (i % 2)) * 4)) & 0xf
                 } else {
-                    // I'm really unsure if this is correct. This is what the
-                    // OpenGL ES 1.1 spec says, but the extension spec (which it
-                    // supposedly incorporates) says the opposite?!
-                    indices[i / 4..][3 - (i % 4)]
+                    indices[i]
                 } as usize;
                 let palette_entry = &palette[index * palette_entry_size..][..palette_entry_size];
                 decoded.extend_from_slice(palette_entry);
@@ -1245,6 +1245,21 @@ impl GLES for GLES1OnGL2 {
         );
         assert!(border == 0);
         gl21::CopyTexImage2D(target, level, internalformat, x, y, width, height, border)
+    }
+    unsafe fn CopyTexSubImage2D(
+        &mut self,
+        target: GLenum,
+        level: GLint,
+        xoffset: GLint,
+        yoffset: GLint,
+        x: GLint,
+        y: GLint,
+        width: GLsizei,
+        height: GLsizei,
+    ) {
+        assert!(target == gl21::TEXTURE_2D);
+        assert!(level >= 0);
+        gl21::CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
     }
     unsafe fn TexEnvf(&mut self, target: GLenum, pname: GLenum, param: GLfloat) {
         // TODO: GL_POINT_SPRITE_OES

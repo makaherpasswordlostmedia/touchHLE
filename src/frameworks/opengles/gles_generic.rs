@@ -50,6 +50,7 @@ pub trait GLES {
     unsafe fn GetIntegerv(&mut self, pname: GLenum, params: *mut GLint);
     unsafe fn GetPointerv(&mut self, pname: GLenum, params: *mut *const GLvoid);
     unsafe fn Hint(&mut self, target: GLenum, mode: GLenum);
+    unsafe fn Flush(&mut self);
     unsafe fn GetString(&mut self, name: GLenum) -> *const GLubyte;
 
     // Other state manipulation
@@ -194,6 +195,17 @@ pub trait GLES {
         width: GLsizei,
         height: GLsizei,
         border: GLint,
+    );
+    unsafe fn CopyTexSubImage2D(
+        &mut self,
+        target: GLenum,
+        level: GLint,
+        xoffset: GLint,
+        yoffset: GLint,
+        x: GLint,
+        y: GLint,
+        width: GLsizei,
+        height: GLsizei,
     );
     unsafe fn TexEnvf(&mut self, target: GLenum, pname: GLenum, param: GLfloat);
     unsafe fn TexEnvx(&mut self, target: GLenum, pname: GLenum, param: GLfixed);

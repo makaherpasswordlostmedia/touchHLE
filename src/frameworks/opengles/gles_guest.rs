@@ -112,6 +112,9 @@ fn glGetIntegerv(env: &mut Environment, pname: GLenum, params: MutPtr<GLint>) {
 fn glHint(env: &mut Environment, target: GLenum, mode: GLenum) {
     with_ctx_and_mem(env, |gles, _mem| unsafe { gles.Hint(target, mode) })
 }
+fn glFlush(env: &mut Environment) {
+    with_ctx_and_mem(env, |gles, _mem| unsafe { gles.Flush() })
+}
 fn glGetString(env: &mut Environment, name: GLenum) -> ConstPtr<GLubyte> {
     // TODO: override some strings like `GL_VERSION` to match a real iOS device
     with_ctx_and_mem(env, |gles, mem| {
@@ -671,6 +674,21 @@ fn glCopyTexImage2D(
         gles.CopyTexImage2D(target, level, internalformat, x, y, width, height, border)
     })
 }
+fn glCopyTexSubImage2D(
+    env: &mut Environment,
+    target: GLenum,
+    level: GLint,
+    xoffset: GLint,
+    yoffset: GLint,
+    x: GLint,
+    y: GLint,
+    width: GLsizei,
+    height: GLsizei,
+) {
+    with_ctx_and_mem(env, |gles, _mem| unsafe {
+        gles.CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
+    })
+}
 fn glTexEnvf(env: &mut Environment, target: GLenum, pname: GLenum, param: GLfloat) {
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.TexEnvf(target, pname, param)
@@ -825,6 +843,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(glGetFloatv(_, _)),
     export_c_func!(glGetIntegerv(_, _)),
     export_c_func!(glHint(_, _)),
+    export_c_func!(glFlush()),
     export_c_func!(glGetString(_)),
     // Other state manipulation
     export_c_func!(glAlphaFunc(_, _)),
@@ -908,6 +927,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(glTexImage2D(_, _, _, _, _, _, _, _, _)),
     export_c_func!(glCompressedTexImage2D(_, _, _, _, _, _, _, _)),
     export_c_func!(glCopyTexImage2D(_, _, _, _, _, _, _, _)),
+    export_c_func!(glCopyTexSubImage2D(_, _, _, _, _, _, _, _)),
     export_c_func!(glTexEnvf(_, _, _)),
     export_c_func!(glTexEnvx(_, _, _)),
     export_c_func!(glTexEnvi(_, _, _)),

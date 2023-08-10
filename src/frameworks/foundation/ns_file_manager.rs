@@ -27,7 +27,7 @@ fn NSSearchPathForDirectoriesInDomains(
     expand_tilde: bool,
 ) -> id {
     // TODO: other cases not implemented
-    assert!(directory == NSDocumentDirectory);
+    // assert!(directory == NSDocumentDirectory);
     assert!(domain_mask == NSUserDomainMask);
     assert!(expand_tilde);
 
