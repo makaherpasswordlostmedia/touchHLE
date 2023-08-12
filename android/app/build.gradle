@@ -20,7 +20,7 @@ android {
     compileSdkVersion 31
     defaultConfig {
         if (buildAsApplication) {
-            applicationId "org.touchhle.android"
+            applicationId "org.touchhle.androidtest"
         }
         minSdkVersion 21 // first version with AArch64
         targetSdkVersion 31
@@ -82,7 +82,7 @@ android {
             variant.outputs.each { output ->
                 def outputFile = output.outputFile
                 if (outputFile != null && outputFile.name.endsWith(".aar")) {
-                    def fileName = "org.touchhle.android.aar"
+                    def fileName = "org.touchhle.androidtest.aar"
                     output.outputFile = new File(outputFile.parent, fileName)
                 }
             }

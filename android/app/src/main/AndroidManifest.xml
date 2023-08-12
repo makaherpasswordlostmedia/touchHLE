@@ -10,7 +10,7 @@
      com.gamemaker.game
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.touchhle.android"
+    package="org.touchhle.androidtest"
     android:installLocation="auto"
     android:versionCode="1"
     android:versionName="android">
@@ -67,7 +67,7 @@
          -->
 
         <activity
-            android:name="org.touchhle.android.MainActivity"
+            android:name="org.touchhle.androidtest.MainActivity"
             android:alwaysRetainTaskState="true"
             android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
