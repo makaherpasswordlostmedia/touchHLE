@@ -185,6 +185,18 @@ pub trait GLES {
         type_: GLenum,
         pixels: *const GLvoid,
     );
+    unsafe fn TexSubImage2D(
+        &mut self,
+        target: GLenum,
+        level: GLint,
+        xoffset: GLint,
+        yoffset: GLint,
+        width: GLsizei,
+        height: GLsizei,
+        format: GLenum,
+        type_: GLenum,
+        data: *const GLvoid,
+    );
     unsafe fn CompressedTexImage2D(
         &mut self,
         target: GLenum,

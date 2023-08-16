@@ -282,6 +282,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, res)
 }
 
++ (id)stringWithString:(id)aString { // NSString*
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithString:aString];
+    autorelease(env, new)
+}
+
 // These are the two methods that have to be overridden by subclasses, so these
 // implementations don't have to care about foreign subclasses.
 - (NSUInteger)length {

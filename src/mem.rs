@@ -428,7 +428,7 @@ impl Mem {
         // TODO: for a moment we always assume that we do not have enough size to realloc inplace
         let old_chunk = self.allocator.find_allocated_chunk(old_ptr.to_bits());
         let old_size = old_chunk.size();
-        if old_size == size {
+        if old_size >= size {
             return old_ptr;
         }
         assert!(size > old_size);

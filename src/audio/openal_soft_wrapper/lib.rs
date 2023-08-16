@@ -118,6 +118,7 @@ extern "C" {
     pub fn alDeleteSources(n: ALsizei, sources: *const ALuint);
 
     pub fn alSourcef(source: ALuint, param: ALenum, value: ALfloat);
+    pub fn alSource3f(source: ALuint, param: ALenum, value1: ALfloat, value2: ALfloat, value3: ALfloat);
     pub fn alSourcei(source: ALuint, param: ALenum, value: ALint);
     pub fn alSourcefv(source: ALuint, param: ALenum, values: *const ALfloat);
     pub fn alGetSourcef(source: ALuint, param: ALenum, value: *mut ALfloat);

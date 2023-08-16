@@ -140,10 +140,25 @@ fn get_default_rune_locale(mem: &mut Mem) -> ConstVoidPtr {
     .cast_const()
 }
 
-pub const CONSTANTS: ConstantExports = &[(
-    "__DefaultRuneLocale",
-    HostConstant::Custom(get_default_rune_locale),
-)];
+pub const CONSTANTS: ConstantExports = &[
+    (
+        "__DefaultRuneLocale",
+        HostConstant::Custom(get_default_rune_locale),
+    ),
+    (
+        "___stderrp",
+        HostConstant::Custom(|mem| mem.alloc_and_write(0).cast().cast_const()),
+    ),
+    (
+        "___stdinp",
+        HostConstant::Custom(|mem| mem.alloc_and_write(0).cast().cast_const()),
+    ),
+    (
+        "___stdoutp",
+        HostConstant::Custom(|mem| mem.alloc_and_write(0).cast().cast_const()),
+    ),
+];
+
 
 pub const FUNCTIONS: FunctionExports =
     &[export_c_func!(__tolower(_)), export_c_func!(__toupper(_))];

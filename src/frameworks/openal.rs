@@ -199,6 +199,16 @@ fn alDeleteSources(env: &mut Environment, n: ALsizei, sources: ConstPtr<ALuint>)
 fn alSourcef(_env: &mut Environment, source: ALuint, param: ALenum, value: ALfloat) {
     unsafe { al::alSourcef(source, param, value) };
 }
+fn alSource3f(
+    _env: &mut Environment,
+    source: ALuint,
+    param: ALenum,
+    value1: ALfloat,
+    value2: ALfloat,
+    value3: ALfloat,
+) {
+    unsafe { al::alSource3f(source, param, value1, value2, value3) };
+}
 fn alSourcei(_env: &mut Environment, source: ALuint, param: ALenum, value: ALint) {
     unsafe { al::alSourcei(source, param, value) };
 }
@@ -469,16 +479,6 @@ fn alGetListeneri(_env: &mut Environment, _param: ALenum, _value: MutPtr<ALint>)
     todo!();
 }
 fn alIsSource(_env: &mut Environment, _source: ALuint) -> ALboolean {
-    todo!();
-}
-fn alSource3f(
-    _env: &mut Environment,
-    _source: ALuint,
-    _param: ALenum,
-    _value1: ALfloat,
-    _value2: ALfloat,
-    _value3: ALfloat,
-) {
     todo!();
 }
 fn alGetSource3f(

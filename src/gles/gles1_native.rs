@@ -347,6 +347,29 @@ impl GLES for GLES1Native {
             pixels,
         )
     }
+    unsafe fn TexSubImage2D(
+        &mut self, target: GLenum,
+        level: GLint,
+        xoffset: GLint,
+        yoffset: GLint,
+        width: GLsizei,
+        height: GLsizei,
+        format: GLenum,
+        type_: GLenum,
+        data: *const GLvoid
+    ) {
+        gles11::TexSubImage2D(
+            target,
+            level,
+            xoffset,
+            yoffset,
+            width,
+            height,
+            format,
+            type_,
+            data,
+        )
+    }
     unsafe fn CompressedTexImage2D(
         &mut self,
         target: GLenum,

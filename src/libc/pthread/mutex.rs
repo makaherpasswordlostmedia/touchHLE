@@ -200,6 +200,11 @@ fn pthread_mutex_lock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> 
     )
 }
 
+fn pthread_mutex_trylock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
+    // pthread_mutex_lock(env, mutex)
+    0
+}
+
 fn pthread_mutex_unlock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
     check_or_register_mutex(env, mutex);
 
@@ -270,5 +275,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_mutexattr_destroy(_)),
     export_c_func!(pthread_mutex_init(_, _)),
     export_c_func!(pthread_mutex_lock(_)),
+    export_c_func!(pthread_mutex_trylock(_)),
     export_c_func!(pthread_mutex_unlock(_)),
 ];

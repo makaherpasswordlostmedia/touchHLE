@@ -30,6 +30,14 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
+- (id)initWithTarget:(id)a selector:(id)b object:(id)c {
+    this
+}
+
+- (())start {
+
+}
+
 // TODO: construction etc
 
 @end
