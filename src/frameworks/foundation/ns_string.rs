@@ -259,6 +259,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new)
 }
 
++ (id)stringWithContentsOfURL:(id)url // NSURL*
+                  encoding:(NSStringEncoding)encoding
+                     error:(MutPtr<id>)error { // NSError**
+    let path: id = msg![env; url path];
+    msg_class![env; NSString stringWithContentsOfFile:path encoding:encoding error:error]
+}
+
 + (id)stringWithFormat:(id)format, // NSString*
                        ...args {
     // TODO: avoid copy
@@ -280,6 +287,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     // TODO: what if it's not valid UTF-8?
     let res = from_rust_string(env, String::from_utf8(res).unwrap());
     autorelease(env, res)
+}
+
++ (id)stringWithString:(id)string {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithString:string];
+    autorelease(env, new)
 }
 
 // These are the two methods that have to be overridden by subclasses, so these
@@ -795,7 +808,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)initWithContentsOfFile:(id)path // NSString*
                     encoding:(NSStringEncoding)encoding
                        error:(MutPtr<id>)error { // NSError**
-    assert!(error.is_null()); // TODO: error handling
+    // assert!(error.is_null()); // TODO: error handling
 
     // TODO: avoid copy?
     let path = to_rust_string(env, path);

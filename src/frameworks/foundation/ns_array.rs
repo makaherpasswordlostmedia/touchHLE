@@ -6,6 +6,8 @@
 //! The `NSArray` class cluster, including `NSMutableArray`.
 
 use super::{ns_keyed_unarchiver, NSUInteger};
+use super::ns_enumerator::NSFastEnumerationState;
+use crate::mem::MutPtr;
 use crate::objc::{
     autorelease, id, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
     NSZonePtr,
@@ -65,6 +67,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     // to have the normal behaviour. Unimplemented: call superclass alloc then.
     assert!(this == env.objc.get_known_class("NSMutableArray", &mut env.mem));
     msg_class![env; _touchHLE_NSMutableArray allocWithZone:zone]
+}
+
++ (id)array {
+    assert!(this == env.objc.get_known_class("NSMutableArray", &mut env.mem));
+    msg_class![env; _touchHLE_NSMutableArray allocWithZone:nil]
 }
 
 // NSCopying implementation
@@ -137,6 +144,46 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)objectAtIndex:(NSUInteger)index {
     // TODO: throw real exception rather than panic if out-of-bounds?
     env.objc.borrow::<ArrayHostObject>(this).array[index as usize]
+}
+
+// NSFastEnumeration implementation
+- (NSUInteger)countByEnumeratingWithState:(MutPtr<NSFastEnumerationState>)state
+                                  objects:(MutPtr<id>)stackbuf
+                                    count:(NSUInteger)len {
+    let host_object = env.objc.borrow::<ArrayHostObject>(this);
+
+    if host_object.array.len() == 0 {
+        return 0;
+    }
+
+    // TODO: handle size > 1
+    assert!(host_object.array.len() == 1);
+    assert!(len >= host_object.array.len().try_into().unwrap());
+
+    let NSFastEnumerationState {
+        state: is_first_round,
+        ..
+    } = env.mem.read(state);
+
+    match is_first_round {
+        0 => {
+            let object = host_object.array.iter().next().unwrap();
+            env.mem.write(stackbuf, *object);
+            env.mem.write(state, NSFastEnumerationState {
+                state: 1,
+                items_ptr: stackbuf,
+                // can be anything as long as it's dereferenceable and the same
+                // each iteration
+                mutations_ptr: stackbuf.cast(),
+                extra: Default::default(),
+            });
+            1 // returned object count
+        },
+        1 => {
+            0 // end of iteration
+        },
+        _ => panic!(), // app failed to initialize the buffer?
+    }
 }
 
 @end
