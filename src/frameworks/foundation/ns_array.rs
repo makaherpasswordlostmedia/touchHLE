@@ -43,10 +43,62 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg_class![env; _touchHLE_NSArray allocWithZone:zone]
 }
 
++ (id)arrayWithObject:(id)anObject {
+    assert!(this == env.objc.get_known_class("NSArray", &mut env.mem));
+    from_vec(env, vec![anObject])
+}
+
 // NSCopying implementation
 - (id)copyWithZone:(NSZonePtr)_zone {
     // TODO: override this once we have NSMutableArray!
     retain(env, this)
+}
+
+// NSFastEnumeration implementation
+- (NSUInteger)countByEnumeratingWithState:(MutPtr<NSFastEnumerationState>)state
+                                  objects:(MutPtr<id>)stackbuf
+                                    count:(NSUInteger)len {
+    // assert!(this == env.objc.get_known_class("NSArray", &mut env.mem));
+
+    let host_object = env.objc.borrow::<ArrayHostObject>(this);
+
+    if host_object.array.len() == 0 {
+        return 0;
+    }
+
+    // TODO: handle size > 1
+    // assert!(host_object.array.len() == 1);
+    let array_len = host_object.array.len().try_into().unwrap();
+    assert!(len >= array_len);
+
+    let NSFastEnumerationState {
+        state: start_index,
+        ..
+    } = env.mem.read(state);
+
+    let mut array_iter = host_object.array.iter();
+    if start_index >= 1 {
+       _ = array_iter.nth((start_index-1).try_into().unwrap());
+    }
+
+    let mut batch_count = 0;
+    while batch_count < len {
+        if let Some(object) = array_iter.next() {
+            env.mem.write(stackbuf + batch_count, *object);
+            batch_count += 1;
+        } else {
+            break;
+        }
+    }
+    env.mem.write(state, NSFastEnumerationState {
+        state: start_index + batch_count,
+        items_ptr: stackbuf,
+        // can be anything as long as it's dereferenceable and the same
+        // each iteration
+        mutations_ptr: stackbuf.cast(),
+        extra: Default::default(),
+    });
+    batch_count
 }
 
 @end
@@ -144,46 +196,6 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)objectAtIndex:(NSUInteger)index {
     // TODO: throw real exception rather than panic if out-of-bounds?
     env.objc.borrow::<ArrayHostObject>(this).array[index as usize]
-}
-
-// NSFastEnumeration implementation
-- (NSUInteger)countByEnumeratingWithState:(MutPtr<NSFastEnumerationState>)state
-                                  objects:(MutPtr<id>)stackbuf
-                                    count:(NSUInteger)len {
-    let host_object = env.objc.borrow::<ArrayHostObject>(this);
-
-    if host_object.array.len() == 0 {
-        return 0;
-    }
-
-    // TODO: handle size > 1
-    assert!(host_object.array.len() == 1);
-    assert!(len >= host_object.array.len().try_into().unwrap());
-
-    let NSFastEnumerationState {
-        state: is_first_round,
-        ..
-    } = env.mem.read(state);
-
-    match is_first_round {
-        0 => {
-            let object = host_object.array.iter().next().unwrap();
-            env.mem.write(stackbuf, *object);
-            env.mem.write(state, NSFastEnumerationState {
-                state: 1,
-                items_ptr: stackbuf,
-                // can be anything as long as it's dereferenceable and the same
-                // each iteration
-                mutations_ptr: stackbuf.cast(),
-                extra: Default::default(),
-            });
-            1 // returned object count
-        },
-        1 => {
-            0 // end of iteration
-        },
-        _ => panic!(), // app failed to initialize the buffer?
-    }
 }
 
 @end

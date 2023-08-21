@@ -213,6 +213,14 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg_class![env; NSMutableDictionary dictionary]
 }
 
+- (())setValue:(id)value
+        forKey:(id)key { // NSString*
+    assert!(!key.is_null());
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert(env, key, value, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
 @end
 
 };
