@@ -17,6 +17,7 @@
 use super::{id, msg, nil, release, retain, SEL};
 use crate::mem::{ConstVoidPtr, GuestISize, GuestUSize, MutPtr, MutVoidPtr, Ptr};
 use crate::Environment;
+use crate::objc::autorelease;
 
 /// Undocumented function (see link above) apparently used by auto-generated
 /// methods for properties to set an ivar and handle reference counting, copying
@@ -38,7 +39,7 @@ pub(super) fn objc_setProperty(
     // safeguard: any real ivar offset will be after the isa pointer.
     assert!(offset >= 4);
 
-    assert!(!atomic); // what do we do with this?
+    // assert!(!atomic); // what do we do with this?
 
     let ivar: MutPtr<id> = Ptr::from_bits(this.to_bits().checked_add_signed(offset).unwrap());
     let old = env.mem.read(ivar);
@@ -61,6 +62,21 @@ pub(super) fn objc_setProperty(
     if old != nil {
         release(env, old);
     }
+}
+
+pub(super) fn objc_getProperty(
+    env: &mut Environment,
+    this: id,
+    _cmd: SEL,
+    offset: GuestISize,
+    atomic: bool,
+) -> id {
+    assert!(offset >= 4);
+
+    // assert!(!atomic); // what do we do with this?
+
+    let ivar: MutPtr<id> = Ptr::from_bits(this.to_bits().checked_add_signed(offset).unwrap());
+    env.mem.read(ivar)
 }
 
 // note: https://opensource.apple.com/source/objc4/objc4-723/runtime/objc-accessors.mm.auto.html

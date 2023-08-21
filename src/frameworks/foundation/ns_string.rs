@@ -13,6 +13,7 @@ use super::{
 };
 use crate::abi::VaList;
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect, CGSize};
+use crate::frameworks::core_foundation::CFRange;
 use crate::frameworks::uikit::ui_font::{
     self, UILineBreakMode, UILineBreakModeWordWrap, UITextAlignment, UITextAlignmentLeft,
 };
@@ -340,6 +341,36 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     // TODO: raise exception instead of panicking?
     utf16[index as usize]
+}
+
+// TODO: define and use NSRange
+- (CFRange)rangeOfString:(id)searchString { // NSString *
+    let len: NSUInteger = msg![env; this length];
+    let len_search: NSUInteger = msg![env; searchString length];
+    if len_search == 0 {
+        // TODO: define NSFound
+        return CFRange { location: 0x7fffffff, length: 0 };
+    }
+    for i in 0..len {
+        let mut match_found = true;
+        for j in 0..len_search {
+            if (i + j) >= len {
+                match_found = false;
+                break;
+            }
+            let a_c: u16 = msg![env; this characterAtIndex:(i + j)];
+            let b_c: u16 = msg![env; searchString characterAtIndex:j];
+            if a_c != b_c {
+                match_found = false;
+                break;
+            }
+        }
+        if match_found {
+            return CFRange { location: i.try_into().unwrap(), length: len_search.try_into().unwrap() }
+        }
+    }
+    // TODO: define NSFound
+    CFRange { location: 0x7fffffff, length: 0 }
 }
 
 - (id)description {

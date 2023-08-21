@@ -146,6 +146,7 @@ fn strsep(env: &mut Environment, stringp: MutPtr<MutPtr<u8>>, delim: ConstPtr<u8
     orig
 }
 pub(super) fn strdup(env: &mut Environment, src: ConstPtr<u8>) -> MutPtr<u8> {
+    log!("STRDUP {}", env.mem.cstr_at_utf8(src).unwrap());
     GenericChar::<u8>::strdup(env, src)
 }
 fn strcmp(env: &mut Environment, a: ConstPtr<u8>, b: ConstPtr<u8>) -> i32 {
