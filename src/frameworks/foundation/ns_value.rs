@@ -11,9 +11,10 @@ use crate::objc::{
     NSZonePtr,
 };
 
-enum NSNumberHostObject {
+pub enum NSNumberHostObject {
     Bool(bool),
     Int(i32),
+    Float(f32),
 }
 impl HostObject for NSNumberHostObject {}
 
@@ -62,6 +63,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new)
 }
 
++ (id)numberWithFloat:(f32)value {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithFloat:value];
+    autorelease(env, new)
+}
+
 // TODO: types other than booleans
 
 - (id)initWithBool:(bool)value {
@@ -78,10 +85,18 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
+- (id)initWithFloat:(f32)value {
+    *env.objc.borrow_mut::<NSNumberHostObject>(this) = NSNumberHostObject::Float(
+        value,
+    );
+    this
+}
+
 - (NSUInteger)hash {
     match env.objc.borrow(this) {
          &NSNumberHostObject::Bool(value) => super::hash_helper(&value),
          &NSNumberHostObject::Int(value) => super::hash_helper(&value),
+         &NSNumberHostObject::Float(value) => super::hash_helper(&value.to_bits()),
     }
 }
 - (bool)isEqualTo:(id)other {
@@ -99,6 +114,10 @@ pub const CLASSES: ClassExports = objc_classes! {
          },
          &NSNumberHostObject::Int(a) => {
              let b = if let &NSNumberHostObject::Int(b) = env.objc.borrow(other) { b } else { unreachable!() };
+             a == b
+         },
+        &NSNumberHostObject::Float(a) => {
+             let b = if let &NSNumberHostObject::Float(b) = env.objc.borrow(other) { b } else { unreachable!() };
              a == b
          },
     }
