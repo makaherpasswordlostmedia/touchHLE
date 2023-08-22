@@ -1,11 +1,16 @@
 use plist::Value;
+use std::io::Cursor;
+
 use crate::objc::{
     id, objc_classes, Class, ClassExports,
 };
 use crate::{Environment, msg, msg_class};
-use crate::frameworks::foundation::ns_dictionary::DictionaryHostObject;
+use crate::mem::MutPtr;
+use crate::frameworks::foundation::ns_data;
+use crate::frameworks::foundation::ns_dictionary::{DictionaryHostObject, dict_from_keys_and_objects};
 use crate::frameworks::foundation::ns_string::to_rust_string;
 use crate::frameworks::foundation::ns_value::NSNumberHostObject;
+use crate::frameworks::foundation::NSUInteger;
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -15,7 +20,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (id)dataFromPropertyList:(id)plist
                     format:(i32)format
-                errorDescription:(id)errorString {
+                errorDescription:(id)errorString { // NSString**
     // 200 => NSPropertyListBinaryFormat_v1_0 = kCFPropertyListBinaryFormat_v1_0
     assert_eq!(format, 200);
     log_dbg!("dataFromPropertyList format {}", format);
@@ -26,6 +31,18 @@ pub const CLASSES: ClassExports = objc_classes! {
     log_dbg!("dataFromPropertyList buf len {}", len);
     let ptr = env.mem.alloc_and_write_cstr(&buf[..]);
     msg_class![env; NSData dataWithBytes:ptr length:len]
+}
+
++ (id)propertyListFromData:(id)data // NSData*
+          mutabilityOption:(NSUInteger)opt
+                    format:(MutPtr<i32>)format
+          errorDescription:(id)errorString { // NSString**
+    // assert!(format.is_null());
+    let slice = ns_data::to_rust_slice(env, data);
+    let plist = Value::from_reader(Cursor::new(slice)).unwrap();
+    let plist = plist.into_dictionary().unwrap();
+    // TODO: parse plist to objects
+    dict_from_keys_and_objects(env, &[])
 }
 
 @end

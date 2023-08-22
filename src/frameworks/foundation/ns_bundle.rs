@@ -5,6 +5,8 @@
  */
 //! `NSBundle`.
 
+use std::borrow::Cow;
+
 use super::ns_array;
 use super::ns_string;
 use crate::bundle::Bundle;
@@ -12,6 +14,7 @@ use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, ClassExports, HostObject,
 };
 use crate::frameworks::foundation::ns_dictionary::dict_from_keys_and_objects;
+use crate::frameworks::core_foundation::cf_run_loop::kCFBundleExecutableKey;
 
 #[derive(Default)]
 pub struct State {
@@ -154,6 +157,15 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)infoDictionary {
     // TODO: convert info.plist to a dict
     dict_from_keys_and_objects(env, &[])
+}
+
+- (id)objectForInfoDictionaryKey:(id)key { // NSString*
+    let key_str = ns_string::to_rust_string(env, key); // TODO: avoid copy
+    match key_str {
+       Cow::Borrowed(kCFBundleExecutableKey) =>
+            ns_string::from_rust_string(env, env.bundle.executable().to_string()),
+        _ => unimplemented!()
+    }
 }
 
 // TODO: constructors, more accessors

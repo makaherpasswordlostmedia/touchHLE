@@ -13,7 +13,7 @@ use super::CFIndex;
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::frameworks::foundation::ns_string::{to_rust_string, NSUTF8StringEncoding};
 use crate::frameworks::foundation::NSUInteger;
-use crate::mem::{ConstPtr, MutPtr};
+use crate::mem::{ConstPtr, ConstVoidPtr, MutPtr, MutVoidPtr};
 use crate::objc::{id, msg, msg_class};
 use crate::Environment;
 
@@ -60,7 +60,17 @@ pub fn CFURLCreateFromFileSystemRepresentation(
     msg![env; url initFileURLWithPath:string isDirectory:is_directory]
 }
 
+fn SCNetworkReachabilityCreateWithAddress(_env: &mut Environment, _allocator: CFAllocatorRef, _addr: ConstVoidPtr) -> MutVoidPtr {
+    MutVoidPtr::null()
+}
+
+fn SCNetworkReachabilityGetFlags(_env: &mut Environment, _target: MutVoidPtr, _flags: MutVoidPtr) -> bool {
+    false
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFURLGetFileSystemRepresentation(_, _, _, _)),
     export_c_func!(CFURLCreateFromFileSystemRepresentation(_, _, _, _)),
+    export_c_func!(SCNetworkReachabilityCreateWithAddress(_, _)),
+    export_c_func!(SCNetworkReachabilityGetFlags(_, _)),
 ];

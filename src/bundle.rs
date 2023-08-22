@@ -90,6 +90,10 @@ impl Bundle {
             .map(|v| v.as_string().unwrap())
     }
 
+    pub fn executable(&self) -> &str {
+        self.plist["CFBundleExecutable"].as_string().unwrap()
+    }
+
     pub fn executable_path(&self) -> GuestPathBuf {
         // FIXME: Is this key optional? All iPhone apps seem to have it.
         self.path

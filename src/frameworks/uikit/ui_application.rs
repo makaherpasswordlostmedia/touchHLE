@@ -85,7 +85,14 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; this setStatusBarHidden:hidden]
 }
 
-// TODO: statusBarOrientation getter
+- (UIInterfaceOrientation)statusBarOrientation {
+    match env.window.device_orientation {
+        DeviceOrientation::Portrait => UIDeviceOrientationPortrait,
+        DeviceOrientation::LandscapeLeft => UIDeviceOrientationLandscapeLeft,
+        DeviceOrientation::LandscapeRight => UIDeviceOrientationLandscapeRight,
+    }
+}
+
 - (())setStatusBarOrientation:(UIInterfaceOrientation)orientation {
     env.window.rotate_device(match orientation {
         UIDeviceOrientationPortrait => DeviceOrientation::Portrait,
@@ -119,6 +126,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     echo!("App opened URL {:?}, exiting.", url_string);
     exit(env);
     true
+}
+
+- (id)keyWindow {
+    nil
 }
 
 @end

@@ -6,6 +6,7 @@
 //! The `NSDictionary` class cluster, including `NSMutableDictionary`.
 
 use super::NSUInteger;
+use super::ns_array;
 use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
     NSZonePtr,
@@ -192,6 +193,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     *env.objc.borrow_mut(this) = host_obj;
 }
 
+- (())setDouble:(f64)value forKey:(id)defaultName {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    // TODO: do not down cast
+    let float: f32 = value as f32;
+    let value_id: id = msg_class![env; NSNumber numberWithFloat:float];
+    host_obj.insert(env, defaultName, value_id, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
 - (())setFloat:(f32)value forKey:(id)defaultName {
     todo!();
 }
@@ -210,6 +220,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; val integerValue]
 }
 
+- (f64)doubleForKey:(id)defaultName {
+    let val: id = msg![env; this objectForKey:defaultName];
+    msg![env; val doubleValue]
+}
+
+- (id)allKeys {
+    ns_array::from_vec(env, vec![])
+}
+
 @end
 
 @implementation NSMutableDictionary: _touchHLE_NSDictionary
@@ -223,6 +242,17 @@ pub const CLASSES: ClassExports = objc_classes! {
     assert!(!key.is_null());
     let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
     host_obj.insert(env, key, value, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (())setObject:(id)anObject
+         forKey:(id)key { // NSString*
+    assert!(!anObject.is_null());
+    assert!(anObject != nil);
+    assert!(!key.is_null());
+    assert!(key != nil);
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert(env, key, anObject, false);
     *env.objc.borrow_mut(this) = host_obj;
 }
 

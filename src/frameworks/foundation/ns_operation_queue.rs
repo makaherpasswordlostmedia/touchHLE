@@ -1,5 +1,5 @@
 use crate::objc::{
-    objc_classes, ClassExports,
+    id, objc_classes, ClassExports,
 };
 
 pub const CLASSES: ClassExports = objc_classes! {
@@ -7,6 +7,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 (env, this, _cmd);
 
 @implementation NSOperationQueue: NSObject
+
+- (())addOperation:(id)op { // NSOperation*
+    log!("WARNING NSOperationQueue ignoring addOperation: {:?}", op);
+}
 
 @end
 
