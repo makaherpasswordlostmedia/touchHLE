@@ -29,6 +29,7 @@ pub const CLASS_LISTS: &[super::ClassExports] = &[
     foundation::ns_file_manager::CLASSES,
     foundation::ns_keyed_unarchiver::CLASSES,
     foundation::ns_property_list_serialization::CLASSES,
+    foundation::ns_operation_queue::CLASSES,
     foundation::ns_locale::CLASSES,
     foundation::ns_notification::CLASSES,
     foundation::ns_notification_center::CLASSES,

@@ -8,6 +8,7 @@
 use std::time::Instant;
 
 use super::NSTimeInterval;
+use crate::msg_class;
 use crate::objc::{autorelease, id, objc_classes, ClassExports, HostObject};
 
 struct NSDateHostObject {
@@ -30,6 +31,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     log_dbg!("[(NSDate*){:?} date]: New date {:?}", this, new);
 
     autorelease(env, new)
+}
+
++ (NSTimeInterval)timeIntervalSinceReferenceDate {
+    // This should be consistent with CFAbsoluteTimeGetCurrent()
+    // TODO: This should use "Jan 1 2001 00:00:00 GMT" as an absolute reference instead
+    let time: NSTimeInterval = msg_class![env; NSProcessInfo systemUptime];
+    time
 }
 
 - (NSTimeInterval)timeIntervalSinceDate:(id)anotherDate {

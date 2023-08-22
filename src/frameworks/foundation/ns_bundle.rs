@@ -12,6 +12,7 @@ use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, ClassExports, HostObject,
 };
 use crate::Environment;
+use crate::frameworks::foundation::ns_dictionary::dict_from_keys_and_objects;
 
 // Should be ISO 639-1 (or ISO 639-2) compliant
 // TODO: complete this list or use some crate for mapping

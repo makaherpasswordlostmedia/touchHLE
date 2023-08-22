@@ -241,6 +241,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; this objectForKey:defaultName]
 }
 
+- (id)arrayForKey:(id)defaultName {
+    // TODO: return nil if not an array
+    msg![env; this objectForKey:defaultName]
+}
+
 - (NSInteger)integerForKey:(id)defaultName {
     let val: id = msg![env; this objectForKey:defaultName];
     msg![env; val integerValue]
