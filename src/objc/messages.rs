@@ -168,7 +168,7 @@ Type mismatch when sending message {} to {:?}!
 /// Standard variant of `objc_msgSend`. See [objc_msgSend_inner].
 #[allow(non_snake_case)]
 pub(super) fn objc_msgSend(env: &mut Environment, receiver: id, selector: SEL) {
-    log!("objc_msgSend SEL {}", selector.as_str(&env.mem));
+    log_dbg!("objc_msgSend SEL {}", selector.as_str(&env.mem));
     objc_msgSend_inner(env, receiver, selector, /* super2: */ None)
 }
 

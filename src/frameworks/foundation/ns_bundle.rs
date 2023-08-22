@@ -5,6 +5,8 @@
  */
 //! `NSBundle`.
 
+use std::borrow::Cow;
+
 use super::ns_array;
 use super::ns_string;
 use crate::bundle::Bundle;
@@ -13,6 +15,7 @@ use crate::objc::{
 };
 use crate::Environment;
 use crate::frameworks::foundation::ns_dictionary::dict_from_keys_and_objects;
+use crate::frameworks::core_foundation::cf_run_loop::kCFBundleExecutableKey;
 
 // Should be ISO 639-1 (or ISO 639-2) compliant
 // TODO: complete this list or use some crate for mapping
@@ -215,6 +218,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     let dict: id = msg![env; dict initWithContentsOfFile:plist_path];
     env.objc.borrow_mut::<NSBundleHostObject>(this).info_dictionary = Some(dict);
     dict
+}
+
+- (id)objectForInfoDictionaryKey:(id)key { // NSString*
+    let key_str = ns_string::to_rust_string(env, key); // TODO: avoid copy
+    match key_str {
+       Cow::Borrowed(kCFBundleExecutableKey) =>
+            ns_string::from_rust_string(env, env.bundle.executable().to_string()),
+        _ => unimplemented!()
+    }
 }
 
 // TODO: constructors, more accessors

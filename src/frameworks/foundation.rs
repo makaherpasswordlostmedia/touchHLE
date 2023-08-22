@@ -39,7 +39,10 @@ pub mod ns_timer;
 pub mod ns_url;
 pub mod ns_user_defaults;
 pub mod ns_value;
+pub mod ns_operation;
 pub mod ns_operation_queue;
+pub mod ns_time_zone;
+pub mod ns_calendar;
 
 #[derive(Default)]
 pub struct State {

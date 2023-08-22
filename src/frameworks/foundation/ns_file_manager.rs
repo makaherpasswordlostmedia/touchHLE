@@ -37,6 +37,8 @@ fn NSSearchPathForDirectoriesInDomains(
         // request this; Wolfenstein 3D requests it but never uses it.
         NSApplicationDirectory => GuestPath::new(crate::fs::APPLICATIONS).to_owned(),
         NSDocumentDirectory => env.fs.home_directory().join("Documents"),
+        // NSLibraryDirectory ??
+        5 => env.fs.home_directory().join("Documents"),
         _ => todo!("NSSearchPathDirectory {}", directory),
     };
     let dir = ns_string::from_rust_string(env, String::from(dir));
@@ -137,6 +139,32 @@ pub const CLASSES: ClassExports = objc_classes! {
             if !error.is_null() {
                 todo!(); // TODO: create an NSError if requested
             }
+            false
+        }
+    }
+}
+
+- (bool)createDirectoryAtPath:(id)path // NSString *
+  withIntermediateDirectories:(bool)createIntermediates
+                   attributes:(id)attributes // NSDictionary*
+                        error:(id)error { // NSError **
+    assert!(attributes == nil); // TODO
+    assert!(createIntermediates);
+
+    let path_str = ns_string::to_rust_string(env, path); // TODO: avoid copy
+    match env
+        .fs
+        .create_dir(GuestPath::new(&path_str))
+    {
+        Ok(()) => {
+            log!("createDirectoryAtPath path {} => true", path_str);
+            true
+        }
+        Err(()) => {
+            log!(
+                "Warning: createDirectoryAtPath path {} failed, returning false",
+                path_str,
+            );
             false
         }
     }
