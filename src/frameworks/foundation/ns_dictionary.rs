@@ -11,7 +11,7 @@ use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
     NSZonePtr,
 };
-use crate::frameworks::foundation::NSInteger;
+use crate::frameworks::foundation::{ns_string, NSInteger};
 use crate::Environment;
 use std::collections::HashMap;
 
@@ -116,6 +116,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new_dict)
 }
 
++ (id)dictionaryWithContentsOfFile:(id)path { // NSString*
+    let path = ns_string::to_rust_string(env, path);
+    log!("dictionaryWithContentsOfFile: path {}", path);
+    msg_class![env; NSDictionary dictionary]
+}
+
 - (id)init {
     todo!("TODO: Implement [dictionary init] for custom subclasses")
 }
@@ -179,6 +185,13 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (NSUInteger)count {
     env.objc.borrow::<DictionaryHostObject>(this).count
 }
+
+- (id)valueForKey:(id)key {
+    let key_str = ns_string::to_rust_string(env, key);
+    assert!(!key_str.starts_with('@'));
+    msg![env; this objectForKey:key]
+}
+
 - (id)objectForKey:(id)key {
     let host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
     let res = host_obj.lookup(env, key);

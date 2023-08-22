@@ -273,6 +273,20 @@ fn AudioQueueEnqueueBuffer(
 
     0 // success
 }
+// AudioQueueRef inAQ, AudioQueuePropertyID inID, void *outData, UInt32 *ioDataSize
+fn AudioQueueGetProperty(
+    env: &mut Environment,
+    in_aq: AudioQueueRef,
+    in_id: u32,             // TODO: should be AudioQueuePropertyID
+    out_data: MutVoidPtr,
+    io_data_size: MutPtr<u32>,
+) -> OSStatus {
+    return_if_null!(in_aq);
+
+    log!("AudioQueueGetProperty in_id {}", debug_fourcc(in_id));
+
+    -1
+}
 
 fn AudioQueueAddPropertyListener(
     env: &mut Environment,
@@ -741,6 +755,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(AudioQueueSetParameter(_, _, _)),
     export_c_func!(AudioQueueAllocateBuffer(_, _, _)),
     export_c_func!(AudioQueueEnqueueBuffer(_, _, _, _)),
+    export_c_func!(AudioQueueGetProperty(_, _, _, _)),
     export_c_func!(AudioQueueAddPropertyListener(_, _, _, _)),
     export_c_func!(AudioQueueRemovePropertyListener(_, _, _, _)),
     export_c_func!(AudioQueuePrime(_, _, _)),
