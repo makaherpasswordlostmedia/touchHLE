@@ -58,6 +58,7 @@ pub const FUNCTION_LISTS: &[super::FunctionExports] = &[
     core_graphics::cg_bitmap_context::FUNCTIONS,
     core_graphics::cg_color_space::FUNCTIONS,
     core_graphics::cg_context::FUNCTIONS,
+    core_graphics::cg_geometry::FUNCTIONS,
     core_graphics::cg_data_provider::FUNCTIONS,
     core_graphics::cg_geometry::FUNCTIONS,
     core_graphics::cg_image::FUNCTIONS,
