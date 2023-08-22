@@ -5,17 +5,19 @@
  */
 //! The `NSValue` class cluster, including `NSNumber`.
 
-use super::NSUInteger;
+use super::{NSInteger, NSUInteger};
 use crate::objc::{
     autorelease, id, msg, msg_class, objc_classes, retain, Class, ClassExports, HostObject,
     NSZonePtr,
 };
 
-enum NSNumberHostObject {
+pub enum NSNumberHostObject {
     Bool(bool),
     UnsignedLongLong(u64),
     LongLong(i64),
     Double(f64),
+    Int(i32),
+    Float(f32),
 }
 impl HostObject for NSNumberHostObject {}
 
@@ -74,7 +76,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new)
 }
 
-// TODO: types other than booleans and long longs
++ (id)numberWithFloat:(f32)value {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithFloat:value];
+    autorelease(env, new)
+}
+
+// TODO: other types
 
 - (id)initWithBool:(bool)value {
     *env.objc.borrow_mut(this) = NSNumberHostObject::Bool(value);
@@ -96,11 +104,20 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
+- (id)initWithFloat:(f32)value {
+    *env.objc.borrow_mut::<NSNumberHostObject>(this) = NSNumberHostObject::Float(
+        value,
+    );
+    this
+}
+
 - (NSUInteger)hash {
-    let &NSNumberHostObject::Bool(value) = env.objc.borrow(this) else {
-        todo!();
-    };
-    super::hash_helper(&value)
+    match env.objc.borrow(this) {
+        &NSNumberHostObject::Bool(value) => super::hash_helper(&value),
+        &NSNumberHostObject::Int(value) => super::hash_helper(&value),
+        &NSNumberHostObject::Float(value) => super::hash_helper(&value.to_bits()),
+        _ => todo!()
+    }
 }
 - (bool)isEqualTo:(id)other {
     if this == other {
@@ -110,13 +127,26 @@ pub const CLASSES: ClassExports = objc_classes! {
     if !msg![env; other isKindOfClass:class] {
         return false;
     }
-    let &NSNumberHostObject::Bool(a) = env.objc.borrow(this) else {
-        todo!();
-    };
-    let &NSNumberHostObject::Bool(b) = env.objc.borrow(other) else {
-        todo!();
-    };
-    a == b
+     match env.objc.borrow(this) {
+         &NSNumberHostObject::Bool(a) => {
+            let b = if let &NSNumberHostObject::Bool(b) = env.objc.borrow(other) { b } else { unreachable!() };
+            a == b
+         },
+        &NSNumberHostObject::Int(a) => {
+            let b = if let &NSNumberHostObject::Int(b) = env.objc.borrow(other) { b } else { unreachable!() };
+            a == b
+        },
+        &NSNumberHostObject::Float(a) => {
+            let b = if let &NSNumberHostObject::Float(b) = env.objc.borrow(other) { b } else { unreachable!() };
+            a == b
+        },
+        _ => todo!()
+    }
+}
+
+- (NSInteger)integerValue {
+    let value = if let &NSNumberHostObject::Int(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
 }
 
 // TODO: accessors etc
