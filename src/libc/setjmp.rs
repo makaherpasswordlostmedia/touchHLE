@@ -24,7 +24,7 @@ fn setjmp(env: &mut Environment) -> i32 {
         "TODO: setjmp() at {:#x}",
         env.cpu.regs()[crate::cpu::Cpu::LR]
     );
-    0
+    0 // no longjmp() was performed
 }
 
 pub const FUNCTIONS: FunctionExports = &[export_c_func!(setjmp())];
