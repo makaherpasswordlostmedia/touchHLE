@@ -214,11 +214,15 @@ pub const CLASSES: ClassExports = objc_classes! {
         renderbuffer as _
     };
 
-    let &drawable = env
+    let tmp = env
         .objc
         .borrow::<EAGLContextHostObject>(this)
         .renderbuffer_drawable_bindings
-        .get(&renderbuffer)
+        .get(&renderbuffer);
+    if tmp.is_none() {
+        return false;
+    }
+    let &drawable = tmp
         .expect("Can't present a renderbuffer not bound to a drawable!");
 
     // We're presenting to the opaque CAEAGLLayer that covers the screen.

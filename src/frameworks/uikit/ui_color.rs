@@ -126,6 +126,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     true
 }
 
+- (id)CGColor {
+    this
+}
+
 @end
 
 };
