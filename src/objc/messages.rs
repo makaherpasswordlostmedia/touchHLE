@@ -13,7 +13,7 @@
 
 use super::{id, nil, Class, ObjC, IMP, SEL};
 use crate::abi::{CallFromHost, GuestRet};
-use crate::mem::{ConstPtr, MutVoidPtr, SafeRead};
+use crate::mem::{ConstPtr, MutPtr, MutVoidPtr, SafeRead};
 use crate::Environment;
 
 /// The core implementation of `objc_msgSend`, the main function of Objective-C.
@@ -37,7 +37,15 @@ fn objc_msgSend_inner(env: &mut Environment, receiver: id, selector: SEL, super2
         return;
     }
 
+    if selector.as_str(&env.mem) == "release" && receiver == MutPtr::from_bits(0x11) {
+        // WTF
+        return;
+    }
     let orig_class = super2.unwrap_or_else(|| ObjC::read_isa(receiver, &env.mem));
+    if orig_class == nil && selector.as_str(&env.mem) == "release" {
+        // WTF2
+        return;
+    }
     assert!(orig_class != nil);
 
     // Traverse the chain of superclasses to find the method implementation.
@@ -134,6 +142,7 @@ fn objc_msgSend_inner(env: &mut Environment, receiver: id, selector: SEL, super2
 /// Standard variant of `objc_msgSend`. See [objc_msgSend_inner].
 #[allow(non_snake_case)]
 pub(super) fn objc_msgSend(env: &mut Environment, receiver: id, selector: SEL) {
+    log_dbg!("objc_msgSend SEL {}", selector.as_str(&env.mem));
     objc_msgSend_inner(env, receiver, selector, /* super2: */ None)
 }
 

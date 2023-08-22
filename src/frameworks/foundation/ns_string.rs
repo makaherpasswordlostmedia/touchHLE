@@ -224,6 +224,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 // For the time being, that will always be _touchHLE_NSString.
 @implementation NSString: NSObject
 
++ (id)string {
+    msg_class![env; NSString allocWithZone:nil]
+}
+
 + (id)allocWithZone:(NSZonePtr)zone {
     // NSString might be subclassed by something which needs allocWithZone:
     // to have the normal behaviour. Unimplemented: call superclass alloc then.
@@ -258,6 +262,13 @@ pub const CLASSES: ClassExports = objc_classes! {
                                               encoding:encoding
                                                  error:error];
     autorelease(env, new)
+}
+
++ (id)stringWithContentsOfFile:(id)path { // NSString*
+    // TODO: detect file encoding
+    msg_class![env; NSString stringWithContentsOfFile:path
+                                             encoding:NSASCIIStringEncoding
+                                                error:nil]
 }
 
 + (id)stringWithContentsOfURL:(id)url // NSURL*
@@ -690,6 +701,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new_string)
 }
 
+- (bool)isAbsolutePath {
+    let string = to_rust_string(env, this); // TODO: avoid copying
+    string.starts_with('/')
+}
+
 - (id)stringByAppendingPathComponent:(id)component { // NSString*
     // TODO: avoid copying
     // FIXME: check if Rust join() matches NSString (it probably doesn't)
@@ -858,6 +874,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     let tmp: ConstPtr<u8> = msg![env; aString UTF8String];
     msg![env; this initWithUTF8String:tmp]
 }
+
+@end
+
+@implementation NSMutableString: _touchHLE_NSString
 
 @end
 

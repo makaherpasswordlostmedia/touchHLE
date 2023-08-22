@@ -14,6 +14,7 @@ pub mod ui_window;
 use super::ui_graphics::{UIGraphicsPopContext, UIGraphicsPushContext};
 use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContextRef};
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
+use crate::frameworks::core_graphics::cg_affine_transform::CGAffineTransform;
 use crate::frameworks::foundation::ns_string::get_static_str;
 use crate::frameworks::foundation::NSUInteger;
 use crate::objc::{
@@ -351,6 +352,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     UIGraphicsPushContext(env, context);
     () = msg![env; this drawRect:bounds];
     UIGraphicsPopContext(env);
+}
+
+- (())setTransform:(CGAffineTransform)transform {
+    log!("WARNING: Ignoring CGAffineTransform set for an UIView");
 }
 
 @end

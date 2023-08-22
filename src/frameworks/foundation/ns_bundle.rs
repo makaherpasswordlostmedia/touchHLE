@@ -11,6 +11,7 @@ use crate::bundle::Bundle;
 use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, ClassExports, HostObject,
 };
+use crate::frameworks::foundation::ns_dictionary::dict_from_keys_and_objects;
 
 #[derive(Default)]
 pub struct State {
@@ -148,6 +149,11 @@ pub const CLASSES: ClassExports = objc_classes! {
             if tableName == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, tableName) }
     );
     value
+}
+
+- (id)infoDictionary {
+    // TODO: convert info.plist to a dict
+    dict_from_keys_and_objects(env, &[])
 }
 
 // TODO: constructors, more accessors

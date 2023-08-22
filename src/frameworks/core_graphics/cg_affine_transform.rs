@@ -6,7 +6,7 @@
 //! `CGAffineTransform.h`
 
 use super::CGFloat;
-use crate::abi::GuestArg;
+use crate::abi::{impl_GuestRet_for_large_struct, GuestArg};
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
 use crate::mem::SafeRead;
 use crate::Environment;
@@ -24,6 +24,7 @@ pub struct CGAffineTransform {
     pub ty: CGFloat,
 }
 unsafe impl SafeRead for CGAffineTransform {}
+impl_GuestRet_for_large_struct!(CGAffineTransform);
 impl GuestArg for CGAffineTransform {
     const REG_COUNT: usize = 6;
 
@@ -67,4 +68,16 @@ fn CGAffineTransformIsIdentity(_env: &mut Environment, transform: CGAffineTransf
     transform == CGAffineTransformIdentity
 }
 
-pub const FUNCTIONS: FunctionExports = &[export_c_func!(CGAffineTransformIsIdentity(_))];
+fn CGAffineTransformTranslate(_env: &mut Environment,
+                              t: CGAffineTransform, tx: CGFloat, ty: CGFloat) -> CGAffineTransform {
+    CGAffineTransform {
+        a: t.a, c: t.c, tx: t.tx + tx,
+        b: t.b, d: t.d, ty: t.ty + ty,
+        // 0.0, 0.0, 1.0,
+    }
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(CGAffineTransformIsIdentity(_)),
+    export_c_func!(CGAffineTransformTranslate(_, _, _)),
+];

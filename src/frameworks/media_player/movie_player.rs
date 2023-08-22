@@ -38,6 +38,8 @@ pub const MPMoviePlayerContentPreloadDidFinishNotification: &str =
     "MPMoviePlayerContentPreloadDidFinishNotification";
 pub const UIApplicationDidReceiveMemoryWarningNotification: &str =
     "UIApplicationDidReceiveMemoryWarningNotification";
+pub const UIApplicationWillTerminateNotification: &str =
+    "UIApplicationWillTerminateNotification";
 // TODO: More notifications?
 
 /// `NSNotificationName` values.
@@ -53,6 +55,10 @@ pub const CONSTANTS: ConstantExports = &[
     (
         "_UIApplicationDidReceiveMemoryWarningNotification",
         HostConstant::NSString(UIApplicationDidReceiveMemoryWarningNotification),
+    ),
+    (
+        "_UIApplicationWillTerminateNotification",
+        HostConstant::NSString(UIApplicationWillTerminateNotification),
     ),
 ];
 

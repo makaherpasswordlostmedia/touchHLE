@@ -37,6 +37,8 @@ pub mod ns_url;
 pub mod ns_user_defaults;
 pub mod ns_value;
 pub mod ns_property_list_serialization;
+pub mod ns_operation_queue;
+pub mod ns_date;
 
 #[derive(Default)]
 pub struct State {

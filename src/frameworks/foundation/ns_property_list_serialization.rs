@@ -34,15 +34,6 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 fn build_plist_value_rec(env: &mut Environment, plist: id) -> Value {
     let class: Class = msg![env; plist class];
-
-    let class_host_object = env.objc.get_host_object(class).unwrap();
-    let &crate::objc::classes::ClassHostObject {
-        ref name,
-        is_metaclass,
-        ..
-    } = class_host_object.as_any().downcast_ref().unwrap();
-    log_dbg!("class name {}", name);
-
     // TODO: check subclass instead of exact match
     return if class == env.objc.get_known_class("NSMutableDictionary", &mut env.mem) {
         let mut dict = plist::dictionary::Dictionary::new();
