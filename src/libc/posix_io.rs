@@ -74,11 +74,11 @@ fn open(env: &mut Environment, path: ConstPtr<u8>, flags: i32, _args: DotDotDot)
 
 /// Special extension for host code: [open] without the [DotDotDot].
 pub fn open_direct(env: &mut Environment, path: ConstPtr<u8>, flags: i32) -> FileDescriptor {
-    log!(
-        "pre-open({:?}, {:#x})",
-        env.mem.cstr_at_utf8(path).unwrap(),
-        flags
-    );
+    // log!(
+    //     "pre-open({:?}, {:#x})",
+    //     env.mem.cstr_at_utf8(path).unwrap(),
+    //     flags
+    // );
     // TODO: support more flags, this list is not complete
     assert!(
         flags & !(O_ACCMODE | O_NONBLOCK | O_APPEND | O_NOFOLLOW | O_CREAT | O_TRUNC | O_EXCL) == 0

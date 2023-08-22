@@ -10,6 +10,8 @@
 use super::CGFloat;
 use crate::abi::{impl_GuestRet_for_large_struct, GuestArg};
 use crate::mem::SafeRead;
+use crate::dyld::{export_c_func, FunctionExports};
+use crate::Environment;
 
 fn parse_tuple(s: &str) -> Result<(f32, f32), ()> {
     let (a, b) = s.split_once(", ").ok_or(())?;
@@ -138,3 +140,38 @@ impl std::fmt::Display for CGRect {
         write!(f, "{{{}, {}}}", origin, size)
     }
 }
+
+fn CGRectGetWidth(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.size.width
+}
+
+fn CGRectGetMidY(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.origin.y + rect.size.height/2.0
+}
+
+fn CGRectGetMinX(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    // is it always true? if yes, why we need this func at all?
+    rect.origin.x
+}
+
+fn CGRectGetMaxX(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.origin.x + rect.size.width
+}
+
+fn CGRectGetMinY(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    // is it always true? if yes, why we need this func at all?
+    rect.origin.y
+}
+
+fn CGRectGetMaxY(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.origin.y + rect.size.height
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(CGRectGetWidth(_)),
+    export_c_func!(CGRectGetMidY(_)),
+    export_c_func!(CGRectGetMinX(_)),
+    export_c_func!(CGRectGetMaxX(_)),
+    export_c_func!(CGRectGetMinY(_)),
+    export_c_func!(CGRectGetMaxY(_)),
+];

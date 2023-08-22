@@ -547,7 +547,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (ConstPtr<u8>)UTF8String {
     // TODO: avoid copying
     let string = to_rust_string(env, this);
-    log!("UTF8String {}", string);
+    // log!("UTF8String {}", string);
     let c_string = env.mem.alloc_and_write_cstr(string.as_bytes()).cast_const();
     let length: NSUInteger = (string.len() + 1).try_into().unwrap();
     // NSData will handle releasing the string (it is autoreleased)
