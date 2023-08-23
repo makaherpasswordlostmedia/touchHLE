@@ -92,8 +92,8 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, button)
 }
 
-- (id)init {
-    let this: id = msg_super![env; this init];
+- (id)initWithFrame:(CGRect)frame {
+    let this: id = msg_super![env; this initWithFrame:frame];
 
     () = msg![env; this setOpaque:false];
     let bg_color: id = msg_class![env; UIColor clearColor];
@@ -116,6 +116,8 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     this
 }
+
+// TODO: initWithCoder:
 
 - (())dealloc {
     let UIButtonHostObject {
