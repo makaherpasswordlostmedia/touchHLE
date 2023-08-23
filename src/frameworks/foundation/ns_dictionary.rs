@@ -9,7 +9,7 @@ use super::NSUInteger;
 use super::ns_array;
 use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
-    NSZonePtr,
+    NSZonePtr, Class,
 };
 use crate::frameworks::foundation::{ns_string, NSInteger};
 use crate::Environment;
@@ -125,8 +125,10 @@ pub const CLASSES: ClassExports = objc_classes! {
                                       format:nil
                             errorDescription:nil];
 
-    let dictionary_class = env.objc.get_known_class("NSDictionary", &mut env.mem);
-    assert!(env.objc.class_is_subclass_of(plist, dictionary_class));
+
+    let class: Class = msg![env; plist class];
+    // TODO: check subclass instead of exact match
+    assert!(class == env.objc.get_known_class("NSMutableDictionary", &mut env.mem));
 
     plist
 }

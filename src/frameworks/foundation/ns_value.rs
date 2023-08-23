@@ -128,6 +128,16 @@ pub const CLASSES: ClassExports = objc_classes! {
     value
 }
 
+- (i32)intValue {
+    let value = if let &NSNumberHostObject::Int(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
+}
+
+- (f32)floatValue {
+    let value = if let &NSNumberHostObject::Float(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
+}
+
 - (f64)doubleValue {
     let value = if let &NSNumberHostObject::Float(value) = env.objc.borrow(this) { value } else { todo!() };
     value.try_into().unwrap()

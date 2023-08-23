@@ -875,6 +875,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; this initWithUTF8String:tmp]
 }
 
+// FIXME: this should be a NSMutableString method
+-(())setString:(id)aString { // NSString*
+    let str = to_rust_string(env, aString);
+    let host_object = StringHostObject::Utf8(str);
+    *env.objc.borrow_mut(this) = host_object;
+}
+
 @end
 
 @implementation NSMutableString: _touchHLE_NSString

@@ -66,11 +66,6 @@ pub const CLASSES: ClassExports = objc_classes! {
         return 0;
     }
 
-    // TODO: handle size > 1
-    // assert!(host_object.array.len() == 1);
-    let array_len = host_object.array.len().try_into().unwrap();
-    assert!(len >= array_len);
-
     let NSFastEnumerationState {
         state: start_index,
         ..
@@ -95,7 +90,8 @@ pub const CLASSES: ClassExports = objc_classes! {
         items_ptr: stackbuf,
         // can be anything as long as it's dereferenceable and the same
         // each iteration
-        mutations_ptr: stackbuf.cast(),
+        // Note: stackbuf can be different each time, it's better to return self pointer
+        mutations_ptr: this.cast(),
         extra: Default::default(),
     });
     batch_count
@@ -237,6 +233,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 
     env.objc.dealloc_object(this, &mut env.mem)
+}
+
+- (id)initWithCapacity:(NSUInteger)_capacity {
+    this
 }
 
 

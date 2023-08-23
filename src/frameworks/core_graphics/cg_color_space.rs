@@ -84,6 +84,7 @@ pub fn CGColorSpaceRetain(env: &mut Environment, cs: CGColorSpaceRef) -> CGColor
 }
 
 pub fn CGColorSpaceGetModel(_env: &mut Environment) -> i32 {
+    // kCGColorSpaceModelRGB
     1
 }
 
