@@ -11,7 +11,7 @@ use crate::abi::VaList;
 use crate::fs::GuestPath;
 use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
-    NSZonePtr,
+    NSZonePtr, Class,
 };
 use crate::Environment;
 use std::collections::HashMap;
