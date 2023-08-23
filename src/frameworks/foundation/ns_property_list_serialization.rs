@@ -2,11 +2,11 @@ use plist::Value;
 use std::io::Cursor;
 
 use crate::objc::{
-    id, objc_classes, Class, ClassExports,
+    id, objc_classes, Class, ClassExports, retain,
 };
 use crate::{Environment, msg, msg_class};
 use crate::mem::MutPtr;
-use crate::frameworks::foundation::ns_data;
+use crate::frameworks::foundation::{ns_data, ns_string, NSInteger};
 use crate::frameworks::foundation::ns_dictionary::{DictionaryHostObject, dict_from_keys_and_objects};
 use crate::frameworks::foundation::ns_string::to_rust_string;
 use crate::frameworks::foundation::ns_value::NSNumberHostObject;
@@ -40,14 +40,47 @@ pub const CLASSES: ClassExports = objc_classes! {
     // assert!(format.is_null());
     let slice = ns_data::to_rust_slice(env, data);
     let plist = Value::from_reader(Cursor::new(slice)).unwrap();
-    let plist = plist.into_dictionary().unwrap();
-    // TODO: parse plist to objects
-    dict_from_keys_and_objects(env, &[])
+    build_plist_id_rec(env, plist)
 }
 
 @end
 
 };
+
+fn build_plist_id_rec(env: &mut Environment, value: Value) -> id {
+    match value {
+        Value::Array(arr_val) => {
+            let arr = msg_class![env; NSMutableArray array];
+            for v in arr_val {
+                let value = build_plist_id_rec(env, v);
+                () = msg![env; arr addObject:value];
+            }
+            arr
+        }
+        Value::Dictionary(dict_val) => {
+            let dict = msg_class![env; NSMutableDictionary dictionary];
+            for (k, v) in dict_val {
+                let key = ns_string::from_rust_string(env, k);
+                let value = build_plist_id_rec(env, v);
+                () = msg![env; dict setValue:value forKey:key];
+            }
+            dict
+        }
+        Value::String(str_val) => {
+            ns_string::from_rust_string(env, str_val)
+        }
+        Value::Real(real_val) => {
+            // TODO: avoid downcast
+            let float: f32 = real_val as f32;
+            msg_class![env; NSNumber numberWithFloat:float]
+        }
+        Value::Integer(int_val) => {
+            let int: NSInteger = int_val.as_signed().unwrap().try_into().unwrap();
+            msg_class![env; NSNumber numberWithInteger:int]
+        }
+        _ => unimplemented!("build_plist_id_rec value {:?}", value)
+    }
+}
 
 fn build_plist_value_rec(env: &mut Environment, plist: id) -> Value {
     let class: Class = msg![env; plist class];

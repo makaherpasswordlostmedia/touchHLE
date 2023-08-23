@@ -21,7 +21,7 @@ use crate::frameworks::core_foundation::cf_run_loop::{
 };
 use crate::frameworks::foundation::ns_run_loop;
 use crate::frameworks::foundation::ns_string::get_static_str;
-use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr, SafeRead};
+use crate::mem::{ConstPtr, ConstVoidPtr, guest_size_of, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr, SafeRead};
 use crate::objc::msg;
 use crate::Environment;
 use std::collections::{HashMap, VecDeque};
@@ -283,9 +283,21 @@ fn AudioQueueGetProperty(
 ) -> OSStatus {
     return_if_null!(in_aq);
 
-    log!("AudioQueueGetProperty in_id {}", debug_fourcc(in_id));
+    if fourcc(b"aqrn") == in_id {
+        let out_data_int: MutPtr<i32> = out_data.cast();
+        env.mem.write(out_data_int, 1);
+        env.mem.write(io_data_size, guest_size_of::<i32>());
+    } else {
+        log!(
+            "TODO: AudioQueueGetProperty({:?}, {}, {:?}, {:?})",
+            in_aq,
+            debug_fourcc(in_id),
+            out_data,
+            io_data_size
+        );
+    }
 
-    -1
+    0 // success
 }
 
 fn AudioQueueAddPropertyListener(

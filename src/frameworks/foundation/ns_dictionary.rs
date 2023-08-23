@@ -117,9 +117,18 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 + (id)dictionaryWithContentsOfFile:(id)path { // NSString*
-    let path = ns_string::to_rust_string(env, path);
-    log!("dictionaryWithContentsOfFile: path {}", path);
-    msg_class![env; NSDictionary dictionary]
+    log!("dictionaryWithContentsOfFile: path {}", ns_string::to_rust_string(env, path));
+    let data: id = msg_class![env; NSData dataWithContentsOfFile:path];
+    let plist: id = msg_class![env; NSPropertyListSerialization
+                        propertyListFromData:data
+                            mutabilityOption:0
+                                      format:nil
+                            errorDescription:nil];
+
+    let dictionary_class = env.objc.get_known_class("NSDictionary", &mut env.mem);
+    assert!(env.objc.class_is_subclass_of(plist, dictionary_class));
+
+    plist
 }
 
 - (id)init {
@@ -239,7 +248,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (id)allKeys {
-    ns_array::from_vec(env, vec![])
+    let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let keys: Vec<id> = dict_host_obj.iter_keys().collect();
+    ns_array::from_vec(env, keys)
 }
 
 @end
