@@ -4,6 +4,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 //! `UIView`.
+//!
+//! Useful resources:
+//! - Apple's [View Programming Guide for iOS](https://developer.apple.com/library/archive/documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/Introduction/Introduction.html)
 
 pub mod ui_alert_view;
 pub mod ui_control;
@@ -27,20 +30,6 @@ pub struct State {
     pub ui_window: ui_window::State,
 }
 
-#[allow(clippy::enum_variant_names)]
-#[derive(Default)]
-pub(super) enum UIViewSubclass {
-    #[default]
-    /// Plain `UIView*`, or some subclass that doesn't need extra data.
-    UIView,
-    UIImageView {
-        /// `UIImage*`
-        image: id,
-    },
-    UILabel(ui_label::UILabelData),
-}
-
-#[derive(Default)]
 pub(super) struct UIViewHostObject {
     /// CALayer or subclass.
     layer: id,
@@ -49,10 +38,22 @@ pub(super) struct UIViewHostObject {
     /// The superview. This is a weak reference.
     superview: id,
     clears_context_before_drawing: bool,
-    /// Subclass-specific data
-    subclass: UIViewSubclass,
+    user_interaction_enabled: bool,
 }
 impl HostObject for UIViewHostObject {}
+impl Default for UIViewHostObject {
+    fn default() -> UIViewHostObject {
+        // The Default trait is implemented so subclasses will get the same
+        // defaults.
+        UIViewHostObject {
+            layer: nil,
+            subviews: Vec::new(),
+            superview: nil,
+            clears_context_before_drawing: true,
+            user_interaction_enabled: true,
+        }
+    }
+}
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -61,13 +62,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 @implementation UIView: UIResponder
 
 + (id)allocWithZone:(NSZonePtr)_zone {
-    let host_object = Box::new(UIViewHostObject {
-        layer: nil,
-        subviews: Vec::new(),
-        superview: nil,
-        clears_context_before_drawing: true,
-        subclass: UIViewSubclass::UIView,
-    });
+    let host_object = Box::<UIViewHostObject>::default();
     env.objc.alloc_object(this, host_object, &mut env.mem)
 }
 
@@ -155,8 +150,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
-- (())setUserInteractionEnabled:(bool)_enabled {
-    // TODO: enable user interaction
+- (bool)isUserInteractionEnabled {
+    env.objc.borrow::<UIViewHostObject>(this).user_interaction_enabled
+}
+- (())setUserInteractionEnabled:(bool)enabled {
+    env.objc.borrow_mut::<UIViewHostObject>(this).user_interaction_enabled = enabled;
 }
 
 // TODO: setMultipleTouchEnabled
@@ -231,12 +229,8 @@ pub const CLASSES: ClassExports = objc_classes! {
         superview,
         subviews,
         clears_context_before_drawing: _,
-        subclass,
+        user_interaction_enabled: _,
     } = std::mem::take(env.objc.borrow_mut(this));
-
-    // This assert forces subclasses to clean up their data in their dealloc
-    // implementation :)
-    assert!(matches!(subclass, UIViewSubclass::UIView));
 
     release(env, layer);
     assert!(superview == nil);
@@ -351,6 +345,60 @@ pub const CLASSES: ClassExports = objc_classes! {
     UIGraphicsPushContext(env, context);
     () = msg![env; this drawRect:bounds];
     UIGraphicsPopContext(env);
+}
+
+// Event handling
+
+- (id)pointInside:(CGPoint)point
+        withEvent:(id)_event { // UIEvent* (possibly nil)
+    let layer = env.objc.borrow::<UIViewHostObject>(this).layer;
+    msg![env; layer containsPoint:point]
+}
+
+- (id)hitTest:(CGPoint)point
+    withEvent:(id)event { // UIEvent* (possibly nil)
+    if !msg![env; this pointInside:point withEvent:event] {
+        return nil;
+    }
+    // TODO: avoid copy somehow?
+    let subviews = env.objc.borrow::<UIViewHostObject>(this).subviews.clone();
+    for subview in subviews.into_iter().rev() { // later views are on top
+        let hidden: bool = msg![env; subview isHidden];
+        let alpha: CGFloat = msg![env; subview alpha];
+        let interactible: bool = msg![env; this isUserInteractionEnabled];
+        if hidden || alpha < 0.01 || !interactible {
+           continue;
+        }
+        let frame: CGRect = msg![env; subview frame];
+        let bounds: CGRect = msg![env; subview bounds];
+        let point = CGPoint {
+            x: point.x - frame.origin.x + bounds.origin.x,
+            y: point.y - frame.origin.y + bounds.origin.y,
+        };
+        let subview: id = msg![env; subview hitTest:point withEvent:event];
+        if subview != nil {
+            return subview;
+        }
+    }
+    this
+}
+
+// Co-ordinate space conversion
+
+- (CGPoint)convertPoint:(CGPoint)point
+               fromView:(id)other { // UIView*
+    assert!(other != nil); // TODO
+    let this_layer = env.objc.borrow::<UIViewHostObject>(this).layer;
+    let other_layer = env.objc.borrow::<UIViewHostObject>(other).layer;
+    msg![env; this_layer convertPoint:point fromLayer:other_layer]
+}
+
+- (CGPoint)convertPoint:(CGPoint)point
+                 toView:(id)other { // UIView*
+    assert!(other != nil); // TODO
+    let this_layer = env.objc.borrow::<UIViewHostObject>(this).layer;
+    let other_layer = env.objc.borrow::<UIViewHostObject>(other).layer;
+    msg![env; this_layer convertPoint:point toLayer:other_layer]
 }
 
 @end
