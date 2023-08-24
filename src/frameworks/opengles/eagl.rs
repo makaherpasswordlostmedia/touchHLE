@@ -19,6 +19,7 @@ use crate::objc::{id, msg, nil, objc_classes, release, retain, ClassExports, Hos
 use crate::window::Window;
 use std::collections::HashMap;
 use std::time::Instant;
+use crate::gles;
 
 // These are used by the EAGLDrawable protocol implemented by CAEAGLayer.
 // Since these have the ABI of constant symbols rather than literal constants,
@@ -573,5 +574,5 @@ unsafe fn present_renderbuffer(gles: &mut dyn GLES, window: &mut Window) {
     gles.BindTexture(gles11::TEXTURE_2D, old_texture_2d);
     gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_framebuffer);
 
-    //{ let err = gl21::GetError(); if err != 0 { panic!("{:#x}", err); } }
+    { let err = gles.GetError(); if err != 0 { panic!("{:#x}", err); } }
 }

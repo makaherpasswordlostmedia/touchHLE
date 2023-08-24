@@ -248,7 +248,8 @@ pub const CLASSES: ClassExports = objc_classes! {
 @implementation NSString: NSObject
 
 + (id)string {
-    msg_class![env; NSString allocWithZone:nil]
+    let null: NSZonePtr = MutPtr::null();
+    msg_class![env; NSString allocWithZone:null]
 }
 
 + (id)allocWithZone:(NSZonePtr)zone {
@@ -295,9 +296,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (id)stringWithContentsOfFile:(id)path { // NSString*
     // TODO: detect file encoding
+    let null: MutPtr<id> = MutPtr::null();
     msg_class![env; NSString stringWithContentsOfFile:path
                                              encoding:NSASCIIStringEncoding
-                                                error:nil]
+                                                error:null]
 }
 
 + (id)stringWithContentsOfURL:(id)url // NSURL*

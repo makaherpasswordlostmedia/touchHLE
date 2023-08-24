@@ -11,6 +11,7 @@ use crate::objc::{
     NSZonePtr,
 };
 
+#[derive(Debug)]
 pub enum NSNumberHostObject {
     Bool(bool),
     UnsignedLongLong(u64),
@@ -42,6 +43,26 @@ pub const CLASSES: ClassExports = objc_classes! {
 + (id)allocWithZone:(NSZonePtr)_zone {
     let host_object = Box::new(NSNumberHostObject::Bool(false));
     env.objc.alloc_object(this, host_object, &mut env.mem)
+}
+
++ (id)numberWithInteger:(NSInteger)value {
+    // TODO: for greater efficiency we could return a static-lifetime value
+
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithInteger:value];
+    autorelease(env, new)
+}
+
++ (id)numberWithInt:(i32)value {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithInteger:value];
+    autorelease(env, new)
+}
+
++ (id)numberWithFloat:(f32)value {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithFloat:value];
+    autorelease(env, new)
 }
 
 + (id)numberWithBool:(bool)value {
@@ -83,6 +104,16 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 // TODO: other types
+
+- (id)initWithInteger:(NSInteger)value {
+    *env.objc.borrow_mut::<NSNumberHostObject>(this) = NSNumberHostObject::Int(value);
+    this
+}
+
+- (id)initWithFloat:(f32)value {
+    *env.objc.borrow_mut::<NSNumberHostObject>(this) = NSNumberHostObject::Float(value);
+    this
+}
 
 - (id)initWithBool:(bool)value {
     *env.objc.borrow_mut(this) = NSNumberHostObject::Bool(value);
@@ -150,13 +181,19 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (i32)intValue {
-    let value = if let &NSNumberHostObject::Int(value) = env.objc.borrow(this) { value } else { todo!() };
-    value
+    match env.objc.borrow(this) {
+        &NSNumberHostObject::Int(value) => value,
+        &NSNumberHostObject::LongLong(value) => value as i32,
+        x => todo!("{:?}", x)
+    }
 }
 
 - (f32)floatValue {
-    let value = if let &NSNumberHostObject::Float(value) = env.objc.borrow(this) { value } else { todo!() };
-    value
+    match env.objc.borrow(this) {
+        &NSNumberHostObject::Float(value) => value,
+        &NSNumberHostObject::Double(value) => value as f32,
+        x => todo!("{:?}", x)
+    }
 }
 
 - (f64)doubleValue {

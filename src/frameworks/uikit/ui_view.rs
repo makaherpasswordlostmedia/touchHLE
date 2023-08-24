@@ -108,7 +108,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     () = msg![env; this setFrame:frame];
 
-    log_dbg!(
+    log!(
         "[(UIView*){:?} initWithFrame:{:?}] => bounds {:?}, center {:?}",
         this,
         frame,
@@ -207,6 +207,11 @@ pub const CLASSES: ClassExports = objc_classes! {
         let this_layer = this_obj.layer;
         () = msg![env; this_layer addSublayer:subview_layer];
     }
+    // Hack: While layoutSubviews provides an empty default implementation (up to iOS 5), custom
+    // views could override it to perform precise layouts or set frame rectangles of subviews directly.
+    // As layoutSubviews only currently called on UIApplication load, we must call overridden
+    // `layoutSubviews` somewhere, addSubview: seems to be a good place to do so
+    () = msg![env; view layoutSubviews];
 }
 
 - (())bringSubviewToFront:(id)subview {
