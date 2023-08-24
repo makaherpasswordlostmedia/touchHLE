@@ -31,10 +31,9 @@ where
         &mut env.window,
         env.current_thread,
     );
-
-    //panic_on_gl_errors(&mut **gles);
+    panic_on_gl_errors(&mut *gles);
     let res = f(gles, &mut env.mem);
-    //panic_on_gl_errors(&mut **gles);
+    panic_on_gl_errors(&mut *gles);
     #[allow(clippy::let_and_return)]
     res
 }
@@ -188,6 +187,7 @@ fn glScissor(env: &mut Environment, x: GLint, y: GLint, width: GLsizei, height: 
     })
 }
 fn glViewport(env: &mut Environment, x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
+    log!("glViewport x {} y {} w {} h {}", x, y, width, height);
     // apply scale hack: assume framebuffer's size is larger than the app thinks
     // and scale viewport appropriately
     let factor = env.options.scale_hack.get() as GLsizei;
@@ -480,6 +480,7 @@ fn glOrthof(
     near: GLfloat,
     far: GLfloat,
 ) {
+    log!("glOrthof l {} r {} b {} t {} n {} f {}", left, right, bottom, top, near, far);
     with_ctx_and_mem(env, |gles, _mem| {
         unsafe { gles.Orthof(left, right, bottom, top, near, far) };
     });
@@ -811,6 +812,7 @@ fn glGetRenderbufferParameterivOES(
     with_ctx_and_mem(env, |gles, mem| {
         let params = mem.ptr_at_mut(params, 1);
         unsafe { gles.GetRenderbufferParameterivOES(target, pname, params) };
+        log!("glGetRenderbufferParameterivOES {} {} {}", target, pname, unsafe { params.read_unaligned() });
         // apply scale hack: scale down the reported size of the framebuffer,
         // assuming the framebuffer's true size is larger than it should be
         if pname == gles11::RENDERBUFFER_WIDTH_OES || pname == gles11::RENDERBUFFER_HEIGHT_OES {

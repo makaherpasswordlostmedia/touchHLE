@@ -129,7 +129,8 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (id)keyWindow {
-    nil
+    // TODO: return the one which is actually made key and visible
+    *env.framework_state.uikit.ui_view.ui_window.visible_windows.first().unwrap()
 }
 
 @end

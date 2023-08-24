@@ -30,6 +30,7 @@ use crate::Environment;
 /// overwriting it.
 #[allow(non_snake_case)]
 fn objc_msgSend_inner(env: &mut Environment, receiver: id, selector: SEL, super2: Option<Class>) {
+    // log!("Dispatching {} for {:?}", selector.as_str(&env.mem), receiver);
     if receiver == nil {
         // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjectiveC/Chapters/ocObjectsClasses.html#//apple_ref/doc/uid/TP30001163-CH11-SW7
         log_dbg!("[nil {}]", selector.as_str(&env.mem));
@@ -83,6 +84,7 @@ fn objc_msgSend_inner(env: &mut Environment, receiver: id, selector: SEL, super2
         if let Some(&super::ClassHostObject {
             superclass,
             ref methods,
+            ref name,
             ..
         }) = host_object.as_any().downcast_ref()
         {
@@ -94,6 +96,7 @@ fn objc_msgSend_inner(env: &mut Environment, receiver: id, selector: SEL, super2
             }
 
             if let Some(imp) = methods.get(&selector) {
+                // log!("Found method on: {}", name);
                 match imp {
                     IMP::Host(host_imp) => host_imp.call_from_guest(env),
                     // We can't create a new stack frame, because that would
@@ -142,7 +145,7 @@ fn objc_msgSend_inner(env: &mut Environment, receiver: id, selector: SEL, super2
 /// Standard variant of `objc_msgSend`. See [objc_msgSend_inner].
 #[allow(non_snake_case)]
 pub(super) fn objc_msgSend(env: &mut Environment, receiver: id, selector: SEL) {
-    log_dbg!("objc_msgSend SEL {}", selector.as_str(&env.mem));
+    // log!("objc_msgSend SEL {}", selector.as_str(&env.mem));
     objc_msgSend_inner(env, receiver, selector, /* super2: */ None)
 }
 

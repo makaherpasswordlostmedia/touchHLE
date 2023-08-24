@@ -7,6 +7,7 @@
 
 use super::ns_array;
 use super::ns_dictionary::DictionaryHostObject;
+use super::ns_array::ArrayHostObject;
 use super::ns_enumerator::NSFastEnumerationState;
 use super::NSUInteger;
 use crate::mem::MutPtr;
@@ -15,6 +16,7 @@ use crate::objc::{
 };
 
 /// Belongs to _touchHLE_NSSet
+#[derive(Debug, Default)]
 struct SetHostObject {
     dict: DictionaryHostObject,
 }
@@ -43,6 +45,17 @@ pub const CLASSES: ClassExports = objc_classes! {
     assert!(object != nil);
     let new: id = msg![env; this alloc];
     let new: id = msg![env; new initWithObject:object];
+    autorelease(env, new)
+}
+
++ (id)setWithArray:(id)array { // NSArray *
+    // TODO: alloc mutable set
+    let new: id = msg![env; this alloc];
+    let count: NSUInteger = msg![env; array count];
+    for i in 0..count {
+        let next: id = msg![env; array objectAtIndex:i];
+        () = msg![env; new addObject:next];
+    }
     autorelease(env, new)
 }
 
@@ -98,6 +111,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     ns_array::from_vec(env, objects)
 }
 
+- (NSUInteger)count {
+    env.objc.borrow::<SetHostObject>(this).dict.count
+}
+
 // NSFastEnumeration implementation
 - (NSUInteger)countByEnumeratingWithState:(MutPtr<NSFastEnumerationState>)state
                                   objects:(MutPtr<id>)stackbuf
@@ -136,6 +153,14 @@ pub const CLASSES: ClassExports = objc_classes! {
         },
         _ => panic!(), // app failed to initialize the buffer?
     }
+}
+
+// TODO: move to NSMutableSet methods
+- (())addObject:(id)object {
+    let null: id = msg_class![env; NSNull null];
+    let mut host_obj: SetHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.dict.insert(env, object, null, /* copy_key: */ false);
+    *env.objc.borrow_mut(this) = host_obj;
 }
 
 @end
