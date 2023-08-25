@@ -132,7 +132,7 @@ fn CGImageGetBytesPerRow(env: &mut Environment, image: CGImageRef) -> GuestUSize
 
 fn CGImageGetDataProvider(_env: &mut Environment, image: CGImageRef) -> CGDataProviderRef {
     // This is a hack which basically substitutes a provider with an original image.
-    // Check `cf_data.rs` and `cg_data_provider.rs` for more info.
+    // See CGDataProviderCopyData() implementation.
     // TODO: implement proper provider
     image
 }
