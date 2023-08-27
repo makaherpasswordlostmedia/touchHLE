@@ -42,6 +42,7 @@ pub mod ns_operation_queue;
 pub mod ns_date;
 pub mod ns_time_zone;
 pub mod ns_calendar;
+pub mod ns_file_handle;
 
 #[derive(Default)]
 pub struct State {

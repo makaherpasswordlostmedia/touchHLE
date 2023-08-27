@@ -130,7 +130,7 @@ impl StringHostObject {
             _ => panic!("Unimplemented encoding: {:#x}", encoding),
         }
     }
-    fn to_utf8(&self) -> Result<Cow<'static, str>, FromUtf16Error> {
+    pub(super) fn to_utf8(&self) -> Result<Cow<'static, str>, FromUtf16Error> {
         match self {
             StringHostObject::Utf8(utf8) => Ok(utf8.clone()),
             StringHostObject::Utf16(utf16) => Ok(Cow::Owned(String::from_utf16(utf16)?)),
@@ -882,9 +882,20 @@ pub const CLASSES: ClassExports = objc_classes! {
     *env.objc.borrow_mut(this) = host_object;
 }
 
+// FIXME: this should be a NSMutableString method
+- (())appendString:(id)aString { // NSString*
+    // TODO: this is inefficient? append in place instead
+    let new: id = msg![env; this stringByAppendingString:aString];
+    () = msg![env; this setString:new];
+}
+
 @end
 
 @implementation NSMutableString: _touchHLE_NSString
+
++ (id)stringWithCapacity:(NSUInteger)_capacity {
+    msg_class![env; NSMutableString string]
+}
 
 @end
 

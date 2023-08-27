@@ -57,6 +57,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     nil
 }
 
++ (id)currentLocale {
+    nil
+}
+
 // TODO: constructors, more accessors
 
 @end

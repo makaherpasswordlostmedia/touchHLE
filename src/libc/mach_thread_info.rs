@@ -10,7 +10,7 @@
 #![allow(non_camel_case_types)]
 
 use crate::dyld::{export_c_func, FunctionExports};
-use crate::mem::{guest_size_of, MutPtr, SafeRead};
+use crate::mem::{ConstPtr, guest_size_of, MutPtr, SafeRead};
 use crate::Environment;
 
 type kern_return_t = i32;
@@ -152,7 +152,23 @@ fn thread_policy_set(
     KERN_SUCCESS
 }
 
+fn mach_host_self(_env: &mut Environment) -> i32 {
+    0
+}
+
+fn setlocale(env: &mut Environment, category: i32, locale: ConstPtr<u8>) -> MutPtr<u8> {
+    // assert_eq!(category, 0); // LC_ALL
+    if !locale.is_null() {
+        assert_eq!("C", env.mem.cstr_at_utf8(locale).unwrap());
+        locale.cast_mut()
+    } else {
+        env.mem.alloc_and_write_cstr(b"C")
+    }
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(thread_info(_, _, _, _)),
     export_c_func!(thread_policy_set(_, _, _, _)),
+    export_c_func!(mach_host_self()),
+    export_c_func!(setlocale(_, _)),
 ];

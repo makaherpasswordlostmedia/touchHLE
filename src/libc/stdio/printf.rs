@@ -64,6 +64,12 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
             pad_width
         };
 
+        if has_precision && get_format_char(&env.mem, format_char_idx) == b'*' {
+            let precision: i32 = args.next(env);
+            log!("WARNING ignoring * precision: {}", precision);
+            format_char_idx += 1;
+        }
+
         let specifier = get_format_char(&env.mem, format_char_idx);
         format_char_idx += 1;
 
@@ -73,9 +79,9 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
             continue;
         }
 
-        if has_precision {
-            assert!(INTEGER_SPECIFIERS.contains(&specifier))
-        }
+        // if has_precision {
+        //     assert!(INTEGER_SPECIFIERS.contains(&specifier))
+        // }
 
         match specifier {
             b'c' => {
@@ -110,7 +116,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                     write!(&mut res, "{}", int).unwrap();
                 }
             }
-            b'f' => {
+            b'f' | b'g' => {
                 let float: f64 = args.next(env);
                 if pad_width > 0 {
                     if pad_char == '0' {
@@ -140,7 +146,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
         }
     }
 
-    log_dbg!("=> {:?}", std::str::from_utf8(&res));
+    log!("=> {:?}", std::str::from_utf8(&res));
 
     res
 }
@@ -152,7 +158,7 @@ fn vsnprintf(
     format: ConstPtr<u8>,
     arg: VaList,
 ) -> i32 {
-    log_dbg!(
+    log!(
         "vsnprintf({:?} {:?} {:?})",
         dest,
         format,
@@ -172,6 +178,16 @@ fn vsnprintf(
     }
 
     res.len().try_into().unwrap()
+}
+
+fn snprintf(
+    env: &mut Environment,
+    dest: MutPtr<u8>,
+    n: GuestUSize,
+    format: ConstPtr<u8>,
+    args: DotDotDot,
+) -> i32 {
+    vsnprintf(env, dest, n, format, args.start())
 }
 
 fn vsprintf(env: &mut Environment, dest: MutPtr<u8>, format: ConstPtr<u8>, arg: VaList) -> i32 {
@@ -290,6 +306,7 @@ fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(sscanf(_, _, _)),
     export_c_func!(vsnprintf(_, _, _, _)),
+    export_c_func!(snprintf(_, _, _, _)),
     export_c_func!(vsprintf(_, _, _)),
     export_c_func!(sprintf(_, _, _)),
     export_c_func!(printf(_, _)),
