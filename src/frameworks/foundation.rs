@@ -43,6 +43,7 @@ pub mod ns_date;
 pub mod ns_time_zone;
 pub mod ns_calendar;
 pub mod ns_file_handle;
+pub(crate) mod fake_cftimer_target;
 
 #[derive(Default)]
 pub struct State {

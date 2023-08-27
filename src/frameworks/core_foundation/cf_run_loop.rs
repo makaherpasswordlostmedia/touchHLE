@@ -8,12 +8,20 @@
 //! This is not even toll-free bridged to `NSRunLoop` in Apple's implementation,
 //! but here it is the same type.
 
+use crate::abi::GuestFunction;
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
-use crate::objc::msg_class;
+use crate::objc::{id, msg, msg_class, nil};
 use crate::Environment;
+use crate::frameworks::core_foundation::cf_allocator::CFAllocatorRef;
+use crate::frameworks::core_foundation::CFIndex;
+use crate::frameworks::core_foundation::time::{CFAbsoluteTime, CFTimeInterval};
+use crate::mem::{MutVoidPtr, Ptr};
 
 pub type CFRunLoopRef = super::CFTypeRef;
 pub type CFRunLoopMode = super::cf_string::CFStringRef;
+
+pub type CFRunLoopTimerRef = super::CFTypeRef;
+pub type CFOptionFlags = u64;
 
 fn CFRunLoopGetCurrent(env: &mut Environment) -> CFRunLoopRef {
     msg_class![env; NSRunLoop currentRunLoop]
@@ -21,6 +29,36 @@ fn CFRunLoopGetCurrent(env: &mut Environment) -> CFRunLoopRef {
 
 pub fn CFRunLoopGetMain(env: &mut Environment) -> CFRunLoopRef {
     msg_class![env; NSRunLoop mainRunLoop]
+}
+
+// CFRunLoopTimerRef CFRunLoopTimerCreate(
+// CFAllocatorRef allocator, CFAbsoluteTime fireDate, CFTimeInterval interval,
+// CFOptionFlags flags, CFIndex order, CFRunLoopTimerCallBack callout, CFRunLoopTimerContext *context
+// )
+
+// typedef void (*CFRunLoopTimerCallBack)(CFRunLoopTimerRef timer, void *info)
+fn CFRunLoopTimerCreate(
+    env: &mut Environment, _allocator: CFAllocatorRef, fireDate: CFAbsoluteTime,
+    interval: CFTimeInterval, flags: CFOptionFlags, _order: CFIndex, callout: GuestFunction,
+    context: MutVoidPtr
+) -> CFRunLoopTimerRef {
+    assert_eq!(flags, 0);
+    assert!(context.is_null());
+
+    let fake_target: id = msg_class![env; FakeCFTimerTarget alloc];
+    let fake_target: id = msg![env; fake_target initWithCallout:callout];
+
+    let selector = env.objc.lookup_selector("timerFireMethod:").unwrap();
+
+    let repeats = interval > 0.0;
+    let timer =
+        msg_class![env; NSTimer timerWithTimeInterval:interval
+                                               target:fake_target
+                                             selector:selector
+                                             userInfo:nil
+                                              repeats:repeats];
+
+    timer
 }
 
 pub const kCFRunLoopCommonModes: &str = "kCFRunLoopCommonModes";
@@ -45,4 +83,5 @@ pub const CONSTANTS: ConstantExports = &[
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFRunLoopGetCurrent()),
     export_c_func!(CFRunLoopGetMain()),
+    export_c_func!(CFRunLoopTimerCreate(_, _, _, _, _, _, _)),
 ];
