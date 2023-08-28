@@ -21,7 +21,7 @@ pub type CFRunLoopRef = super::CFTypeRef;
 pub type CFRunLoopMode = super::cf_string::CFStringRef;
 
 pub type CFRunLoopTimerRef = super::CFTypeRef;
-pub type CFOptionFlags = u64;
+pub type CFOptionFlags = u32;
 
 fn CFRunLoopGetCurrent(env: &mut Environment) -> CFRunLoopRef {
     msg_class![env; NSRunLoop currentRunLoop]
@@ -39,14 +39,15 @@ pub fn CFRunLoopGetMain(env: &mut Environment) -> CFRunLoopRef {
 // typedef void (*CFRunLoopTimerCallBack)(CFRunLoopTimerRef timer, void *info)
 fn CFRunLoopTimerCreate(
     env: &mut Environment, _allocator: CFAllocatorRef, fireDate: CFAbsoluteTime,
-    interval: CFTimeInterval, flags: CFOptionFlags, _order: CFIndex, callout: GuestFunction,
+    interval: CFTimeInterval, flags: CFOptionFlags, order: CFIndex, callout: GuestFunction,
     context: MutVoidPtr
 ) -> CFRunLoopTimerRef {
     assert_eq!(flags, 0);
-    assert!(context.is_null());
+    assert_eq!(order, 0);
+    // assert!(context.is_null());
 
     let fake_target: id = msg_class![env; FakeCFTimerTarget alloc];
-    let fake_target: id = msg![env; fake_target initWithCallout:callout];
+    let fake_target: id = msg![env; fake_target initWithCallout:callout context:context];
 
     let selector = env.objc.lookup_selector("timerFireMethod:").unwrap();
 
