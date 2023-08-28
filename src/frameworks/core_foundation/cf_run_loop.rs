@@ -10,7 +10,7 @@
 
 use crate::abi::{CallFromHost, GuestFunction};
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
-use crate::objc::{Class, id, msg, msg_class, nil};
+use crate::objc::{Class, id, msg, msg_class, nil, retain};
 use crate::Environment;
 use crate::frameworks::core_foundation::cf_allocator::CFAllocatorRef;
 use crate::frameworks::core_foundation::CFIndex;
@@ -73,6 +73,13 @@ fn CFRunLoopAddTimer(env: &mut Environment, rl: CFRunLoopRef, timer: CFRunLoopTi
     () = msg![env; rl addTimer:timer forMode:mode];
 }
 
+fn CFRunLoopTimerInvalidate(env: &mut Environment, timer: CFRunLoopTimerRef) {
+    let timer_class: Class = msg![env; timer class];
+    assert_eq!(timer_class, env.objc.get_known_class("NSTimer", &mut env.mem));
+
+    () = msg![env; timer invalidate];
+}
+
 pub const kCFRunLoopCommonModes: &str = "kCFRunLoopCommonModes";
 pub const kCFRunLoopDefaultMode: &str = "kCFRunLoopDefaultMode";
 pub const kCFBundleExecutableKey: &str = "kCFBundleExecutableKey";
@@ -97,4 +104,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFRunLoopGetMain()),
     export_c_func!(CFRunLoopTimerCreate(_, _, _, _, _, _, _)),
     export_c_func!(CFRunLoopAddTimer(_, _, _)),
+    export_c_func!(CFRunLoopTimerInvalidate(_)),
 ];

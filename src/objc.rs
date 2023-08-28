@@ -22,7 +22,7 @@ use crate::dyld::{export_c_func, FunctionExports};
 use crate::MutexId;
 use std::collections::HashMap;
 
-mod classes;
+pub mod classes;
 mod messages;
 mod methods;
 mod objects;

@@ -131,7 +131,7 @@ fn atoi_common(env: &mut Environment, s: ConstPtr<u8>) -> (f64, u32) {
 }
 
 fn strtod(env: &mut Environment, nptr: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>) -> f64 {
-    log!("strtod nptr {}", env.mem.cstr_at_utf8(nptr).unwrap());
+    log_dbg!("strtod nptr {}", env.mem.cstr_at_utf8(nptr).unwrap());
     let (d, len) = atoi_common(env, nptr);
     if !endptr.is_null() {
         env.mem.write(endptr, env.mem.read((nptr + len).cast()));
