@@ -8,9 +8,9 @@
 //! This is not even toll-free bridged to `NSRunLoop` in Apple's implementation,
 //! but here it is the same type.
 
-use crate::abi::GuestFunction;
+use crate::abi::{CallFromHost, GuestFunction};
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
-use crate::objc::{id, msg, msg_class, nil};
+use crate::objc::{Class, id, msg, msg_class, nil};
 use crate::Environment;
 use crate::frameworks::core_foundation::cf_allocator::CFAllocatorRef;
 use crate::frameworks::core_foundation::CFIndex;
@@ -61,6 +61,17 @@ fn CFRunLoopTimerCreate(
     timer
 }
 
+// void CFRunLoopAddTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFRunLoopMode mode);
+fn CFRunLoopAddTimer(env: &mut Environment, rl: CFRunLoopRef, timer: CFRunLoopTimerRef, mode: CFRunLoopMode) {
+    let rl_class: Class = msg![env; rl class];
+    assert_eq!(rl_class, env.objc.get_known_class("NSRunLoop", &mut env.mem));
+
+    let timer_class: Class = msg![env; timer class];
+    assert_eq!(timer_class, env.objc.get_known_class("NSTimer", &mut env.mem));
+
+    () = msg![env; rl addTimer:timer forMode:mode];
+}
+
 pub const kCFRunLoopCommonModes: &str = "kCFRunLoopCommonModes";
 pub const kCFRunLoopDefaultMode: &str = "kCFRunLoopDefaultMode";
 pub const kCFBundleExecutableKey: &str = "kCFBundleExecutableKey";
@@ -84,4 +95,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFRunLoopGetCurrent()),
     export_c_func!(CFRunLoopGetMain()),
     export_c_func!(CFRunLoopTimerCreate(_, _, _, _, _, _, _)),
+    export_c_func!(CFRunLoopAddTimer(_, _, _)),
 ];

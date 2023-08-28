@@ -2,7 +2,8 @@ use crate::objc::{
     autorelease, id, msg, msg_class, msg_send, nil, objc_classes, ClassExports,
     HostObject, NSZonePtr,
 };
-use crate::abi::GuestFunction;
+use crate::abi::{CallFromHost, GuestFunction};
+use crate::mem::{MutVoidPtr, Ptr};
 
 struct FakeCFTimerTargetHostObject {
     callout: GuestFunction,
@@ -29,7 +30,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (())timerFireMethod:(id)timer { // NSTimer *
-    todo!();
+    let &FakeCFTimerTargetHostObject {
+        callout
+    } = env.objc.borrow(this);
+    // callout.call_from_host(env, (timer,))
 }
 
 @end
