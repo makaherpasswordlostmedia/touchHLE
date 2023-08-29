@@ -146,7 +146,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
         }
     }
 
-    log!("=> {:?}", std::str::from_utf8(&res));
+    log_dbg!("=> {:?}", std::str::from_utf8(&res));
 
     res
 }
@@ -158,7 +158,7 @@ fn vsnprintf(
     format: ConstPtr<u8>,
     arg: VaList,
 ) -> i32 {
-    log!(
+    log_dbg!(
         "vsnprintf({:?} {:?} {:?})",
         dest,
         format,

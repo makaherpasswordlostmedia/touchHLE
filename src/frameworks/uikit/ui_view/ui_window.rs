@@ -30,7 +30,7 @@ pub const CLASSES: ClassExports = objc_classes! {
     // is not in the list, so it must be added to it before that call.
     let visible_list = &mut env.framework_state.uikit.ui_view.ui_window.visible_windows;
     visible_list.push(this);
-    log_dbg!(
+    log!(
         "New window: {:?}. New set of visible windows: {:?}",
         this,
         visible_list,
@@ -99,7 +99,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 -(())setWindowLevel:(CGFloat)level {
-
+    log!("Setting windowLevel {} for {:?}", level, this);
 }
 
 @end
