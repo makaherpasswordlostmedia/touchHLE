@@ -13,6 +13,7 @@ use super::{
 };
 use crate::abi::VaList;
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect, CGSize};
+use crate::frameworks::foundation::NSRange;
 use crate::frameworks::uikit::ui_font::{
     self, UILineBreakMode, UILineBreakModeWordWrap, UITextAlignment, UITextAlignmentLeft,
 };
@@ -130,7 +131,7 @@ impl StringHostObject {
             _ => panic!("Unimplemented encoding: {:#x}", encoding),
         }
     }
-    fn to_utf8(&self) -> Result<Cow<'static, str>, FromUtf16Error> {
+    pub(super) fn to_utf8(&self) -> Result<Cow<'static, str>, FromUtf16Error> {
         match self {
             StringHostObject::Utf8(utf8) => Ok(utf8.clone()),
             StringHostObject::Utf16(utf16) => Ok(Cow::Owned(String::from_utf16(utf16)?)),
@@ -246,6 +247,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 // For the time being, that will always be _touchHLE_NSString.
 @implementation NSString: NSObject
 
++ (id)string {
+    msg_class![env; NSString allocWithZone:nil]
+}
+
 + (id)allocWithZone:(NSZonePtr)zone {
     // NSString might be subclassed by something which needs allocWithZone:
     // to have the normal behaviour. Unimplemented: call superclass alloc then.
@@ -327,6 +332,33 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     // TODO: raise exception instead of panicking?
     utf16[index as usize]
+}
+
+- (NSRange)rangeOfString:(id)searchString { // NSString *
+    let len: NSUInteger = msg![env; this length];
+    let len_search: NSUInteger = msg![env; searchString length];
+    if len_search == 0 {
+        return NSRange { location: 0x7fffffff, length: 0 };
+    }
+    for i in 0..len {
+        let mut match_found = true;
+        for j in 0..len_search {
+            if (i + j) >= len {
+                match_found = false;
+                break;
+            }
+            let a_c: u16 = msg![env; this characterAtIndex:(i + j)];
+            let b_c: u16 = msg![env; searchString characterAtIndex:j];
+            if a_c != b_c {
+                match_found = false;
+                break;
+            }
+        }
+        if match_found {
+            return NSRange { location: i, length: len_search }
+        }
+    }
+    NSRange { location: 0x7fffffff, length: 0 }
 }
 
 - (id)description {
@@ -841,6 +873,28 @@ pub const CLASSES: ClassExports = objc_classes! {
     *env.objc.borrow_mut(this) = host_object;
 
     this
+}
+
+// FIXME: this should be a NSMutableString method
+-(())setString:(id)aString { // NSString*
+    let str = to_rust_string(env, aString);
+    let host_object = StringHostObject::Utf8(str);
+    *env.objc.borrow_mut(this) = host_object;
+}
+
+// FIXME: this should be a NSMutableString method
+- (())appendString:(id)aString { // NSString*
+    // TODO: this is inefficient? append in place instead
+    let new: id = msg![env; this stringByAppendingString:aString];
+    () = msg![env; this setString:new];
+}
+
+@end
+
+@implementation NSMutableString: _touchHLE_NSString
+
++ (id)stringWithCapacity:(NSUInteger)_capacity {
+    msg_class![env; NSMutableString string]
 }
 
 @end
