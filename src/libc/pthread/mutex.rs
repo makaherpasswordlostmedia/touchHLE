@@ -15,7 +15,7 @@ use crate::{Environment, MutexId, PTHREAD_MUTEX_DEFAULT};
 /// Apple's implementation is a 4-byte magic number followed by an 8-byte opaque
 /// region. We only have to match the size theirs has.
 #[repr(C, packed)]
-struct pthread_mutexattr_t {
+pub struct pthread_mutexattr_t {
     /// Magic number (must be [MAGIC_MUTEXATTR])
     magic: u32,
     type_: i32,
@@ -78,7 +78,7 @@ fn pthread_mutexattr_destroy(env: &mut Environment, attr: MutPtr<pthread_mutexat
     0 // success
 }
 
-fn pthread_mutex_init(
+pub fn pthread_mutex_init(
     env: &mut Environment,
     mutex: MutPtr<pthread_mutex_t>,
     attr: ConstPtr<pthread_mutexattr_t>,
@@ -125,7 +125,7 @@ fn check_or_register_mutex(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>
     }
 }
 
-fn pthread_mutex_lock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
+pub fn pthread_mutex_lock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
     check_or_register_mutex(env, mutex);
     let mutex_data = env.mem.read(mutex);
     let mutex_id = mutex_data.mutex_id;
@@ -136,15 +136,7 @@ fn pthread_mutex_lock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> 
 fn pthread_mutex_trylock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
     check_or_register_mutex(env, mutex);
     let mutex_data = env.mem.read(mutex);
-    let mutex_id = mutex_data.mutex_id;
-    log_dbg!("About to lock mutex #{} ({:#x})", mutex_id, mutex.to_bits());
-    match env.trylock_mutex(mutex_id) {
-        Ok(_) => 0,
-        Err(e) => match e {
-            EBUSY => EBUSY,
-            _ => unimplemented!()
-        }
-    }
+    env.unlock_mutex(mutex_data.mutex_id).err().unwrap_or(0)
 }
 
 pub fn pthread_mutex_unlock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
@@ -155,7 +147,7 @@ pub fn pthread_mutex_unlock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t
     env.unlock_mutex(mutex_id).err().unwrap_or(0)
 }
 
-fn pthread_mutex_destroy(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
+pub fn pthread_mutex_destroy(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
     check_or_register_mutex(env, mutex);
     let mutex_id = env.mem.read(mutex).mutex_id;
     env.mem.write(
