@@ -5,7 +5,8 @@
  */
 //! `NSThread`.
 
-use crate::objc::{id, objc_classes, ClassExports};
+use crate::frameworks::foundation::NSTimeInterval;
+use crate::objc::{id, nil, objc_classes, ClassExports, SEL};
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -30,7 +31,26 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
++ (())sleepForTimeInterval:(NSTimeInterval)interval {
+
+}
+
 // TODO: construction etc
+
+- (id)initWithTarget:(id)target selector:(SEL)selector object:(id)object {
+    // let target_class = msg![env; target class];
+    // let class_host_object = env.objc.get_host_object(target_class).unwrap();
+    // let &ClassHostObject {
+    //     ref name,
+    //     ..
+    // } = class_host_object.as_any().downcast_ref().unwrap();
+    //
+    // log!("NSThread initWithTarget {} sel {}", name, selector.as_str(&env.mem));
+
+    // () = msg_send(env, (target, selector, object));
+
+    nil
+}
 
 @end
 

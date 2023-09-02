@@ -33,9 +33,9 @@ pub type Class = id;
 /// will look up method implementations.
 ///
 /// Note: `superclass` can be `nil`!
-pub(super) struct ClassHostObject {
-    pub(super) name: String,
-    pub(super) is_metaclass: bool,
+pub struct ClassHostObject {
+    pub name: String,
+    pub is_metaclass: bool,
     pub(super) superclass: Class,
     pub(super) methods: HashMap<SEL, IMP>,
     /// Offset into the allocated memory for the object where the ivars of

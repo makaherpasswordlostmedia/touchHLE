@@ -1,9 +1,6 @@
 use crate::abi::{CallFromHost, GuestFunction};
-use crate::mem::{MutVoidPtr, Ptr};
-use crate::objc::{
-    autorelease, id, msg, msg_class, msg_send, nil, objc_classes, ClassExports, HostObject,
-    NSZonePtr,
-};
+use crate::mem::MutVoidPtr;
+use crate::objc::{id, objc_classes, ClassExports, HostObject, NSZonePtr};
 
 struct FakeCFTimerTargetHostObject {
     callout: GuestFunction,

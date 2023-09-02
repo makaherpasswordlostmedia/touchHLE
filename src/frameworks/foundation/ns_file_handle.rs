@@ -17,7 +17,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 @implementation NSFileHandle: NSObject
 
 + (id)fileHandleForReadingAtPath:(id)path { // NSString*
-    log!("fileHandleForReadingAtPath {}", ns_string::to_rust_string(env, path));
+    log_dbg!("fileHandleForReadingAtPath {}", ns_string::to_rust_string(env, path));
     let path_str: ConstPtr<u8> = msg![env; path UTF8String];
     match posix_io::open_direct(env, path_str, posix_io::O_RDONLY) {
         -1 => nil,
@@ -28,6 +28,17 @@ pub const CLASSES: ClassExports = objc_classes! {
             let new = env.objc.alloc_object(this, host_object, &mut env.mem);
             autorelease(env, new)
         },
+    }
+}
+
+- (i64)offsetInFile {
+    let &NSFileHandleHostObject {
+        fd
+    } = env.objc.borrow(this);
+    match posix_io::lseek(env, fd, 0, posix_io::SEEK_CUR) {
+        -1 => panic!("offsetInFile failed"),
+        // TODO: What's the correct behaviour if the position is beyond 2GiB?
+        cur_pos => cur_pos,
     }
 }
 
