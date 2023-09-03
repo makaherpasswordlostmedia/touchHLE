@@ -9,6 +9,8 @@
 
 use super::CGFloat;
 use crate::abi::{impl_GuestRet_for_large_struct, GuestArg};
+use crate::dyld::FunctionExports;
+use crate::{Environment, export_c_func};
 use crate::mem::SafeRead;
 
 fn parse_tuple(s: &str) -> Result<(f32, f32), ()> {
@@ -138,3 +140,20 @@ impl std::fmt::Display for CGRect {
         write!(f, "{{{}, {}}}", origin, size)
     }
 }
+
+fn CGRectContainsPoint(_env: &mut Environment, rect: CGRect, point: CGPoint) -> bool {
+    let min_x = rect.origin.x;
+    assert!(rect.size.width > 0.0);
+    let max_x = rect.origin.x + rect.size.width;
+    assert!(min_x <= max_x);
+    let min_y = rect.origin.y;
+    assert!(rect.size.height > 0.0);
+    let max_y = rect.origin.y + rect.size.height;
+    assert!(min_y <= max_y);
+
+    min_x <= point.x && point.x <= max_x && min_y <= point.y && point.y <= max_y
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(CGRectContainsPoint(_, _)),
+];

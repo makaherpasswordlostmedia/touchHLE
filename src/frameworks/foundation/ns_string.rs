@@ -659,6 +659,25 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new_string)
 }
 
+- (id)substringFromIndex:(NSUInteger)from {
+    // TODO: ideally, don't convert to UTF-16 here
+    let len: NSUInteger = msg![env; this length];
+    assert!(from <= len);
+    let mut new_utf16 = Vec::with_capacity(len as usize);
+    for_each_code_unit(env, this, |idx, c| {
+        if idx >= from {
+            new_utf16.push(c);
+        }
+    });
+
+    // TODO: For a foreign subclass of NSString, do we have to return that
+    // subclass? The signature implies this isn't the case and it's probably not
+    // worth the effort, but it's an interesting question.
+    let class = env.objc.get_known_class("_touchHLE_NSString", &mut env.mem);
+    let host_object = Box::new(StringHostObject::Utf16(new_utf16));
+    env.objc.alloc_object(class, host_object, &mut env.mem)
+}
+
 - (id)lastPathComponent {
     let string = to_rust_string(env, this); // TODO: avoid copying
     let (_, res) = path_algorithms::split_last_path_component(&string);
