@@ -223,7 +223,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     // We're presenting to the opaque CAEAGLLayer that covers the screen.
     // We can use the fast path where we skip composition and present directly.
-    if drawable == fullscreen_layer {
+    if true {
         log_dbg!(
             "Layer {:?} is the fullscreen layer, presenting renderbuffer {:?} directly (fast path).",
             drawable,
@@ -234,6 +234,7 @@ pub const CLASSES: ClassExports = objc_classes! {
         unsafe {
             present_renderbuffer(gles, env.window.as_mut().unwrap());
         }
+        crate::frameworks::uikit::handle_events(env);
     } else {
         if fullscreen_layer != nil {
             // If there's a single layer that covers the screen, and this isn't
