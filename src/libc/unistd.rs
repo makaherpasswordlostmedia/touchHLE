@@ -11,6 +11,7 @@ use crate::libc::posix_io::{FileDescriptor, STDERR_FILENO, STDIN_FILENO, STDOUT_
 use crate::mem::ConstPtr;
 use crate::Environment;
 use std::time::Duration;
+use crate::mem::MutVoidPtr;
 
 #[allow(non_camel_case_types)]
 type useconds_t = u32;
@@ -76,6 +77,10 @@ fn access(env: &mut Environment, path: ConstPtr<u8>, mode: i32) -> i32 {
     }
 }
 
+fn uname(_env: &mut Environment, name: MutVoidPtr) -> i32 {
+    -1
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(sleep(_)),
     export_c_func!(usleep(_)),
@@ -83,4 +88,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(getppid()),
     export_c_func!(isatty(_)),
     export_c_func!(access(_, _)),
+    export_c_func!(uname(_)),
 ];

@@ -242,6 +242,12 @@ fn glLightxv(env: &mut Environment, light: GLenum, pname: GLenum, params: ConstP
         unsafe { gles.Lightxv(light, pname, params) }
     })
 }
+fn glLightModelfv(env: &mut Environment, pname: GLenum, params: ConstPtr<GLfloat>) {
+    with_ctx_and_mem(env, |gles, mem| {
+        let params = mem.ptr_at(params, 4 /* upper bound */);
+        unsafe { gles.LightModelfv(pname, params) }
+    })
+}
 fn glMaterialf(env: &mut Environment, face: GLenum, pname: GLenum, param: GLfloat) {
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.Materialf(face, pname, param)
@@ -668,6 +674,7 @@ fn image_size_estimate(pixel_count: GuestUSize, format: GLenum, type_: GLenum) -
             gles11::LUMINANCE_ALPHA => 2,
             gles11::RGB => 3,
             gles11::RGBA => 4,
+            0x80e1 => 4,
             _ => panic!("Unexpected format {:#x}", format),
         },
         gles11::UNSIGNED_SHORT_5_6_5
@@ -787,6 +794,16 @@ fn glCopyTexSubImage2D(
 ) {
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
+    })
+}
+fn glPointSize(env: &mut Environment, size: GLfloat) {
+    with_ctx_and_mem(env, |gles, _mem| unsafe {
+        gles.PointSize(size)
+    })
+}
+fn glLineWidth(env: &mut Environment, width: GLfloat) {
+    with_ctx_and_mem(env, |gles, _mem| unsafe {
+        gles.LineWidth(width)
     })
 }
 fn glTexEnvf(env: &mut Environment, target: GLenum, pname: GLenum, param: GLfloat) {
@@ -968,6 +985,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(glLightx(_, _, _)),
     export_c_func!(glLightfv(_, _, _)),
     export_c_func!(glLightxv(_, _, _)),
+    export_c_func!(glLightModelfv(_, _)),
     export_c_func!(glMaterialf(_, _, _)),
     export_c_func!(glMaterialx(_, _, _)),
     export_c_func!(glMaterialfv(_, _, _)),
@@ -1032,6 +1050,8 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(glCompressedTexImage2D(_, _, _, _, _, _, _, _)),
     export_c_func!(glCopyTexImage2D(_, _, _, _, _, _, _, _)),
     export_c_func!(glCopyTexSubImage2D(_, _, _, _, _, _, _, _)),
+    export_c_func!(glPointSize(_)),
+    export_c_func!(glLineWidth(_)),
     export_c_func!(glTexEnvf(_, _, _)),
     export_c_func!(glTexEnvx(_, _, _)),
     export_c_func!(glTexEnvi(_, _, _)),

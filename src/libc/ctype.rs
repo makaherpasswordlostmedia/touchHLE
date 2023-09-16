@@ -145,5 +145,23 @@ pub const CONSTANTS: ConstantExports = &[(
     HostConstant::Custom(get_default_rune_locale),
 )];
 
-pub const FUNCTIONS: FunctionExports =
-    &[export_c_func!(__tolower(_)), export_c_func!(__toupper(_))];
+fn __maskrune(env: &mut Environment, c: darwin_rune_t, f: u64) -> i32 {
+    let (_, y) = CONSTANTS.first().unwrap();
+    let z = match y {
+        HostConstant::Custom(f) => f(&mut env.mem),
+        _ => panic!()
+    };
+    let rune: RuneLocale = env.mem.read(z.cast());
+    (rune.runetype[(c & 0xFF) as usize] & (f as u32)) as i32
+}
+
+fn localeconv(_env: &mut Environment) -> MutVoidPtr {
+    Ptr::null()
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(__tolower(_)),
+    export_c_func!(__toupper(_)),
+    export_c_func!(__maskrune(_, _)),
+    export_c_func!(localeconv())
+];
