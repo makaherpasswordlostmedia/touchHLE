@@ -89,7 +89,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
         }
 
         if has_precision {
-            assert!(INTEGER_SPECIFIERS.contains(&specifier))
+            //assert!(INTEGER_SPECIFIERS.contains(&specifier))
         }
 
         match specifier {
@@ -135,7 +135,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                     write!(&mut res, "{}", int).unwrap();
                 }
             }
-            b'f' => {
+            b'f' | b'g' => {
                 let float: f64 = args.next(env);
                 if pad_width > 0 {
                     if pad_char == '0' {

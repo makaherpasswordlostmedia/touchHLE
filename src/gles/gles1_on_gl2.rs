@@ -269,6 +269,7 @@ const GET_PARAMS: ParamTable = ParamTable(&[
     (gl21::RENDERBUFFER_BINDING_EXT, ParamType::Int, 1),
     // EXT_texture_lod_bias
     (gl21::MAX_TEXTURE_LOD_BIAS_EXT, ParamType::Float, 1),
+    (gl21::MAX_TEXTURE_MAX_ANISOTROPY_EXT, ParamType::Float, 2),
 ]);
 
 /// Table of `glFog` parameters shared by OpenGL ES 1.1 and OpenGL 2.1.
@@ -1145,6 +1146,7 @@ impl GLES for GLES1OnGL2 {
                 || format == gl21::RGBA
                 || format == gl21::LUMINANCE
                 || format == gl21::LUMINANCE_ALPHA
+                || format == gl21::BGRA
         );
         assert!(
             type_ == gl21::UNSIGNED_BYTE
@@ -1601,5 +1603,17 @@ impl GLES for GLES1OnGL2 {
     }
     unsafe fn GenerateMipmapOES(&mut self, target: GLenum) {
         gl21::GenerateMipmapEXT(target)
+    }
+
+    unsafe fn LightModelfv(&mut self, pname: GLenum, params: *const GLfloat) {
+        gl21::LightModelfv(pname, params)
+    }
+
+    unsafe fn PointSize(&mut self, size: GLfloat) {
+        gl21::PointSize(size)
+    }
+
+    unsafe fn LineWidth(&mut self, width: GLfloat) {
+        gl21::LineWidth(width)
     }
 }

@@ -615,4 +615,16 @@ impl GLES for GLES1Native {
     unsafe fn GenerateMipmapOES(&mut self, target: GLenum) {
         gles11::GenerateMipmapOES(target)
     }
+
+    unsafe fn LightModelfv(&mut self, pname: GLenum, params: *const GLfloat) {
+        gles11::LightModelfv(pname, params)
+    }
+
+    unsafe fn PointSize(&mut self, size: GLfloat) {
+        gles11::PointSize(size)
+    }
+
+    unsafe fn LineWidth(&mut self, width: GLfloat) {
+        gles11::LineWidth(width)
+    }
 }
