@@ -17,7 +17,7 @@ pub type wchar_t = i32; // not sure if this signedness is correct
 #[allow(non_camel_case_types)]
 type wint_t = i32;
 
-const WEOF: wint_t = -1;
+pub const WEOF: wint_t = -1;
 
 fn btowc(_env: &mut Environment, c: i32) -> wint_t {
     let c = c as u8;
@@ -29,7 +29,7 @@ fn btowc(_env: &mut Environment, c: i32) -> wint_t {
     }
 }
 
-fn wctob(_env: &mut Environment, c: wint_t) -> i32 {
+pub fn wctob(_env: &mut Environment, c: wint_t) -> i32 {
     // Assuming ASCII locale, like in ctype.rs.
     if u32::try_from(c)
         .ok()
@@ -84,7 +84,7 @@ fn wmemcmp(
 ) -> i32 {
     GenericChar::<wchar_t>::memcmp(env, a, b, size)
 }
-fn wcslen(env: &mut Environment, s: ConstPtr<wchar_t>) -> GuestUSize {
+pub fn wcslen(env: &mut Environment, s: ConstPtr<wchar_t>) -> GuestUSize {
     GenericChar::<wchar_t>::strlen(env, s)
 }
 fn wcscpy(env: &mut Environment, dest: MutPtr<wchar_t>, src: ConstPtr<wchar_t>) -> MutPtr<wchar_t> {

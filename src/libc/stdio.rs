@@ -15,6 +15,7 @@ use crate::libc::string::strlen;
 use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr, SafeRead};
 use crate::Environment;
 use std::io::Write;
+use crate::abi::{CallFromHost, GuestFunction};
 
 // Standard C functions
 
@@ -254,6 +255,11 @@ fn fileno(env: &mut Environment, file_ptr: MutPtr<FILE>) -> posix_io::FileDescri
     fd
 }
 
+fn _ZN6b2Vec29NormalizeEv(env: &mut Environment, ptr: MutVoidPtr)  {
+    let func = GuestFunction::from_addr_with_thumb_bit(0x0012c86c);
+    func.call_from_host(env, (ptr,))
+}
+
 pub const CONSTANTS: ConstantExports = &[
     (
         "___stdinp",
@@ -298,4 +304,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(setbuf(_, _)),
     // POSIX-specific functions
     export_c_func!(fileno(_)),
+    export_c_func!(_ZN6b2Vec29NormalizeEv(_)),
 ];

@@ -77,10 +77,11 @@ impl AudioFile {
         } else {
             // We may eventually want to return an error here, this is just more
             // useful currently.
-            panic!(
-                "Could not decode audio file at path {:?}, likely an unimplemented file format.",
-                path.as_ref()
-            );
+            // panic!(
+            //     "Could not decode audio file at path {:?}, likely an unimplemented file format.",
+            //     path.as_ref()
+            // );
+            Err(())
         }
     }
 
