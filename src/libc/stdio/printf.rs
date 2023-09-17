@@ -322,6 +322,60 @@ fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: 
     matched_args
 }
 
+fn vsscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, arg: VaList) -> i32 {
+    log_dbg!(
+        "vsscanf({:?}, {:?} ({:?}), ...)",
+        src,
+        format,
+        env.mem.cstr_at_utf8(format)
+    );
+
+    let mut args = arg;
+
+    let mut src_ptr = src.cast_mut();
+    let mut format_char_idx = 0;
+
+    let mut matched_args = 0;
+
+    loop {
+        let c = env.mem.read(format + format_char_idx);
+        format_char_idx += 1;
+
+        if c == b'\0' {
+            break;
+        }
+        if c != b'%' {
+            let cc = env.mem.read(src_ptr);
+            if c != cc {
+                return matched_args - 1;
+            }
+            src_ptr += 1;
+            continue;
+        }
+
+        let specifier = env.mem.read(format + format_char_idx);
+        format_char_idx += 1;
+
+        match specifier {
+            b'd' => {
+                let mut val: i32 = 0;
+                while let c @ b'0'..=b'9' = env.mem.read(src_ptr) {
+                    val = val * 10 + (c - b'0') as i32;
+                    src_ptr += 1;
+                }
+                let c_int_ptr: ConstPtr<i32> = args.next(env);
+                env.mem.write(c_int_ptr.cast_mut(), val);
+            }
+            // TODO: more specifiers
+            _ => unimplemented!("Format character '{}'", specifier as char),
+        }
+
+        matched_args += 1;
+    }
+
+    matched_args
+}
+
 fn fprintf(
     env: &mut Environment,
     stream: MutPtr<FILE>,
@@ -347,6 +401,7 @@ fn fprintf(
 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(sscanf(_, _, _)),
+    export_c_func!(vsscanf(_, _, _)),
     export_c_func!(snprintf(_, _, _, _)),
     export_c_func!(vprintf(_, _)),
     export_c_func!(vsnprintf(_, _, _, _)),
