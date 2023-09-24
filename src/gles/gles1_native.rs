@@ -342,7 +342,7 @@ impl GLES for GLES1Native {
         &mut self,
         target: GLenum,
         level: GLint,
-        internalformat: GLint,
+        mut internalformat: GLint,
         width: GLsizei,
         height: GLsizei,
         border: GLint,
@@ -350,6 +350,9 @@ impl GLES for GLES1Native {
         type_: GLenum,
         pixels: *const GLvoid,
     ) {
+        if format == 0x80E1 {
+            internalformat = 0x80E1
+        }
         gles11::TexImage2D(
             target,
             level,
