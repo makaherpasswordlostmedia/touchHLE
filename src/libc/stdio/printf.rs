@@ -10,11 +10,11 @@ use crate::dyld::{export_c_func, FunctionExports};
 use crate::frameworks::foundation::{ns_string, unichar};
 use crate::libc::posix_io::{STDERR_FILENO, STDOUT_FILENO};
 use crate::libc::stdio::FILE;
+use crate::libc::wchar::{wchar_t, wcslen, wctob, WEOF};
 use crate::mem::{ConstPtr, GuestUSize, Mem, MutPtr, MutVoidPtr};
 use crate::objc::{id, msg};
 use crate::Environment;
 use std::io::Write;
-use crate::libc::wchar::{wchar_t, wcslen, wctob, WEOF};
 
 const INTEGER_SPECIFIERS: [u8; 6] = [b'd', b'i', b'o', b'u', b'x', b'X'];
 
@@ -236,7 +236,13 @@ fn vsprintf(env: &mut Environment, dest: MutPtr<u8>, format: ConstPtr<u8>, arg: 
 
 // int swprintf(wchar_t * restrict ws, size_t n, const wchar_t * restrict format, ...);
 
-fn swprintf(env: &mut Environment, ws: MutPtr<wchar_t>, n: GuestUSize, format: ConstPtr<wchar_t>, args: DotDotDot) -> i32 {
+fn swprintf(
+    env: &mut Environment,
+    ws: MutPtr<wchar_t>,
+    n: GuestUSize,
+    format: ConstPtr<wchar_t>,
+    args: DotDotDot,
+) -> i32 {
     // let ws_len = wcslen(env, ws.cast_const());
     // for i in 0..ws_len {
     //     let n_wc = env.mem.read(ws + i);

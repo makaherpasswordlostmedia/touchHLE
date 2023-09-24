@@ -9,9 +9,9 @@ use crate::dyld::{export_c_func, FunctionExports};
 use crate::fs::GuestPath;
 use crate::libc::posix_io::{FileDescriptor, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
 use crate::mem::ConstPtr;
+use crate::mem::MutVoidPtr;
 use crate::Environment;
 use std::time::Duration;
-use crate::mem::MutVoidPtr;
 
 #[allow(non_camel_case_types)]
 type useconds_t = u32;

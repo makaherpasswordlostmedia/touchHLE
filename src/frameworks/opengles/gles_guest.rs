@@ -797,14 +797,10 @@ fn glCopyTexSubImage2D(
     })
 }
 fn glPointSize(env: &mut Environment, size: GLfloat) {
-    with_ctx_and_mem(env, |gles, _mem| unsafe {
-        gles.PointSize(size)
-    })
+    with_ctx_and_mem(env, |gles, _mem| unsafe { gles.PointSize(size) })
 }
 fn glLineWidth(env: &mut Environment, width: GLfloat) {
-    with_ctx_and_mem(env, |gles, _mem| unsafe {
-        gles.LineWidth(width)
-    })
+    with_ctx_and_mem(env, |gles, _mem| unsafe { gles.LineWidth(width) })
 }
 fn glTexEnvf(env: &mut Environment, target: GLenum, pname: GLenum, param: GLfloat) {
     with_ctx_and_mem(env, |gles, _mem| unsafe {

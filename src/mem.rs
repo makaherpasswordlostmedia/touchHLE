@@ -501,13 +501,21 @@ impl Mem {
         self.bytes_at(ptr, len)
     }
 
-    pub fn wcstr_at<const MUT: bool>(&self, ptr: Ptr<wchar_t, MUT>) -> (impl Iterator<Item=u16> + '_, GuestUSize) {
+    pub fn wcstr_at<const MUT: bool>(
+        &self,
+        ptr: Ptr<wchar_t, MUT>,
+    ) -> (impl Iterator<Item = u16> + '_, GuestUSize) {
         let mut len = 0;
         while self.read(ptr + len) != wchar_t::default() {
             len += 1;
         }
-        let iter = self.bytes_at(ptr.cast(), len * guest_size_of::<wchar_t>()).chunks(4);
-        (iter.map(|chunk| u16::from_le_bytes(chunk[..2].try_into().unwrap())), len)
+        let iter = self
+            .bytes_at(ptr.cast(), len * guest_size_of::<wchar_t>())
+            .chunks(4);
+        (
+            iter.map(|chunk| u16::from_le_bytes(chunk[..2].try_into().unwrap())),
+            len,
+        )
     }
 
     pub fn wcstr_at_utf16<const MUT: bool>(&self, ptr: Ptr<wchar_t, MUT>) -> String {

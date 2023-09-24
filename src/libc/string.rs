@@ -108,7 +108,11 @@ fn strcat(env: &mut Environment, dest: MutPtr<u8>, src: ConstPtr<u8>) -> MutPtr<
     GenericChar::<u8>::strcat(env, dest, src)
 }
 fn strcspn(env: &mut Environment, s: ConstPtr<u8>, charset: ConstPtr<u8>) -> GuestUSize {
-    log!("strcspn: '{}' '{}'", env.mem.cstr_at_utf8(s).unwrap(), env.mem.cstr_at_utf8(charset).unwrap());
+    log!(
+        "strcspn: '{}' '{}'",
+        env.mem.cstr_at_utf8(s).unwrap(),
+        env.mem.cstr_at_utf8(charset).unwrap()
+    );
     GenericChar::<u8>::strcspn(env, s, charset)
 }
 fn strncpy(

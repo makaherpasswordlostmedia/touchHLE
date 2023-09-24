@@ -9,13 +9,13 @@ use super::posix_io::{
     self, off_t, O_APPEND, O_CREAT, O_RDONLY, O_RDWR, O_TRUNC, O_WRONLY, STDERR_FILENO,
     STDIN_FILENO, STDOUT_FILENO,
 };
+use crate::abi::{CallFromHost, GuestFunction};
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
 use crate::fs::GuestPath;
 use crate::libc::string::strlen;
 use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr, SafeRead};
 use crate::Environment;
 use std::io::Write;
-use crate::abi::{CallFromHost, GuestFunction};
 
 // Standard C functions
 
@@ -255,7 +255,7 @@ fn fileno(env: &mut Environment, file_ptr: MutPtr<FILE>) -> posix_io::FileDescri
     fd
 }
 
-fn _ZN6b2Vec29NormalizeEv(env: &mut Environment, ptr: MutVoidPtr)  {
+fn _ZN6b2Vec29NormalizeEv(env: &mut Environment, ptr: MutVoidPtr) {
     let func = GuestFunction::from_addr_with_thumb_bit(0x0012c86c);
     func.call_from_host(env, (ptr,))
 }
