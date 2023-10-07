@@ -92,6 +92,25 @@ fn atoi(env: &mut Environment, s: ConstPtr<u8>) -> i32 {
     s.parse().unwrap_or(0)
 }
 
+fn atol(env: &mut Environment, s: ConstPtr<u8>) -> i64 {
+    // atoi() doesn't work with a null-terminated string, instead it stops
+    // once it hits something that's not a digit, so we have to do some parsing
+    // ourselves.
+    let start = skip_whitespace(env, s);
+    let mut len = 0;
+    let maybe_sign = env.mem.read(start + len);
+    if maybe_sign == b'+' || maybe_sign == b'-' || maybe_sign.is_ascii_digit() {
+        len += 1;
+    }
+    while env.mem.read(start + len).is_ascii_digit() {
+        len += 1;
+    }
+
+    let s = std::str::from_utf8(env.mem.bytes_at(start, len)).unwrap();
+    // conveniently, overflow is undefined, so 0 is as valid a result as any
+    s.parse().unwrap_or(0)
+}
+
 fn atof(env: &mut Environment, s: ConstPtr<u8>) -> f64 {
     // atof() is similar to atoi().
     // FIXME: no C99 hexfloat, INF, NAN support
@@ -254,6 +273,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(free(_)),
     export_c_func!(atexit(_)),
     export_c_func!(atoi(_)),
+    export_c_func!(atol(_)),
     export_c_func!(atof(_)),
     export_c_func!(srand(_)),
     export_c_func!(rand()),

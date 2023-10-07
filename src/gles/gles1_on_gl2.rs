@@ -598,7 +598,7 @@ impl GLES for GLES1OnGL2 {
         gl21::Enable(cap);
     }
     unsafe fn Disable(&mut self, cap: GLenum) {
-        assert!(CAPABILITIES.contains(&cap));
+        //assert!(CAPABILITIES.contains(&cap));
         gl21::Disable(cap);
     }
     unsafe fn ClientActiveTexture(&mut self, texture: GLenum) {

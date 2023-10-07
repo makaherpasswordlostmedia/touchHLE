@@ -128,6 +128,14 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 }
 
+- (bool)isIgnoringInteractionEvents {
+    false
+}
+
+-(())endIgnoringInteractionEvents {
+
+}
+
 @end
 
 };

@@ -9,6 +9,7 @@
 use crate::frameworks::{
     audio_toolbox, core_foundation, core_graphics, dnssd, foundation, openal, opengles, uikit,
 };
+use crate::frameworks::foundation::ns_thread;
 use crate::libc;
 
 /// All the lists of functions that the linker should search through.
@@ -69,4 +70,5 @@ pub const FUNCTION_LISTS: &[super::FunctionExports] = &[
     uikit::ui_application::FUNCTIONS,
     uikit::ui_geometry::FUNCTIONS,
     uikit::ui_graphics::FUNCTIONS,
+    ns_thread::FUNCTIONS,
 ];

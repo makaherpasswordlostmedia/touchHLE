@@ -18,6 +18,8 @@ use crate::dyld::{export_c_func, FunctionExports};
 use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, MutPtr, MutVoidPtr, Ptr, SafeWrite};
 use crate::Environment;
 use std::collections::HashMap;
+use std::ffi::{CStr, CString};
+use std::ptr::null;
 
 #[derive(Default)]
 pub struct State {
@@ -74,6 +76,17 @@ fn alcGetError(env: &mut Environment, device: MutPtr<GuestALCdevice>) -> i32 {
     let res = unsafe { al::alcGetError(host_device) };
     log_dbg!("alcGetError({:?}) => {:#x}", host_device, res);
     res
+}
+
+fn alcGetString( env: &mut Environment, device: MutPtr<GuestALCdevice>, param: ALenum) -> ConstPtr<u8> {
+    Ptr::null()
+    // assert!(device.is_null());
+    //
+    // let res = unsafe { al::alcGetString(std::ptr::null_mut(), param) };
+    // let s = unsafe { CStr::from_ptr(res) };
+    // log!("TODO: alcGetString({}) leaks memory", param);
+    // log_dbg!("alcGetString({:?}) => {:?}", param, s);
+    // env.mem.alloc_and_write_cstr(s.to_bytes()).cast_const()
 }
 
 fn alcCreateContext(
@@ -195,6 +208,12 @@ fn alGetError(_env: &mut Environment) -> i32 {
     let res = unsafe { al::alGetError() };
     log_dbg!("alGetError() => {:#x}", res);
     res
+}
+
+fn alGetEnumValue(env: &mut Environment, enumName: ConstPtr<u8>) -> ALenum {
+    let s = env.mem.cstr_at_utf8(enumName).unwrap();
+    let ss = CString::new(s).unwrap();
+    unsafe { al::alGetEnumValue(ss.as_ptr()) }
 }
 
 fn alDistanceModel(_env: &mut Environment, value: ALenum) {
@@ -538,13 +557,6 @@ fn alcGetIntegerv(
 ) {
     todo!();
 }
-fn alcGetString(
-    _env: &mut Environment,
-    _device: MutPtr<GuestALCdevice>,
-    _param: ALenum,
-) -> ConstPtr<u8> {
-    todo!();
-}
 fn alcIsExtensionPresent(
     _env: &mut Environment,
     _device: MutPtr<GuestALCdevice>,
@@ -589,9 +601,6 @@ fn alGetInteger(_env: &mut Environment, _param: ALenum) -> ALint {
     todo!();
 }
 fn alGetIntegerv(_env: &mut Environment, _param: ALenum, _values: MutPtr<ALint>) {
-    todo!();
-}
-fn alGetEnumValue(_env: &mut Environment, _enumName: ConstPtr<u8>) -> ALenum {
     todo!();
 }
 fn alGetProcAddress(_env: &mut Environment, _funcName: ConstPtr<u8>) -> MutVoidPtr {

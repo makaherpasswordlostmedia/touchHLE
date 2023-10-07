@@ -146,7 +146,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                 let description = ns_string::to_rust_string(env, description);
                 write!(&mut res, "{}", description).unwrap();
             }
-            b'x' => {
+            b'x' | b'X' => {
                 let int: i32 = args.next(env);
                 res.extend_from_slice(format!("{:x}", int).as_bytes());
             }
@@ -272,7 +272,7 @@ fn printf(env: &mut Environment, format: ConstPtr<u8>, args: DotDotDot) -> i32 {
 // TODO: more printf variants
 
 fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: DotDotDot) -> i32 {
-    log_dbg!(
+    log!(
         "sscanf({:?}, {:?} ({:?}), ...)",
         src,
         format,

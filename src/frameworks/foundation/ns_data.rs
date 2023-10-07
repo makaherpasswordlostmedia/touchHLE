@@ -72,6 +72,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
+- (id)initWithContentsOfURL:(id)url { // NSURL *
+    // let a_url: id = msg![env; url absoluteURL];
+    // let path: id = msg![env; url path];
+    // msg![env; this initWithContentsOfFile:path]
+    nil
+}
+
 - (id)initWithContentsOfFile:(id)path {
     let path = to_rust_string(env, path);
     log_dbg!("[(NSData*){:?} initWithContentsOfFile:{:?}]", this, path);
