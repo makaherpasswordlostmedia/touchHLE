@@ -25,7 +25,7 @@ use crate::frameworks::core_foundation::cf_run_loop::{
 };
 use crate::frameworks::foundation::ns_run_loop;
 use crate::frameworks::foundation::ns_string::get_static_str;
-use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr, SafeRead};
+use crate::mem::{ConstPtr, ConstVoidPtr, guest_size_of, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr, SafeRead};
 use crate::objc::msg;
 use crate::Environment;
 use std::collections::{HashMap, VecDeque};
@@ -361,6 +361,34 @@ fn AudioQueueRemovePropertyListener(
     0 // success
 }
 
+fn AudioQueueGetProperty(
+    env: &mut Environment,
+    in_aq: AudioQueueRef,
+    in_id: AudioQueuePropertyID,
+    out_data: MutVoidPtr,
+    io_data_size: MutPtr<u32>
+) -> OSStatus {
+    if in_id == kAudioQueueProperty_IsRunning {
+        let host_object = State::get(&mut env.framework_state)
+            .audio_queues
+            .get_mut(&in_aq)
+            .unwrap();
+
+        env.mem.write(io_data_size, guest_size_of::<u32>());
+        let is_running_value: u32 = if host_object.is_running { 1 } else { 0 };
+        let ptr: MutPtr<u32> = out_data.cast();
+        env.mem.write(ptr, is_running_value);
+    } else {
+        log!(
+            "TODO: AudioQueueGetProperty({:?}, {}, {:?})",
+            in_aq,
+            debug_fourcc(in_id),
+            io_data_size,
+        );
+    }
+    0 // Success
+}
+
 /// Check if the format of an audio queue is one we currently support.
 /// If not, we should skip trying to play it rather than crash.
 fn is_supported_audio_format(format: &AudioStreamBasicDescription) -> bool {
@@ -376,10 +404,10 @@ fn is_supported_audio_format(format: &AudioStreamBasicDescription) -> bool {
         kAudioFormatLinearPCM => {
             // TODO: support more PCM formats
             (channels_per_frame == 1 || channels_per_frame == 2)
-                && (bits_per_channel == 8 || bits_per_channel == 16)
+                && (bits_per_channel == 8 || bits_per_channel == 16 || bits_per_channel == 32)
                 && (format_flags & kAudioFormatFlagIsPacked) != 0
                 && (format_flags & kAudioFormatFlagIsBigEndian) == 0
-                && (format_flags & kAudioFormatFlagIsFloat) == 0
+                //&& (format_flags & kAudioFormatFlagIsFloat) == 0
         }
         _ => false,
     }
@@ -447,6 +475,7 @@ fn decode_buffer(
                 (1, 16) => al::AL_FORMAT_MONO16,
                 (2, 8) => al::AL_FORMAT_STEREO8,
                 (2, 16) => al::AL_FORMAT_STEREO16,
+                (2, 32) => al::AL_FORMAT_STEREO32F,
                 _ => unreachable!(),
             };
             (f, format.sample_rate as ALsizei, data_slice.to_owned())
@@ -815,6 +844,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(AudioQueueEnqueueBuffer(_, _, _, _)),
     export_c_func!(AudioQueueAddPropertyListener(_, _, _, _)),
     export_c_func!(AudioQueueRemovePropertyListener(_, _, _, _)),
+    export_c_func!(AudioQueueGetProperty(_, _, _, _)),
     export_c_func!(AudioQueuePrime(_, _, _)),
     export_c_func!(AudioQueueStart(_, _)),
     export_c_func!(AudioQueuePause(_)),
