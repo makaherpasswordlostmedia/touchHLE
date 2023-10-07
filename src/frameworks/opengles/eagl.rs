@@ -45,6 +45,10 @@ pub const CONSTANTS: ConstantExports = &[
         "_kEAGLColorFormatRGB565",
         HostConstant::NSString(kEAGLColorFormatRGB565),
     ),
+    (
+        "_NSLocaleCountryCode",
+        HostConstant::NSString("NSLocaleCountryCode"),
+    ),
 ];
 
 type EAGLRenderingAPI = u32;

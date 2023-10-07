@@ -13,6 +13,7 @@ use super::cf_url::CFURLRef;
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::objc::{msg, msg_class};
 use crate::Environment;
+use crate::mem::GuestUSize;
 
 pub type CFBundleRef = super::CFTypeRef;
 
@@ -38,8 +39,13 @@ fn CFBundleCopyResourceURL(
     msg![env; url copy]
 }
 
+fn CFBundleGetVersionNumber(env: &mut Environment, bundle: CFBundleRef) -> GuestUSize {
+    1
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFBundleGetMainBundle()),
     export_c_func!(CFBundleCopyResourcesDirectoryURL(_)),
     export_c_func!(CFBundleCopyResourceURL(_, _, _, _)),
+    export_c_func!(CFBundleGetVersionNumber(_)),
 ];

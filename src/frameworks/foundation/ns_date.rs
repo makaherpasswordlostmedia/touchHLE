@@ -5,7 +5,7 @@
  */
 //! `NSDate`.
 
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use super::NSTimeInterval;
 use crate::objc::{autorelease, id, objc_classes, ClassExports, HostObject};
@@ -32,6 +32,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new)
 }
 
++ (id)distantPast {
+    let host_object = Box::new(NSDateHostObject {
+        instant: (Instant::now() - Duration::from_secs(978_307_200))
+    });
+    let new = env.objc.alloc_object(this, host_object, &mut env.mem);
+
+    autorelease(env, new)
+}
+
 - (NSTimeInterval)timeIntervalSinceDate:(id)anotherDate {
     assert!(!anotherDate.is_null());
     let host_object = env.objc.borrow::<NSDateHostObject>(this);
@@ -39,6 +48,19 @@ pub const CLASSES: ClassExports = objc_classes! {
     let result = another_date_host_object.instant.duration_since(host_object.instant).as_secs_f64();
     log_dbg!("[(NSDate*){:?} timeIntervalSinceDate:{:?}]: result {} seconds", this, anotherDate, result);
     result
+}
+
+@end
+
+@implementation NSDateFormatter: NSObject
+
+- (())setDateFormat:(id)format { // NSString *
+    let str = crate::frameworks::foundation::ns_string::to_rust_string(env, format);
+    log!("format {:?}", str)
+}
+
+- (id)stringFromDate:(id)date {
+    crate::frameworks::foundation::ns_string::get_static_str(env, "2023-10-07_21:43:00")
 }
 
 @end

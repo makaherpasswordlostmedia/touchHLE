@@ -6,7 +6,7 @@
 //! `NSLocale`.
 
 use super::{ns_array, ns_string};
-use crate::objc::{id, objc_classes, ClassExports};
+use crate::objc::{id, objc_classes, nil, ClassExports};
 use crate::Environment;
 
 #[derive(Default)]
@@ -51,6 +51,10 @@ pub const CLASSES: ClassExports = objc_classes! {
         State::get(env).preferred_languages = Some(new);
         new
     }
+}
+
++ (id)currentLocale {
+    nil
 }
 
 // TODO: constructors, more accessors
