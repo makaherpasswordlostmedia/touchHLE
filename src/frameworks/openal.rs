@@ -49,7 +49,7 @@ fn alcOpenDevice(env: &mut Environment, devicename: ConstPtr<u8>) -> MutPtr<Gues
     // NULL means you don't care what device is opened. If an app tries to use
     // a specific device name, it's probably going to be something specific to
     // Apple and fail, so let's assert just in case that happens.
-    assert!(devicename.is_null());
+    //assert!(devicename.is_null());
 
     let res = unsafe { al::alcOpenDevice(std::ptr::null()) };
     if res.is_null() {
@@ -79,14 +79,13 @@ fn alcGetError(env: &mut Environment, device: MutPtr<GuestALCdevice>) -> i32 {
 }
 
 fn alcGetString( env: &mut Environment, device: MutPtr<GuestALCdevice>, param: ALenum) -> ConstPtr<u8> {
-    Ptr::null()
-    // assert!(device.is_null());
-    //
-    // let res = unsafe { al::alcGetString(std::ptr::null_mut(), param) };
-    // let s = unsafe { CStr::from_ptr(res) };
-    // log!("TODO: alcGetString({}) leaks memory", param);
-    // log_dbg!("alcGetString({:?}) => {:?}", param, s);
-    // env.mem.alloc_and_write_cstr(s.to_bytes()).cast_const()
+    assert!(device.is_null());
+
+    let res = unsafe { al::alcGetString(std::ptr::null_mut(), param) };
+    let s = unsafe { CStr::from_ptr(res) };
+    log!("TODO: alcGetString({}) leaks memory", param);
+    log_dbg!("alcGetString({:?}) => {:?}", param, s);
+    env.mem.alloc_and_write_cstr(s.to_bytes()).cast_const()
 }
 
 fn alcCreateContext(
@@ -213,7 +212,9 @@ fn alGetError(_env: &mut Environment) -> i32 {
 fn alGetEnumValue(env: &mut Environment, enumName: ConstPtr<u8>) -> ALenum {
     let s = env.mem.cstr_at_utf8(enumName).unwrap();
     let ss = CString::new(s).unwrap();
-    unsafe { al::alGetEnumValue(ss.as_ptr()) }
+    let res = unsafe { al::alGetEnumValue(ss.as_ptr()) };
+    log_dbg!("alGetEnumValue({:?}) => {:?}", s, res);
+    res
 }
 
 fn alDistanceModel(_env: &mut Environment, value: ALenum) {
