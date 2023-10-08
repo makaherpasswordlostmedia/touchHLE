@@ -220,6 +220,14 @@ fn alDistanceModel(_env: &mut Environment, value: ALenum) {
     unsafe { al::alDistanceModel(value) };
 }
 
+fn alIsBuffer(_env: &mut Environment, buffer: ALuint) -> ALboolean {
+    unsafe { al::alIsBuffer(buffer) }
+}
+
+fn alIsSource(_env: &mut Environment, source: ALuint) -> ALboolean {
+    unsafe { al::alIsSource(source) }
+}
+
 fn alListenerf(_env: &mut Environment, param: ALenum, value: ALfloat) {
     unsafe { al::alListenerf(param, value) };
 }
@@ -564,9 +572,6 @@ fn alcIsExtensionPresent(
 ) -> ALCboolean {
     0
 }
-fn alIsBuffer(_env: &mut Environment, _buffer: ALuint) -> ALboolean {
-    todo!();
-}
 fn alGetBufferf(_env: &mut Environment, _buffer: ALuint, _param: ALenum, _value: MutPtr<ALfloat>) {
     todo!();
 }
@@ -613,9 +618,6 @@ fn alIsExtensionPresent(_env: &mut Environment, _extName: ConstPtr<u8>) -> ALboo
     todo!();
 }
 fn alIsEnabled(_env: &mut Environment, _capability: ALenum) -> ALboolean {
-    todo!();
-}
-fn alIsSource(_env: &mut Environment, _source: ALuint) -> ALboolean {
     todo!();
 }
 fn alSourcePlayv(_env: &mut Environment, _nsources: ALsizei, _sources: ConstPtr<ALuint>) {
