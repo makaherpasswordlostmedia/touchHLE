@@ -129,6 +129,20 @@ fn fgets(
     str
 }
 
+fn fputc(env: &mut Environment, c: i32, stream: MutPtr<FILE>) -> i32 {
+    let cc: u8 = c as u8;
+    let ptr = env.mem.alloc_and_write(cc);
+    let res = fwrite(env, ptr.cast_const().cast(), 1, 1, stream)
+        .try_into()
+        .unwrap();
+    env.mem.free(ptr.cast());
+    res
+}
+
+fn fflush(_env: &mut Environment, _stream: MutPtr<FILE>) -> i32 {
+    0
+}
+
 fn fputs(env: &mut Environment, str: ConstPtr<u8>, stream: MutPtr<FILE>) -> i32 {
     // TODO: this function doesn't set errno or return EOF yet
     let str_len = strlen(env, str);
@@ -322,6 +336,8 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fgetc(_)),
     export_c_func!(fgets(_, _, _)),
     export_c_func!(fputs(_, _)),
+    export_c_func!(fputc(_, _)),
+    export_c_func!(fflush(_)),
     export_c_func!(fwrite(_, _, _, _)),
     export_c_func!(fseek(_, _, _)),
     export_c_func!(ftell(_)),
