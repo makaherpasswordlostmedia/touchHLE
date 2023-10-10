@@ -11,13 +11,42 @@
 use super::cf_string::CFStringRef;
 use super::cf_url::CFURLRef;
 use crate::dyld::{export_c_func, FunctionExports};
-use crate::objc::{msg, msg_class};
+use crate::frameworks::foundation::ns_string;
+use crate::objc::{id, msg, msg_class};
 use crate::Environment;
 
 pub type CFBundleRef = super::CFTypeRef;
 
 fn CFBundleGetMainBundle(env: &mut Environment) -> CFBundleRef {
     msg_class![env; NSBundle mainBundle]
+}
+
+fn CFBundleGetVersionNumber(env: &mut Environment, bundle: CFBundleRef) -> u32 {
+    let dict: id = msg![env; bundle infoDictionary];
+    let version_key: id = ns_string::get_static_str(env, "CFBundleVersion");
+    let vers: id = msg![env; dict objectForKey:version_key];
+    let vers_str = ns_string::to_rust_string(env, vers);
+    log_dbg!("CFBundleGetVersionNumber {}", vers_str);
+
+    let parts: Vec<&str> = vers_str.split('.').collect();
+    assert!(parts.len() <= 3);
+
+    let mut result: u32 = 1 << 15;
+    let major: u32 = parts[0].parse().unwrap();
+    assert!(major <= 99);
+    result |= (major / 10) << 28;
+    result |= (major % 10) << 24;
+    if parts.len() >= 2 {
+        let minor: u32 = parts[1].parse().unwrap();
+        assert!(minor <= 9);
+        result |= minor << 20;
+    }
+    if parts.len() == 3 {
+        let bug_fix: u32 = parts[2].parse().unwrap();
+        assert!(bug_fix <= 9);
+        result |= bug_fix << 16;
+    }
+    result
 }
 
 fn CFBundleCopyResourcesDirectoryURL(env: &mut Environment, bundle: CFBundleRef) -> CFURLRef {
@@ -40,6 +69,7 @@ fn CFBundleCopyResourceURL(
 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFBundleGetMainBundle()),
+    export_c_func!(CFBundleGetVersionNumber(_)),
     export_c_func!(CFBundleCopyResourcesDirectoryURL(_)),
     export_c_func!(CFBundleCopyResourceURL(_, _, _, _)),
 ];
