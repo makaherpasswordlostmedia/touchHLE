@@ -59,6 +59,25 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, res)
 }
 
++ (id)arrayWithObjects:(id)first_object, ...dots {
+    let mut va_args = dots.start();
+    let first_key: id = va_args.next(env);
+    assert!(first_key != nil); // TODO: raise proper exception
+
+    let mut objects: Vec<id> = Vec::new();
+    loop {
+        let object: id = va_args.next(env);
+        if object == nil {
+            break;
+        }
+        retain(env, object);
+        objects.push(object)
+    }
+
+    let new_arr = from_vec(env, objects);
+    autorelease(env, new_arr)
+}
+
 // These probably comes from some category related to plists.
 - (id)initWithContentsOfFile:(id)path { // NSString*
     release(env, this);
