@@ -38,6 +38,7 @@ pub const NSUTF16BigEndianStringEncoding: NSUInteger = 0x90000100;
 pub const NSUTF16LittleEndianStringEncoding: NSUInteger = 0x94000100;
 
 pub type NSStringCompareOptions = NSUInteger;
+pub const NSCaseInsensitiveSearch: NSUInteger = 1;
 pub const NSLiteralSearch: NSUInteger = 2;
 pub const NSNumericSearch: NSUInteger = 64;
 
@@ -378,6 +379,25 @@ pub const CLASSES: ClassExports = objc_classes! {
     let mut b_iter = env.objc.borrow::<StringHostObject>(other).iter_code_units().peekable();
     // TODO: OR'ing of compare options
     match mask {
+        NSCaseInsensitiveSearch => {
+            loop {
+                let a_next = a_iter.next();
+                let b_next = b_iter.next();
+                let (Some(a_unit), Some(b_unit)) = (a_next, b_next) else {
+                    return from_rust_ordering(a_next.cmp(&b_next));
+                };
+                let (Some(a_c), Some(b_c)) = (char::from_u32(a_unit as u32), char::from_u32(b_unit as u32)) else {
+                    panic!("Invalid chars in the strings!");
+                };
+
+                let a = a_c.to_lowercase();
+                let b = b_c.to_lowercase();
+                let char_order = a.cmp(b);
+                if char_order != std::cmp::Ordering::Equal {
+                    return from_rust_ordering(char_order);
+                }
+            }
+        },
         NSLiteralSearch => {
             from_rust_ordering(a_iter.cmp(b_iter))
         },
