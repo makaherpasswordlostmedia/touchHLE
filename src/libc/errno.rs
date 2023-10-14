@@ -9,7 +9,7 @@ use crate::dyld::FunctionExports;
 use crate::export_c_func;
 use crate::mem::{ConstPtr, MutPtr};
 use crate::Environment;
-use std::io::Write;
+use std::io::{Read, Write};
 
 pub const EPERM: i32 = 1;
 pub const EDEADLK: i32 = 11;
@@ -57,4 +57,22 @@ fn perror(env: &mut Environment, s: ConstPtr<u8>) {
     let _ = std::io::stderr().write_all(msg.as_bytes());
 }
 
-pub const FUNCTIONS: FunctionExports = &[export_c_func!(__error()), export_c_func!(perror(_))];
+fn strerror(env: &mut Environment, errnum: i32) -> MutPtr<u8> {
+    let str = format!("ERROR {}", errnum);
+    env.mem.alloc_and_write_cstr(str.as_bytes())
+}
+
+fn __assert_rtn(env: &mut Environment, s1: ConstPtr<u8>, s2: ConstPtr<u8>, i: i32, s3: ConstPtr<u8>) {
+    let ss1 = env.mem.cstr_at_utf8(s1).unwrap();
+    let ss2 = env.mem.cstr_at_utf8(s2).unwrap();
+    let ss3 = env.mem.cstr_at_utf8(s3).unwrap();
+    log!("ASSERTION FAILED: {}, {}, {}, {}", ss1, ss2, i, ss3);
+    todo!()
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(__error()),
+    export_c_func!(perror(_)),
+    export_c_func!(strerror(_)),
+    export_c_func!(__assert_rtn(_, _, _, _))
+];
