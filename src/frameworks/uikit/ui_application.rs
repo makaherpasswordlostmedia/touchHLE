@@ -52,7 +52,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 // This should only be called by UIApplicationMain
 - (id)init {
-    assert!(env.framework_state.uikit.ui_application.shared_application.is_none());
+    //assert!(env.framework_state.uikit.ui_application.shared_application.is_none());
+    if let Some(app) = env.framework_state.uikit.ui_application.shared_application {
+        return app;
+    }
     env.framework_state.uikit.ui_application.shared_application = Some(this);
     this
 }
