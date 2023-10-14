@@ -8,6 +8,12 @@
 // See also tests/README.md and tests/integration.rs for the details of how it
 // is compiled and run.
 
+// === Includes ===
+
+// For convenience, let's just include the other source files.
+
+#include "CGAffineTransform.c"
+
 // === Declarations ===
 
 // We don't have any system headers for iPhone OS, so we must declare everything
@@ -122,9 +128,34 @@ char *str_format(const char *format, ...) {
 }
 
 int test_vsnprintf() {
-  char *str = str_format("%s %x %.3d %s", "test", 2042, 5, NULL);
-  int res = strcmp(str, "test 7fa 005 (null)");
+  int res = 0;
+  char *str;
+
+  // Test %s
+  str = str_format("%s", "test");
+  res += !!strcmp(str, "test");
   free(str);
+  // Test %s NULL
+  str = str_format("%s", NULL);
+  res += !!strcmp(str, "(null)");
+  free(str);
+  // Test %x
+  str = str_format("%x", 2042);
+  res += !!strcmp(str, "7fa");
+  free(str);
+  // Test %d
+  str = str_format("%d|%8d|%08d|%.d|%8.d|%.3d|%8.3d|%08.3d", 5, 5, 5, 5, 5, 5,
+                   5, 5);
+  res += !!strcmp(str, "5|       5|00000005|5|       5|005|     005|     005");
+  free(str);
+  // Test %f
+  str = str_format("%f|%8f|%08f|%.f|%8.f|%.3f|%8.3f|%08.3f", 10.12345, 10.12345,
+                   10.12345, 10.12345, 10.12345, 10.12345, 10.12345, 10.12345);
+  res += !!strcmp(
+      str,
+      "10.123450|10.123450|10.123450|10|      10|10.123|  10.123|0010.123");
+  free(str);
+
   return res;
 }
 
@@ -247,9 +278,10 @@ struct {
   int (*func)();
   const char *name;
 } test_func_array[] = {
-    FUNC_DEF(test_qsort), FUNC_DEF(test_vsnprintf), FUNC_DEF(test_sscanf),
-    FUNC_DEF(test_errno), FUNC_DEF(test_realloc),   FUNC_DEF(test_getcwd_chdir),
-    FUNC_DEF(test_sem),
+    FUNC_DEF(test_qsort),   FUNC_DEF(test_vsnprintf),
+    FUNC_DEF(test_sscanf),  FUNC_DEF(test_errno),
+    FUNC_DEF(test_realloc), FUNC_DEF(test_getcwd_chdir),
+    FUNC_DEF(test_sem),     FUNC_DEF(test_CGAffineTransform),
 };
 
 // Because no libc is linked into this executable, there is no libc entry point
