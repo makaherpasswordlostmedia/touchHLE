@@ -11,6 +11,7 @@ use crate::objc::{
     id, impl_HostObject_with_superclass, msg, msg_super, objc_classes, release, retain,
     ClassExports, NSZonePtr,
 };
+use crate::frameworks::foundation::NSInteger;
 
 #[derive(Default)]
 struct UIImageViewHostObject {
@@ -76,6 +77,19 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     let layer: id = msg![env; this layer];
     () = msg![env; layer setNeedsDisplay];
+}
+
+- (())setAnimationImages:(id)images {
+    log!("Ignoring setAnimationImages:");
+}
+- (())setAnimationDuration:(NSInteger)dur {
+    log!("Ignoring setAnimationDuration: {}", dur);
+}
+- (())setAnimationRepeatCount:(NSInteger)count {
+    log!("Ignoring setAnimationRepeatCount: {}", count);
+}
+- (())startAnimating {
+    log!("Ignoring startAnimating");
 }
 
 // Normally a UIKit view is drawn into a CGContextRef by drawRect:, which is
