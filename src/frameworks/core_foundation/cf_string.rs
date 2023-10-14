@@ -12,8 +12,10 @@ use super::cf_allocator::{kCFAllocatorDefault, CFAllocatorRef};
 use super::cf_dictionary::CFDictionaryRef;
 use crate::abi::{DotDotDot, VaList};
 use crate::dyld::{export_c_func, FunctionExports};
+use crate::frameworks::core_foundation::CFIndex;
 use crate::frameworks::foundation::ns_string;
-use crate::mem::ConstPtr;
+use crate::frameworks::foundation::ns_string::NSCaseInsensitiveSearch;
+use crate::mem::{ConstPtr, MutPtr};
 use crate::objc::{id, msg, msg_class};
 use crate::Environment;
 
@@ -31,6 +33,7 @@ fn CFStringConvertEncodingToNSStringEncoding(
     encoding: CFStringEncoding,
 ) -> ns_string::NSStringEncoding {
     match encoding {
+        0 => ns_string::NSASCIIStringEncoding, // TODO: kCFStringEncodingMacRoman
         kCFStringEncodingASCII => ns_string::NSASCIIStringEncoding,
         kCFStringEncodingUTF8 => ns_string::NSUTF8StringEncoding,
         kCFStringEncodingUTF16 => ns_string::NSUTF16StringEncoding,
@@ -51,6 +54,32 @@ fn CFStringConvertNSStringEncodingToEncoding(
         ns_string::NSUTF16LittleEndianStringEncoding => kCFStringEncodingUTF16LE,
         _ => unimplemented!("Unhandled: NSStringEncoding {:#x}", encoding),
     }
+}
+
+fn CFStringCompare(
+    env: &mut Environment,
+    string1: CFStringRef,
+    string2: CFStringRef,
+    flags: i32,
+) -> i32 {
+    assert_eq!(flags, 1);
+    msg![env; string1 compare:string2 options:NSCaseInsensitiveSearch]
+}
+
+fn CFStringCreateWithBytes(
+    env: &mut Environment,
+    allocator: CFAllocatorRef,
+    bytes: ConstPtr<u8>,
+    num_bytes: CFIndex,
+    encoding: CFStringEncoding,
+    is_external_repr: bool,
+) -> CFStringRef {
+    assert!(allocator == kCFAllocatorDefault); // unimplemented
+    assert!(!is_external_repr);
+    let len: u32 = num_bytes.try_into().unwrap();
+    let encoding = CFStringConvertEncodingToNSStringEncoding(env, encoding);
+    let ns_string: id = msg_class![env; NSString alloc];
+    msg![env; ns_string initWithBytes:bytes length:len encoding:encoding]
 }
 
 fn CFStringCreateWithCString(
@@ -88,10 +117,27 @@ fn CFStringCreateWithFormatAndArguments(
     ns_string::from_rust_string(env, res)
 }
 
+fn CFStringGetCString(
+    env: &mut Environment,
+    string: CFStringRef,
+    buffer: MutPtr<u8>,
+    buffer_size: CFIndex,
+    encoding: CFStringEncoding,
+) -> bool {
+    let encoding = CFStringConvertEncodingToNSStringEncoding(env, encoding);
+    let buffer_size: u32 = buffer_size.try_into().unwrap();
+    msg![env; string getCString:buffer
+                      maxLength:buffer_size
+                       encoding:encoding]
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFStringConvertEncodingToNSStringEncoding(_)),
     export_c_func!(CFStringConvertNSStringEncodingToEncoding(_)),
+    export_c_func!(CFStringCompare(_, _, _)),
+    export_c_func!(CFStringCreateWithBytes(_, _, _, _, _)),
     export_c_func!(CFStringCreateWithCString(_, _, _)),
     export_c_func!(CFStringCreateWithFormat(_, _, _, _)),
     export_c_func!(CFStringCreateWithFormatAndArguments(_, _, _, _)),
+    export_c_func!(CFStringGetCString(_, _, _, _)),
 ];

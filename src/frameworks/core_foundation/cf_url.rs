@@ -9,15 +9,21 @@
 //! the same type.
 
 use super::cf_allocator::{kCFAllocatorDefault, CFAllocatorRef};
+use super::cf_string::CFStringRef;
 use super::CFIndex;
 use crate::dyld::{export_c_func, FunctionExports};
-use crate::frameworks::foundation::ns_string::{to_rust_string, NSUTF8StringEncoding};
-use crate::frameworks::foundation::NSUInteger;
+use crate::frameworks::foundation::ns_string::{
+    from_rust_string, to_rust_string, NSUTF8StringEncoding,
+};
+use crate::frameworks::foundation::{ns_string, NSUInteger};
 use crate::mem::{ConstPtr, MutPtr};
-use crate::objc::{id, msg, msg_class};
+use crate::objc::{id, msg, msg_class, retain};
 use crate::Environment;
 
 pub type CFURLRef = super::CFTypeRef;
+
+type CFURLPathStyle = CFIndex;
+const kCFURLWindowsPathStyle: CFURLPathStyle = 2;
 
 pub fn CFURLGetFileSystemRepresentation(
     env: &mut Environment,
@@ -60,7 +66,43 @@ pub fn CFURLCreateFromFileSystemRepresentation(
     msg![env; url initFileURLWithPath:string isDirectory:is_directory]
 }
 
+fn CFURLCreateWithFileSystemPath(
+    env: &mut Environment,
+    allocator: CFAllocatorRef,
+    file_path: CFStringRef,
+    style: CFURLPathStyle,
+    is_directory: bool,
+) -> CFURLRef {
+    let mut path = to_rust_string(env, file_path).to_string(); // TODO: avoid copy
+    log!("file path: {}", path);
+
+    let new_path = if style == kCFURLWindowsPathStyle {
+        if path.starts_with("c:") {
+            path.remove(0);
+            path.remove(0);
+        }
+        path = path.replace('\\', "/");
+        from_rust_string(env, path)
+    } else {
+        file_path
+    };
+
+    let url: id = msg_class![env; NSURL alloc];
+    msg![env; url initFileURLWithPath:new_path isDirectory:is_directory]
+}
+
+fn CFURLCopyFileSystemPath(
+    env: &mut Environment,
+    url: CFURLRef,
+    style: CFURLPathStyle,
+) -> CFStringRef {
+    let res = msg![env; url path];
+    retain(env, res)
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFURLGetFileSystemRepresentation(_, _, _, _)),
     export_c_func!(CFURLCreateFromFileSystemRepresentation(_, _, _, _)),
+    export_c_func!(CFURLCreateWithFileSystemPath(_, _, _, _)),
+    export_c_func!(CFURLCopyFileSystemPath(_, _)),
 ];
