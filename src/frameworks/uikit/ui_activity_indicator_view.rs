@@ -20,6 +20,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; this init]
 }
 
+- (())startAnimating {
+    log!("Ignoring startAnimating");
+}
+
 @end
 
 };
