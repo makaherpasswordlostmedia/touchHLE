@@ -6,7 +6,7 @@
 //! `CGAffineTransform.h`
 
 use super::CGFloat;
-use crate::abi::GuestArg;
+use crate::abi::{impl_GuestRet_for_large_struct, GuestArg};
 use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant};
 use crate::mem::SafeRead;
 use crate::Environment;
@@ -24,6 +24,7 @@ pub struct CGAffineTransform {
     pub ty: CGFloat,
 }
 unsafe impl SafeRead for CGAffineTransform {}
+impl_GuestRet_for_large_struct!(CGAffineTransform);
 impl GuestArg for CGAffineTransform {
     const REG_COUNT: usize = 6;
 

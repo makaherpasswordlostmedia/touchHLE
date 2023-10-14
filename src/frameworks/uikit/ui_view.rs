@@ -23,6 +23,7 @@ use crate::objc::{
     id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject, NSZonePtr,
 };
 use crate::Environment;
+use crate::frameworks::core_graphics::cg_affine_transform::{CGAffineTransformIdentity, CGAffineTransform};
 
 #[derive(Default)]
 pub struct State {
@@ -373,6 +374,14 @@ pub const CLASSES: ClassExports = objc_classes! {
     UIGraphicsPushContext(env, context);
     () = msg![env; this drawRect:bounds];
     UIGraphicsPopContext(env);
+}
+
+- (CGAffineTransform)transform {
+    CGAffineTransformIdentity
+}
+
+- (())setTransform:(CGAffineTransform)transform {
+    log!("WARNING: Ignoring CGAffineTransform set for an UIView");
 }
 
 // Event handling
