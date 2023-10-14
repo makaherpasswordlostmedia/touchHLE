@@ -18,6 +18,7 @@ use crate::frameworks::foundation::ns_string::NSCaseInsensitiveSearch;
 use crate::mem::{ConstPtr, MutPtr};
 use crate::objc::{id, msg, msg_class};
 use crate::Environment;
+use crate::frameworks::core_foundation::cf_array::CFArrayRef;
 
 pub type CFStringRef = super::CFTypeRef;
 
@@ -131,6 +132,20 @@ fn CFStringGetCString(
                        encoding:encoding]
 }
 
+fn CFStringGetSystemEncoding(_env: &mut Environment) -> CFStringEncoding {
+    kCFStringEncodingASCII
+}
+
+fn CFStringCreateArrayBySeparatingStrings(
+    env: &mut Environment,
+    allocator: CFAllocatorRef,
+    string: CFStringRef,
+    separator: CFStringRef
+) -> CFArrayRef {
+    assert!(allocator == kCFAllocatorDefault); // unimplemented
+    msg![env; string componentsSeparatedByString:separator]
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFStringConvertEncodingToNSStringEncoding(_)),
     export_c_func!(CFStringConvertNSStringEncodingToEncoding(_)),
@@ -140,4 +155,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFStringCreateWithFormat(_, _, _, _)),
     export_c_func!(CFStringCreateWithFormatAndArguments(_, _, _, _)),
     export_c_func!(CFStringGetCString(_, _, _, _)),
+    export_c_func!(CFStringGetSystemEncoding()),
+    export_c_func!(CFStringCreateArrayBySeparatingStrings(_, _, _))
 ];
