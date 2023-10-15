@@ -238,6 +238,51 @@ fn test_timestamp_to_calendar_date() {
     do_test("Sat, 1955-03-26T20:47:45", -466053135);
 }
 
+pub fn calendar_date_to_timestamp(tm: tm) -> time_t {
+    const MINUTE_SECONDS: i32 = 60;
+    const HOUR_SECONDS: i32 = MINUTE_SECONDS * 60;
+    const DAY_SECONDS: i32 = HOUR_SECONDS * 24;
+    const YEAR_DAYS: i32 = 365;
+    const LEAP_YEAR_DAYS: i32 = 366;
+
+    let year = tm.tm_year + 1900;
+    let month = tm.tm_mon;
+    let day = tm.tm_mday - 1; // tm_mday is 1-based
+    let hour = tm.tm_hour;
+    let minute = tm.tm_min;
+    let second = tm.tm_sec;
+
+    // Calculate days from 1970 to the input year
+    let mut days = 0;
+
+    for y in 1970..year {
+        if is_leap_year(y) {
+            days += LEAP_YEAR_DAYS;
+        } else {
+            days += YEAR_DAYS;
+        }
+    }
+
+    // Calculate days in the current year
+    let is_leap = is_leap_year(year);
+    let month_to_day = if is_leap {
+        &MONTH_TO_DAY_LEAP
+    } else {
+        &MONTH_TO_DAY_NONLEAP
+    };
+
+    for m in 0..month {
+        days += month_to_day[m as usize];
+    }
+
+    // Calculate seconds within the day
+    let seconds_in_day = (day * DAY_SECONDS) + (hour * HOUR_SECONDS) + (minute * MINUTE_SECONDS) + second;
+
+    // Combine the days and seconds to get the Unix timestamp
+    let timestamp = (days * DAY_SECONDS) + seconds_in_day;
+    timestamp
+}
+
 fn gmtime_r(env: &mut Environment, timestamp: ConstPtr<time_t>, res: MutPtr<tm>) -> MutPtr<tm> {
     let timestamp = env.mem.read(timestamp);
     let calendar_date = timestamp_to_calendar_date(timestamp);
@@ -262,6 +307,13 @@ fn localtime(env: &mut Environment, timestamp: ConstPtr<time_t>) -> MutPtr<tm> {
     // This doesn't have to be a unique temporary, gmtime and localtime are
     // allowed to share it.
     gmtime(env, timestamp)
+}
+
+fn mktime(env: &mut Environment, tm: MutPtr<tm>) -> time_t {
+    let tm_value = env.mem.read(tm);
+    let res = calendar_date_to_timestamp(tm_value);
+    log_dbg!("{} {:?}\n{:?}", res, tm_value, timestamp_to_calendar_date(res));
+    res
 }
 
 // sys/time.h (POSIX)
@@ -348,5 +400,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(localtime_r(_, _)),
     export_c_func!(localtime(_)),
     export_c_func!(gettimeofday(_, _)),
+    export_c_func!(mktime(_)),
     export_c_func!(nanosleep(_, _)),
 ];

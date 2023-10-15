@@ -63,7 +63,7 @@ fn CFStringCompare(
     string2: CFStringRef,
     flags: i32,
 ) -> i32 {
-    assert_eq!(flags, 1);
+    assert!(matches!(flags, 0 | 1));
     msg![env; string1 compare:string2 options:NSCaseInsensitiveSearch]
 }
 

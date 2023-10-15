@@ -626,8 +626,9 @@ impl GLES for GLES1OnGL2 {
     }
     unsafe fn GetBooleanv(&mut self, pname: GLenum, params: *mut GLboolean) {
         let (type_, _count) = GET_PARAMS.get_type_info(pname);
-        // TODO: type conversion
-        assert!(type_ == ParamType::Boolean);
+        // log!("name {:#x}, type {:?}, count {:?}", pname, type_, _count);
+        // // TODO: type conversion
+        // assert!(type_ == ParamType::Boolean);
         gl21::GetBooleanv(pname, params);
     }
     // TODO: GetFixedv

@@ -18,7 +18,7 @@ use super::ui_graphics::{UIGraphicsPopContext, UIGraphicsPushContext};
 use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContextRef};
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::foundation::ns_string::get_static_str;
-use crate::frameworks::foundation::NSUInteger;
+use crate::frameworks::foundation::{NSInteger, NSUInteger};
 use crate::objc::{
     id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject, NSZonePtr,
 };
@@ -41,6 +41,7 @@ pub(super) struct UIViewHostObject {
     superview: id,
     clears_context_before_drawing: bool,
     user_interaction_enabled: bool,
+    tag: Option<NSInteger>,
 }
 impl HostObject for UIViewHostObject {}
 impl Default for UIViewHostObject {
@@ -53,6 +54,7 @@ impl Default for UIViewHostObject {
             superview: nil,
             clears_context_before_drawing: true,
             user_interaction_enabled: true,
+            tag: None,
         }
     }
 }
@@ -259,6 +261,7 @@ pub const CLASSES: ClassExports = objc_classes! {
         subviews,
         clears_context_before_drawing: _,
         user_interaction_enabled: _,
+        ..
     } = std::mem::take(env.objc.borrow_mut(this));
 
     release(env, layer);
@@ -356,6 +359,11 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 - (())setClearsContextBeforeDrawing:(bool)v {
     env.objc.borrow_mut::<UIViewHostObject>(this).clears_context_before_drawing = v;
+}
+
+
+- (())setTag:(NSInteger)tag {
+    env.objc.borrow_mut::<UIViewHostObject>(this).tag = Some(tag);
 }
 
 // Drawing stuff that views should override

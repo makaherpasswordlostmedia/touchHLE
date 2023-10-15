@@ -20,6 +20,8 @@ type natural_t = u32;
 type mach_msg_type_number_t = natural_t;
 type kern_return_t = i32;
 
+type vm_size_t = natural_t;
+
 type clock_id_t = i32;
 type clock_serv_t = mach_port_t;
 
@@ -93,6 +95,15 @@ fn host_statistics(
     0 // Success
 }
 
+fn host_page_size(
+    env: &mut Environment,
+    _host_priv: host_t,
+    page_size: MutPtr<vm_size_t>
+) -> kern_return_t {
+    env.mem.write(page_size, 4096);
+    0 // Success
+}
+
 fn host_get_clock_service(
     env: &mut Environment,
     host_priv: host_t,
@@ -118,6 +129,7 @@ fn clock_get_time(
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(mach_host_self()),
     export_c_func!(host_statistics(_, _, _, _)),
+    export_c_func!(host_page_size(_, _)),
     export_c_func!(host_get_clock_service(_, _, _)),
     export_c_func!(clock_get_time(_, _)),
 ];

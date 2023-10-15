@@ -355,6 +355,15 @@ impl Dyld {
                 continue;
             }
 
+            if let Ok(ptr) = self
+                .create_proc_address(mem, &mut Cpu::new(None), symbol)
+            {
+                log!("DYLD HANDLED {}", symbol);
+                let ptr = Ptr::from_bits(ptr.addr_with_thumb_bit());
+                mem.write(ptr_ptr, ptr);
+                continue
+            }
+
             log!(
                 "Warning: unhandled non-lazy symbol {:?} at {:?} in \"{}\"",
                 symbol,

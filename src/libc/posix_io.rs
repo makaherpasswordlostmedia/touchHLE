@@ -20,15 +20,15 @@ pub struct State {
     files: Vec<Option<PosixFileHostObject>>,
 }
 impl State {
-    fn file_for_fd(&mut self, fd: FileDescriptor) -> Option<&mut PosixFileHostObject> {
+    pub fn file_for_fd(&mut self, fd: FileDescriptor) -> Option<&mut PosixFileHostObject> {
         self.files
             .get_mut(fd_to_file_idx(fd))
             .and_then(|file_or_none| file_or_none.as_mut())
     }
 }
 
-struct PosixFileHostObject {
-    file: GuestFile,
+pub struct PosixFileHostObject {
+    pub file: GuestFile,
     reached_eof: bool,
 }
 
