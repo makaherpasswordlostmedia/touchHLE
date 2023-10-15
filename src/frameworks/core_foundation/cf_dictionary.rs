@@ -31,9 +31,21 @@ fn CFDictionaryCreateMutable(
     assert!(keyCallbacks.is_null()); // TODO: support retaining etc
     assert!(valueCallbacks.is_null()); // TODO: support retaining etc
 
-    crate::objc::nil
+    msg_class![env; _touchHLE_NSMutableDictionary_non_retaining new]
+}
+
+fn CFDictionarySetValue(
+    env: &mut Environment,
+    dict: CFMutableDictionaryRef,
+    key: ConstVoidPtr,
+    value: ConstVoidPtr
+) {
+    let key: id = key.cast().cast_mut();
+    let value: id = value.cast().cast_mut();
+    msg![env; dict setValue:value forKey:key]
 }
 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFDictionaryCreateMutable(_, _, _, _)),
+    export_c_func!(CFDictionarySetValue(_, _, _)),
 ];
