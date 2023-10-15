@@ -7,6 +7,7 @@
 
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::Environment;
+use crate::mem::MutPtr;
 
 // The sections in this file are organized to match the C standard.
 
@@ -214,6 +215,14 @@ fn fminf(_env: &mut Environment, arg1: f32, arg2: f32) -> f32 {
     arg1.min(arg2)
 }
 
+// int32_t	OSAtomicAdd32( int32_t __theAmount, volatile int32_t *__theValue );
+fn OSAtomicAdd32(env: &mut Environment, amount: i32, value_ptr: MutPtr<i32>) -> i32 {
+    let value = env.mem.read(value_ptr);
+    let new_value = value + amount;
+    env.mem.write(value_ptr, new_value);
+    new_value
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     // Trigonometric functions
     export_c_func!(sin(_)),
@@ -280,4 +289,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fmaxf(_, _)),
     export_c_func!(fmin(_, _)),
     export_c_func!(fminf(_, _)),
+    // Atomic ops (libkern)
+    export_c_func!(OSAtomicAdd32(_, _)),
 ];

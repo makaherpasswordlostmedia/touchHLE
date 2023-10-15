@@ -77,8 +77,14 @@ fn stat(env: &mut Environment, path: ConstPtr<u8>, buf: MutVoidPtr) -> i32 {
 }
 
 fn lstat(env: &mut Environment, path: ConstPtr<u8>, buf: MutVoidPtr) -> i32 {
-    log!("lstat {}", env.mem.cstr_at_utf8(path).unwrap());
-    0
+    let path_string = env.mem.cstr_at_utf8(path).unwrap().to_owned();
+    log!("lstat {}", path_string);
+    let guest_path = GuestPath::new(&path_string);
+    if env.fs.exists(guest_path) {
+        0
+    } else {
+        -1
+    }
 }
 
 fn fstat(env: &mut Environment, fd: FileDescriptor, buf: MutVoidPtr) -> i32 {

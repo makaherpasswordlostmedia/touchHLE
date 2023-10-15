@@ -11,13 +11,17 @@
 use super::cf_allocator::{kCFAllocatorDefault, CFAllocatorRef};
 use super::CFIndex;
 use crate::dyld::{export_c_func, FunctionExports};
-use crate::frameworks::foundation::NSUInteger;
-use crate::mem::ConstVoidPtr;
-use crate::objc::{id, msg, msg_class};
+use crate::frameworks::foundation::{ns_string, NSUInteger};
+use crate::mem::{ConstVoidPtr, MutPtr};
+use crate::objc::{id, msg, msg_class, nil};
 use crate::Environment;
+use crate::frameworks::core_foundation::cf_data::CFDataRef;
+use crate::frameworks::core_foundation::cf_string::CFStringRef;
 
 pub type CFDictionaryRef = super::CFTypeRef;
 pub type CFMutableDictionaryRef = super::CFTypeRef;
+
+pub type CFPropertyListRef = super::CFTypeRef;
 
 fn CFDictionaryCreateMutable(
     env: &mut Environment,
@@ -45,7 +49,33 @@ fn CFDictionarySetValue(
     msg![env; dict setValue:value forKey:key]
 }
 
+// CFDataRef CFPropertyListCreateXMLData(CFAllocatorRef allocator, CFPropertyListRef propertyList);
+fn CFPropertyListCreateXMLData(
+    env: &mut Environment,
+    allocator: CFAllocatorRef,
+    property_list: CFPropertyListRef
+) -> CFDataRef {
+    nil
+}
+
+// CFPropertyListRef CFPropertyListCreateFromXMLData(CFAllocatorRef allocator, CFDataRef xmlData,
+// CFOptionFlags mutabilityOption, CFStringRef *errorString);
+
+fn CFPropertyListCreateFromXMLData(
+    env: &mut Environment,
+    allocator: CFAllocatorRef,
+    xml_data: CFDataRef,
+    flags: u32,
+    error_string: MutPtr<CFStringRef>
+) -> CFPropertyListRef {
+    let err = ns_string::get_static_str(env, "error");
+    env.mem.write(error_string, err);
+    nil
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFDictionaryCreateMutable(_, _, _, _)),
     export_c_func!(CFDictionarySetValue(_, _, _)),
+    export_c_func!(CFPropertyListCreateXMLData(_, _)),
+    export_c_func!(CFPropertyListCreateFromXMLData(_, _, _, _)),
 ];

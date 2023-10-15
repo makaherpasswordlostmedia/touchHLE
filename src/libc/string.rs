@@ -206,6 +206,26 @@ fn strncat(env: &mut Environment, s1: MutPtr<u8>, s2: ConstPtr<u8>, n: GuestUSiz
 fn strstr(env: &mut Environment, string: ConstPtr<u8>, substring: ConstPtr<u8>) -> ConstPtr<u8> {
     GenericChar::<u8>::strstr(env, string, substring)
 }
+fn strcasestr(env: &mut Environment, string: ConstPtr<u8>, substring: ConstPtr<u8>) -> ConstPtr<u8> {
+    let mut offset = 0;
+    loop {
+        let mut inner_offset = 0;
+        loop {
+            let char_string = env.mem.read(string + offset + inner_offset).to_ascii_lowercase();
+            let char_substring = env.mem.read(substring + inner_offset).to_ascii_lowercase();
+            if char_substring == u8::default() {
+                return string + offset;
+            } else if char_string == u8::default() {
+                return Ptr::null();
+            } else if char_string != char_substring {
+                break;
+            } else {
+                inner_offset += 1;
+            }
+        }
+        offset += 1;
+    }
+}
 fn strchr(env: &mut Environment, path: ConstPtr<u8>, c: u8) -> ConstPtr<u8> {
     GenericChar::<u8>::strchr(env, path, c)
 }
@@ -234,6 +254,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(strncasecmp(_, _, _)),
     export_c_func!(strncat(_, _, _)),
     export_c_func!(strstr(_, _)),
+    export_c_func!(strcasestr(_, _)),
     export_c_func!(strchr(_, _)),
     export_c_func!(strrchr(_, _)),
 ];
