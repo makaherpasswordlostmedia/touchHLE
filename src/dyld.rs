@@ -27,7 +27,7 @@ use crate::abi::{CallFromGuest, GuestFunction};
 use crate::cpu::Cpu;
 use crate::frameworks::foundation::ns_string;
 use crate::mach_o::{MachO, SectionType};
-use crate::mem::{ConstVoidPtr, GuestUSize, Mem, MutPtr, Ptr};
+use crate::mem::{ConstVoidPtr, guest_size_of, GuestUSize, Mem, MutPtr, MutVoidPtr, Ptr};
 use crate::objc::{nil, ObjC};
 use crate::Environment;
 use std::collections::HashMap;
