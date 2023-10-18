@@ -303,30 +303,9 @@ impl Dyld {
             } else if name == "___CFConstantStringClassReference" {
                 // See ns_string::register_constant_strings
                 nil
-            } else if name == "___cxa_pure_virtual" {
-                //___cxa_pure_virtual
-                mem.write(Ptr::from_bits(ptr_ptr), 0x30073914);
-                continue;
-            } else if name == "__ZTVN10__cxxabiv117__class_type_infoE" {
-                // from libstdcxx
-                mem.write(Ptr::from_bits(ptr_ptr), 0x3800f61e);
-                continue;
             } else if name == "__ZTVN10__cxxabiv120__si_class_type_infoE" {
                 // from libstdcxx
-                mem.write(Ptr::from_bits(ptr_ptr), 0x3800f648);
-                continue;
-
-            } else if name == "__ZTVN10__cxxabiv121__vmi_class_type_infoE" {
-                // from libstdcxx
-                mem.write(Ptr::from_bits(ptr_ptr), 0x3800f674);
-                continue;
-            } else if name == "__ZTVN10__cxxabiv119__pointer_type_infoE" {
-                // from libstdcxx
-                mem.write(Ptr::from_bits(ptr_ptr), 0x3800fa40);
-                continue;
-            } else if name == "__ZTVN10__cxxabiv120__function_type_infoE" {
-                // from libstdcxx
-                mem.write(Ptr::from_bits(ptr_ptr), 0x3800f9dc);
+                mem.write(Ptr::from_bits(ptr_ptr), 0x3800f650);
                 continue;
             } else {
                 // TODO: look up symbol, write pointer

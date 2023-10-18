@@ -6,7 +6,7 @@
 //! The `NSDictionary` class cluster, including `NSMutableDictionary`.
 
 use super::ns_property_list_serialization::deserialize_plist_from_file;
-use super::{ns_string, ns_url, NSUInteger};
+use super::{ns_array, ns_string, ns_url, NSUInteger};
 use crate::abi::VaList;
 use crate::fs::GuestPath;
 use crate::objc::{
@@ -243,6 +243,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     *env.objc.borrow_mut(this) = host_obj;
     res
 }
+- (id)valueForKey:(id)key {
+    let key_str = ns_string::to_rust_string(env, key);
+    assert!(!key_str.starts_with('@'));
+    msg![env; this objectForKey:key]
+}
 
 @end
 
@@ -258,12 +263,22 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
+- (NSUInteger)count {
+    env.objc.borrow::<DictionaryHostObject>(this).count
+}
+
 - (())setValue:(id)value
         forKey:(id)key { // NSString*
     assert!(!key.is_null());
     let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
     host_obj.insert(env, key, value, false);
     *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (id)allKeys {
+    let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let keys: Vec<id> = dict_host_obj.iter_keys().collect();
+    ns_array::from_vec(env, keys)
 }
 
 @end

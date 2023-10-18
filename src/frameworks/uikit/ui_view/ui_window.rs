@@ -5,8 +5,9 @@
  */
 //! `UIWindow`.
 
+use super::CGPoint;
 use crate::frameworks::core_graphics::CGRect;
-use crate::objc::{id, msg, msg_super, objc_classes, ClassExports};
+use crate::objc::{id, msg, msg_super, nil, objc_classes, ClassExports};
 
 #[derive(Default)]
 pub struct State {
@@ -95,6 +96,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     // send any non-touch events to windows, so there's no meaning in it yet.
 
     msg![env; this setHidden:false]
+}
+
+- (CGPoint)convertPoint:(CGPoint)point fromWindow:(id)window {
+    if window == nil {
+        return point
+    }
+    msg![env; this convertPoint:point fromView:window]
 }
 
 @end

@@ -28,8 +28,7 @@ pub fn CFDataCreate(
     assert!(allocator == kCFAllocatorDefault); // unimplemented
     let bytes: ConstVoidPtr = bytes.cast();
     let length: NSUInteger = length.try_into().unwrap();
-    let new: id = msg_class![env; NSData alloc];
-    msg![env; new dataWithBytes:bytes length:length]
+    msg_class![env; NSData dataWithBytes:bytes length:length]
 }
 
 fn CFDataGetLength(env: &mut Environment, data: CFDataRef) -> CFIndex {
