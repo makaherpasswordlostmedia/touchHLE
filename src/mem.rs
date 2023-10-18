@@ -457,7 +457,7 @@ impl Mem {
     pub fn realloc(&mut self, old_ptr: MutVoidPtr, size: GuestUSize) -> MutVoidPtr {
         // TODO: for a moment we always assume that we do not have enough size to realloc inplace
         let old_size = self.allocator.find_allocated_size(old_ptr.to_bits());
-        if old_size == size {
+        if old_size >= size {
             return old_ptr;
         }
         assert!(size > old_size);

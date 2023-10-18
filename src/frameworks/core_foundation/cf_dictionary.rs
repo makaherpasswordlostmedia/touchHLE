@@ -8,11 +8,12 @@
 //! These are toll-free bridged to `NSDictionary` and `NSMutableDictionary` in
 //! Apple's implementation. Here they are the same types.
 
+use std::ffi::c_void;
 use super::cf_allocator::{kCFAllocatorDefault, CFAllocatorRef};
 use super::CFIndex;
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::frameworks::foundation::{ns_string, NSUInteger};
-use crate::mem::{ConstVoidPtr, MutPtr};
+use crate::mem::{ConstPtr, ConstVoidPtr, MutPtr, MutVoidPtr};
 use crate::objc::{id, msg, msg_class, nil};
 use crate::Environment;
 use crate::frameworks::core_foundation::cf_data::CFDataRef;
@@ -49,6 +50,32 @@ fn CFDictionarySetValue(
     msg![env; dict setValue:value forKey:key]
 }
 
+fn CFDictionaryGetCount(env: &mut Environment, dict: CFDictionaryRef) -> CFIndex {
+    let count: NSUInteger = msg![env; dict count];
+    count.try_into().unwrap()
+}
+
+// void CFDictionaryGetKeysAndValues(CFDictionaryRef theDict, const void **keys, const void **values)
+fn CFDictionaryGetKeysAndValues(
+    env: &mut Environment,
+    dict: CFDictionaryRef,
+    keys: ConstPtr<MutVoidPtr>,
+    values: ConstPtr<MutVoidPtr>) {
+    assert!(values.is_null());
+    let mut key_ptr = keys.cast_mut();
+    let keys_arr: id = msg![env; dict allKeys];
+    let enumerator: id = msg![env; keys_arr objectEnumerator];
+    let mut key: id;
+    loop {
+        key = msg![env; enumerator nextObject];
+        if key == nil {
+            break;
+        }
+        env.mem.write(key_ptr, key.cast());
+        key_ptr += 1;
+    }
+}
+
 // CFDataRef CFPropertyListCreateXMLData(CFAllocatorRef allocator, CFPropertyListRef propertyList);
 fn CFPropertyListCreateXMLData(
     env: &mut Environment,
@@ -76,6 +103,8 @@ fn CFPropertyListCreateFromXMLData(
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFDictionaryCreateMutable(_, _, _, _)),
     export_c_func!(CFDictionarySetValue(_, _, _)),
+    export_c_func!(CFDictionaryGetCount(_)),
+    export_c_func!(CFDictionaryGetKeysAndValues(_, _, _)),
     export_c_func!(CFPropertyListCreateXMLData(_, _)),
     export_c_func!(CFPropertyListCreateFromXMLData(_, _, _, _)),
 ];

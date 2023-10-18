@@ -59,18 +59,20 @@ fn atexit(
     0 // success
 }
 
-fn skip_whitespace(env: &mut Environment, s: ConstPtr<u8>) -> ConstPtr<u8> {
+fn skip_whitespace(env: &mut Environment, s: ConstPtr<u8>) -> (ConstPtr<u8>, u32) {
     let mut start = s;
+    let mut len = 0;
     loop {
         let c = env.mem.read(start);
         // Rust's definition of whitespace excludes vertical tab, unlike C's
         if c.is_ascii_whitespace() || c == b'\x0b' {
             start += 1;
+            len += 1;
         } else {
             break;
         }
     }
-    start
+    (start, len)
 }
 
 fn atoi(env: &mut Environment, s: ConstPtr<u8>) -> i32 {
@@ -81,7 +83,7 @@ fn atol(env: &mut Environment, s: ConstPtr<u8>) -> i64 {
     // atoi()/atol() doesn't work with a null-terminated string, instead it stops
     // once it hits something that's not a digit, so we have to do some parsing
     // ourselves.
-    let start = skip_whitespace(env, s);
+    let (start, _) = skip_whitespace(env, s);
     let mut len = 0;
     let maybe_sign = env.mem.read(start + len);
     if maybe_sign == b'+' || maybe_sign == b'-' || maybe_sign.is_ascii_digit() {
@@ -99,7 +101,11 @@ fn atol(env: &mut Environment, s: ConstPtr<u8>) -> i64 {
 fn atof(env: &mut Environment, s: ConstPtr<u8>) -> f64 {
     // atof() is similar to atoi().
     // FIXME: no C99 hexfloat, INF, NAN support
-    let start = skip_whitespace(env, s);
+    atof_common(env, s).0
+}
+
+fn atof_common(env: &mut Environment, s: ConstPtr<u8>) -> (f64, u32) {
+    let (start, len_prefix) = skip_whitespace(env, s);
     let mut len = 0;
     let maybe_sign = env.mem.read(start + len);
     if maybe_sign == b'+' || maybe_sign == b'-' || maybe_sign.is_ascii_digit() {
@@ -126,7 +132,20 @@ fn atof(env: &mut Environment, s: ConstPtr<u8>) -> f64 {
     }
 
     let s = std::str::from_utf8(env.mem.bytes_at(start, len)).unwrap();
-    s.parse().unwrap_or(0.0)
+    (s.parse().unwrap_or(0.0), len_prefix + len)
+}
+
+fn strtod(env: &mut Environment, nptr: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>) -> f64 {
+    log!("strtod nptr {}", env.mem.cstr_at_utf8(nptr).unwrap());
+    let (d, len) = atof_common(env, nptr);
+    if !endptr.is_null() {
+        env.mem.write(endptr, env.mem.read((nptr + len).cast()));
+    }
+    d
+}
+
+fn strtof(env: &mut Environment, nptr: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>) -> f32 {
+    strtod(env, nptr, endptr) as f32
 }
 
 fn prng(state: u32) -> u32 {
@@ -260,6 +279,8 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(atoi(_)),
     export_c_func!(atol(_)),
     export_c_func!(atof(_)),
+    export_c_func!(strtod(_, _)),
+    export_c_func!(strtof(_, _)),
     export_c_func!(srand(_)),
     export_c_func!(rand()),
     export_c_func!(srandom(_)),
