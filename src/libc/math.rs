@@ -223,6 +223,21 @@ fn OSAtomicAdd32(env: &mut Environment, amount: i32, value_ptr: MutPtr<i32>) -> 
     new_value
 }
 
+type OSSpinLock = i32;
+
+// void    OSSpinLockLock( volatile OSSpinLock *__lock );
+fn OSSpinLockLock(env: &mut Environment, lock: MutPtr<OSSpinLock>) {
+    let curr = env.mem.read(lock);
+    assert_eq!(curr, 0);
+    env.mem.write(lock, 1);
+}
+
+fn OSSpinLockUnlock(env: &mut Environment, lock: MutPtr<OSSpinLock>) {
+    let curr = env.mem.read(lock);
+    assert_eq!(curr, 1);
+    env.mem.write(lock, 0);
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     // Trigonometric functions
     export_c_func!(sin(_)),
@@ -291,4 +306,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fminf(_, _)),
     // Atomic ops (libkern)
     export_c_func!(OSAtomicAdd32(_, _)),
+    export_c_func!(OSSpinLockLock(_)),
+    export_c_func!(OSSpinLockUnlock(_)),
 ];

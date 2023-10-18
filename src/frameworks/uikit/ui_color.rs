@@ -126,6 +126,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     true
 }
 
+- (id)colorWithAlphaComponent:(CGFloat)a {
+    let (r, g, b, a_) = env.objc.borrow::<UIColorHostObject>(this).rgba;
+    msg_class![env; UIColor colorWithRed:r green:g blue:b alpha:a]
+}
+
 @end
 
 };

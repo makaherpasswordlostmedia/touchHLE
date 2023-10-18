@@ -18,7 +18,7 @@ use super::ui_graphics::{UIGraphicsPopContext, UIGraphicsPushContext};
 use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContextRef};
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::foundation::ns_string::get_static_str;
-use crate::frameworks::foundation::{NSInteger, NSUInteger};
+use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger};
 use crate::objc::{
     id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject, NSZonePtr,
 };
@@ -187,6 +187,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.borrow::<UIViewHostObject>(this).superview
 }
 // TODO: subviews accessor
+
+- (id)subviews {
+    let views = env.objc.borrow::<UIViewHostObject>(this).subviews.clone();
+    ns_array::from_vec(env, views)
+}
 
 - (())addSubview:(id)view {
     log_dbg!("[(UIView*){:?} addSubview:{:?}] => ()", this, view);
@@ -364,6 +369,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 - (())setTag:(NSInteger)tag {
     env.objc.borrow_mut::<UIViewHostObject>(this).tag = Some(tag);
+}
+
+- (NSInteger)tag {
+    env.objc.borrow::<UIViewHostObject>(this).tag.unwrap_or(0)
 }
 
 // Drawing stuff that views should override

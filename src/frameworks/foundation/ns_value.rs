@@ -5,7 +5,7 @@
  */
 //! The `NSValue` class cluster, including `NSNumber`.
 
-use super::NSUInteger;
+use super::{NSUInteger, NSInteger};
 use crate::objc::{
     autorelease, id, msg, msg_class, objc_classes, retain, Class, ClassExports, HostObject,
     NSZonePtr,
@@ -13,6 +13,7 @@ use crate::objc::{
 
 enum NSNumberHostObject {
     Bool(bool),
+    Int(i32),
     UnsignedLongLong(u64),
     LongLong(i64),
     Double(f64),
@@ -120,6 +121,15 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 // TODO: accessors etc
+
+- (NSInteger)integerValue {
+    let value = if let &NSNumberHostObject::Int(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
+}
+- (bool)boolValue {
+    let value = if let &NSNumberHostObject::Bool(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
+}
 
 @end
 
