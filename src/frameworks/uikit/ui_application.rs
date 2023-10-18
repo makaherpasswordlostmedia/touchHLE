@@ -138,6 +138,17 @@ pub const CLASSES: ClassExports = objc_classes! {
     log!("TODO: ignoring endIgnoringInteractionEvents");
 }
 
+- (id)keyWindow {
+    *env
+        .framework_state
+        .uikit
+        .ui_view
+        .ui_window
+        .visible_windows
+        .last()
+        .unwrap()
+}
+
 @end
 
 };

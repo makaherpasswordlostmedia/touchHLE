@@ -303,6 +303,10 @@ impl Dyld {
             } else if name == "___CFConstantStringClassReference" {
                 // See ns_string::register_constant_strings
                 nil
+            } else if name == "__ZTVN10__cxxabiv117__class_type_infoE" {
+                // from libstdcxx
+                mem.write(Ptr::from_bits(ptr_ptr), 0x3800f624);
+                continue;
             } else if name == "__ZTVN10__cxxabiv120__si_class_type_infoE" {
                 // from libstdcxx
                 mem.write(Ptr::from_bits(ptr_ptr), 0x3800f650);

@@ -50,6 +50,16 @@ fn CFDictionarySetValue(
     msg![env; dict setValue:value forKey:key]
 }
 
+fn CFDictionaryGetValue(
+    env: &mut Environment,
+    dict: CFMutableDictionaryRef,
+    key: ConstVoidPtr
+) -> ConstVoidPtr {
+    let key: id = key.cast().cast_mut();
+    let res: id = msg![env; dict valueForKey:key];
+    res.cast().cast_const()
+}
+
 fn CFDictionaryGetCount(env: &mut Environment, dict: CFDictionaryRef) -> CFIndex {
     let count: NSUInteger = msg![env; dict count];
     count.try_into().unwrap()
@@ -103,6 +113,7 @@ fn CFPropertyListCreateFromXMLData(
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFDictionaryCreateMutable(_, _, _, _)),
     export_c_func!(CFDictionarySetValue(_, _, _)),
+    export_c_func!(CFDictionaryGetValue(_, _)),
     export_c_func!(CFDictionaryGetCount(_)),
     export_c_func!(CFDictionaryGetKeysAndValues(_, _, _)),
     export_c_func!(CFPropertyListCreateXMLData(_, _)),
