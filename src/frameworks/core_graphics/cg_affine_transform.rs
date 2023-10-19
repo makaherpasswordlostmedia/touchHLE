@@ -25,7 +25,6 @@ pub struct CGAffineTransform {
     pub ty: CGFloat,
 }
 unsafe impl SafeRead for CGAffineTransform {}
-impl_GuestRet_for_large_struct!(CGAffineTransform);
 impl GuestArg for CGAffineTransform {
     const REG_COUNT: usize = 6;
 
