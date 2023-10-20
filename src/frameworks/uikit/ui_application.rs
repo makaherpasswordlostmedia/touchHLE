@@ -7,7 +7,7 @@
 
 use super::ui_device::*;
 use crate::dyld::{export_c_func, FunctionExports};
-use crate::frameworks::foundation::ns_string;
+use crate::frameworks::foundation::{ns_array, ns_string};
 use crate::frameworks::uikit::ui_nib::load_main_nib_file;
 use crate::mem::MutPtr;
 use crate::objc::{
@@ -147,6 +147,16 @@ pub const CLASSES: ClassExports = objc_classes! {
         .visible_windows
         .last()
         .unwrap()
+}
+
+- (id)windows {
+    let x: Vec<id> = (*env
+        .framework_state
+        .uikit
+        .ui_view
+        .ui_window
+        .visible_windows).to_vec();
+    ns_array::from_vec(env, x)
 }
 
 @end

@@ -172,6 +172,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, res)
 }
 
+- (id)contentsOfDirectoryAtPath:(id)path /* NSString* */
+     error:(MutPtr<id>)error { // NSError**
+    //assert!(error.cast() == nil);
+    msg![env; this directoryContentsAtPath:path]
+}
+
 @end
 
 @implementation NSDirectoryEnumerator: NSEnumerator
