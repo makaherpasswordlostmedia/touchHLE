@@ -621,4 +621,12 @@ impl GLES for GLES1Native {
     unsafe fn GenerateMipmapOES(&mut self, target: GLenum) {
         gles11::GenerateMipmapOES(target)
     }
+
+    unsafe fn GetFramebufferAttachmentParameterivOES(&mut self, target: GLenum, attachment: GLenum, pname: GLenum, params: *mut GLint) {
+        gles11::GetFramebufferAttachmentParameterivOES(target, attachment, pname, params)
+    }
+
+    unsafe fn PolygonOffset(&mut self, factor: GLfloat, units: GLfloat) {
+        gles11::PolygonOffset(factor, units)
+    }
 }

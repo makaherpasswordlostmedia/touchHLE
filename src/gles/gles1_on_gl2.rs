@@ -1647,6 +1647,15 @@ impl GLES for GLES1OnGL2 {
     ) {
         gl21::GetRenderbufferParameterivEXT(target, pname, params)
     }
+    unsafe fn GetFramebufferAttachmentParameterivOES(
+        &mut self,
+        target: GLenum,
+        attachment: GLenum,
+        pname: GLenum,
+        params: *mut GLint,
+    ) {
+        gl21::GetFramebufferAttachmentParameterivEXT(target, attachment, pname, params)
+    }
     unsafe fn CheckFramebufferStatusOES(&mut self, target: GLenum) -> GLenum {
         gl21::CheckFramebufferStatusEXT(target)
     }
@@ -1658,5 +1667,9 @@ impl GLES for GLES1OnGL2 {
     }
     unsafe fn GenerateMipmapOES(&mut self, target: GLenum) {
         gl21::GenerateMipmapEXT(target)
+    }
+
+    unsafe fn PolygonOffset(&mut self, factor: GLfloat, units: GLfloat) {
+        gl21::PolygonOffset(factor, units)
     }
 }

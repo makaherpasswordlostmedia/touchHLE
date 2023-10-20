@@ -913,6 +913,27 @@ fn glGetRenderbufferParameterivOES(
         }
     })
 }
+fn glGetFramebufferAttachmentParameterivOES(
+    env: &mut Environment,
+    target: GLenum,
+    attachment: GLenum,
+    pname: GLenum,
+    params: MutPtr<GLint>,
+) {
+    with_ctx_and_mem(env, |gles, mem| {
+        let params = mem.ptr_at_mut(params, 1);
+        unsafe { gles.GetFramebufferAttachmentParameterivOES(target, attachment, pname, params) }
+    })
+}
+fn glPolygonOffset(
+    env: &mut Environment,
+    factor: GLfloat,
+    units: GLfloat
+) {
+    with_ctx_and_mem(env, |gles, mem| {
+        unsafe { gles.PolygonOffset(factor, units) }
+    })
+}
 fn glCheckFramebufferStatusOES(env: &mut Environment, target: GLenum) -> GLenum {
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.CheckFramebufferStatusOES(target)
@@ -1053,6 +1074,8 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(glFramebufferRenderbufferOES(_, _, _, _)),
     export_c_func!(glFramebufferTexture2DOES(_, _, _, _, _)),
     export_c_func!(glGetRenderbufferParameterivOES(_, _, _)),
+    export_c_func!(glGetFramebufferAttachmentParameterivOES(_, _, _, _)),
+    export_c_func!(glPolygonOffset(_, _)),
     export_c_func!(glCheckFramebufferStatusOES(_)),
     export_c_func!(glDeleteFramebuffersOES(_, _)),
     export_c_func!(glDeleteRenderbuffersOES(_, _)),
