@@ -196,6 +196,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 // TODO: init methods etc
 
+- (NSUInteger)count {
+    env.objc.borrow_mut::<SetHostObject>(this).dict.count
+}
+
 - (id)anyObject {
     let object_or_none = env.objc.borrow_mut::<SetHostObject>(this).dict.iter_keys().next();
     match object_or_none {
