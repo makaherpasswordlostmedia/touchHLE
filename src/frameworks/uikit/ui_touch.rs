@@ -164,6 +164,7 @@ pub fn handle_event(env: &mut Environment, event: Event) {
                 .last()
             else {
                 log!("No visible window, touch event ignored");
+                release(env, pool);
                 return;
             };
 
@@ -174,6 +175,7 @@ pub fn handle_event(env: &mut Environment, event: Event) {
                     location,
                     top_window,
                 );
+                release(env, pool);
                 return;
             } else {
                 log_dbg!(
