@@ -20,8 +20,9 @@ use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::core_graphics::cg_affine_transform::CGAffineTransform;
 use crate::frameworks::foundation::ns_string::get_static_str;
 use crate::frameworks::foundation::NSUInteger;
+use crate::mem::MutVoidPtr;
 use crate::objc::{
-    id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject, NSZonePtr,
+    id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject, NSZonePtr, SEL,
 };
 use crate::Environment;
 
@@ -91,6 +92,20 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (Class)layerClass {
     env.objc.get_known_class("CALayer", &mut env.mem)
+}
+
++ (())beginAnimations:(id)animId
+              context:(MutVoidPtr)context {
+    log!("WARNING: Ignoring beginAnimations:context:");
+}
++ (())setAnimationDelegate:(id)delegate {
+    log!("WARNING: Ignoring setAnimationDelegate:");
+}
++ (())setAnimationDidStopSelector:(SEL)selector {
+    log!("WARNING: Ignoring setAnimationDidStopSelector:");
+}
++ (())commitAnimations {
+    log!("WARNING: Ignoring commitAnimations");
 }
 
 // TODO: accessors etc
@@ -436,10 +451,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (())setTransform:(CGAffineTransform)transform {
-    log!("WARNING: Ignoring CGAffineTransform set for an UIView");
+    log!("WARNING: Ignoring setTransform: for an UIView");
 }
 - (())setAutoresizingMask:(NSUInteger)mask {
-    log!("WARNING: Ignoring AutoresizingMask set for an UIView");
+    log!("WARNING: Ignoring setAutoresizingMask: for an UIView");
 }
 
 @end
