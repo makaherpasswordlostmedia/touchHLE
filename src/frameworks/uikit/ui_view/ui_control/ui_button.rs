@@ -254,6 +254,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     update(env, this);
 }
 
+- (())setBackgroundImage:(id)image
+                forState:(UIControlState)state {
+
+}
+
 // TODO: background images, actions, etc
 
 - (id)hitTest:(CGPoint)point

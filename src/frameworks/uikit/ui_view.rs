@@ -438,6 +438,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (())setTransform:(CGAffineTransform)transform {
     log!("WARNING: Ignoring CGAffineTransform set for an UIView");
 }
+- (())setAutoresizingMask:(NSUInteger)mask {
+    log!("WARNING: Ignoring AutoresizingMask set for an UIView");
+}
 
 @end
 

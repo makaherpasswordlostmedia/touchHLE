@@ -40,6 +40,8 @@ pub const UIApplicationDidReceiveMemoryWarningNotification: &str =
     "UIApplicationDidReceiveMemoryWarningNotification";
 pub const UIApplicationWillTerminateNotification: &str =
     "UIApplicationWillTerminateNotification";
+pub const UIDeviceOrientationDidChangeNotification: &str =
+    "UIDeviceOrientationDidChangeNotification";
 // TODO: More notifications?
 
 /// `NSNotificationName` values.
@@ -59,6 +61,10 @@ pub const CONSTANTS: ConstantExports = &[
     (
         "_UIApplicationWillTerminateNotification",
         HostConstant::NSString(UIApplicationWillTerminateNotification),
+    ),
+    (
+        "_UIDeviceOrientationDidChangeNotification",
+        HostConstant::NSString(UIDeviceOrientationDidChangeNotification),
     ),
 ];
 

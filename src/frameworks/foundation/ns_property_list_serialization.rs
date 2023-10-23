@@ -136,7 +136,7 @@ pub const CLASSES: ClassExports = objc_classes! {
     value.to_writer_binary(&mut buf).unwrap();
     let len: u32 = buf.len().try_into().unwrap();
     log_dbg!("dataFromPropertyList buf len {}", len);
-    let ptr = env.mem.alloc_and_write_cstr(&buf[..]);
+    let ptr = env.mem.alloc_and_write_cstr(&buf[..]).cast_const().cast_void();
     msg_class![env; NSData dataWithBytes:ptr length:len]
 }
 

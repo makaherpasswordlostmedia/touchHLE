@@ -10,6 +10,7 @@ use crate::frameworks::carbon_core::OSStatus;
 use crate::frameworks::core_audio_types::fourcc;
 use crate::mem::{MutPtr, MutVoidPtr};
 use crate::Environment;
+use crate::frameworks::core_foundation::cf_url::CFURLRef;
 
 /// Usually a FourCC.
 type AudioServicesPropertyID = u32;
@@ -41,7 +42,21 @@ fn AudioServicesPlaySystemSound(_env: &mut Environment, in_system_sound_id: Syst
     // TODO: implement other system sounds
 }
 
+fn AudioServicesCreateSystemSoundID(
+    _env: &mut Environment, in_file_url: CFURLRef, in_system_sound_id: SystemSoundID
+) -> OSStatus {
+    -1
+}
+
+fn AudioServicesDisposeSystemSoundID(
+    _env: &mut Environment, in_system_sound_id: SystemSoundID
+) -> OSStatus {
+    0
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(AudioServicesGetProperty(_, _, _, _, _)),
     export_c_func!(AudioServicesPlaySystemSound(_)),
+    export_c_func!(AudioServicesCreateSystemSoundID(_, _)),
+    export_c_func!(AudioServicesDisposeSystemSoundID(_)),
 ];
