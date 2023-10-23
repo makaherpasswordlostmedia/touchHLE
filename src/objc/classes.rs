@@ -407,7 +407,7 @@ fn substitute_classes(
     // to skip this. This isn't "ad blocking" because ads no longer work on real
     // devices anyway :)
     if !(name.starts_with("AdMob") || name.starts_with("AltAds") || name.starts_with("Mobclix")
-        || name.starts_with("OpenFeint")) {
+        || name.starts_with("OpenFeint") || name.starts_with("NGPlatform")) {
         return None;
     }
 

@@ -26,6 +26,7 @@ pub fn CFRunLoopGetMain(env: &mut Environment) -> CFRunLoopRef {
 pub const kCFRunLoopCommonModes: &str = "kCFRunLoopCommonModes";
 pub const kCFRunLoopDefaultMode: &str = "kCFRunLoopDefaultMode";
 pub const kCFBundleExecutableKey: &str = "kCFBundleExecutableKey";
+pub const kCFBundleVersionKey: &str = "CFBundleVersion";
 
 pub const CONSTANTS: ConstantExports = &[
     (
@@ -39,6 +40,10 @@ pub const CONSTANTS: ConstantExports = &[
     (
         "_kCFBundleExecutableKey",
         HostConstant::NSString(kCFBundleExecutableKey),
+    ),
+    (
+        "_kCFBundleVersionKey",
+        HostConstant::NSString(kCFBundleVersionKey),
     ),
 ];
 

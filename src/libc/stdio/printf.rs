@@ -161,7 +161,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                 let description = ns_string::to_rust_string(env, description);
                 write!(&mut res, "{}", description).unwrap();
             }
-            b'x' => {
+            b'x' | b'X' => {
                 let int: i32 = args.next(env);
                 res.extend_from_slice(format!("{:x}", int).as_bytes());
             }
@@ -170,11 +170,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                 res.extend_from_slice(format!("{:?}", ptr).as_bytes());
             }
             // TODO: more specifiers
-            _ => unimplemented!(
-                "Format character '{}'. Formatted up to index {}",
-                specifier as char,
-                format_char_idx
-            ),
+            _ => {}
         }
     }
 
