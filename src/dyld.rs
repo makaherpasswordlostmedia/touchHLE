@@ -406,7 +406,7 @@ impl Dyld {
                         // _xmlRealloc
                         mem.write(Ptr::from_bits(0x3a409a14), ptr);
                     } else {
-                        panic!("unhandled libxml2 symbol: {}", symbol);
+                        //panic!("unhandled libxml2 symbol: {}", symbol);
                     }
                 }
                 continue

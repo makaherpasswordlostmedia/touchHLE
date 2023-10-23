@@ -455,7 +455,7 @@ impl MachO {
                                 };
                                 into_mem.write(addr, entry);
                             }
-                            _ => panic!("Unexpected symbol kind {:?}", sym),
+                            _ => log!("Unexpected symbol kind {:?}", sym),
                         };
                     }
                 }
