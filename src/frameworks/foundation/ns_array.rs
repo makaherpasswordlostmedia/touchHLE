@@ -157,7 +157,8 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (id)array {
     assert!(this == env.objc.get_known_class("NSMutableArray", &mut env.mem));
-    msg_class![env; _touchHLE_NSMutableArray allocWithZone:nil]
+    let null: NSZonePtr = MutPtr::null();
+    msg_class![env; _touchHLE_NSMutableArray allocWithZone:null]
 }
 
 // NSCopying implementation

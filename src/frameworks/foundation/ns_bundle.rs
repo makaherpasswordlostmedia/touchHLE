@@ -184,6 +184,20 @@ pub const CLASSES: ClassExports = objc_classes! {
    msg![env; this URLForResource:name withExtension:extension subdirectory:nil]
 }
 
+- (id)localizedStringForKey:(id)key
+                      value:(id)value
+                      table:(id)tableName {
+    log!("localizedStringForKey '{}' '{}' '{}'",
+            if key == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, key) },
+            if value == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, value) },
+            if tableName == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, tableName) }
+    );
+    if value == nil || ns_string::to_rust_string(env, value).len() == 0 {
+        return key;
+    }
+    value
+}
+
 - (id)infoDictionary {
     let &NSBundleHostObject {
         bundle_path,
