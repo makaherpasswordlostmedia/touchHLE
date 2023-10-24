@@ -28,7 +28,7 @@ pub(super) struct DictionaryHostObject {
     /// hash-map, which is not ideally efficient. :)
     /// The keys are the hash values, the values are a list of key-value pairs
     /// where the keys have the same hash value.
-    map: HashMap<Hash, Vec<(id, id)>>,
+    pub(super) map: HashMap<Hash, Vec<(id, id)>>,
     pub(super) count: NSUInteger,
 }
 impl HostObject for DictionaryHostObject {}

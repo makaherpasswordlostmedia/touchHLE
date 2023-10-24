@@ -196,8 +196,14 @@ fn build_plist_value_rec(env: &mut Environment, plist: id) -> Value {
     return if class == env.objc.get_known_class("NSMutableDictionary", &mut env.mem) {
         let mut dict = plist::dictionary::Dictionary::new();
         let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(plist));
-        let mut iter = dict_host_obj.iter_keys();
-        while let Some(key) = iter.next() {
+        let mut key_vals = Vec::with_capacity(dict_host_obj.count as usize);
+        for collisions in dict_host_obj.map.values() {
+            for &(key, value) in collisions {
+                key_vals.push((key, value));
+            }
+        }
+        *env.objc.borrow_mut(plist) = dict_host_obj;
+        for (key, val) in key_vals {
             let key_class: Class = msg![env; key class];
 
             // only string keys are supported
@@ -205,7 +211,6 @@ fn build_plist_value_rec(env: &mut Environment, plist: id) -> Value {
             assert!(env.objc.class_is_subclass_of(key_class, string_class));
 
             let key_string = to_rust_string(env, key);
-            let val = dict_host_obj.lookup(env, key);
             let val_plist = build_plist_value_rec(env, val);
             dict.insert(String::from(key_string), val_plist);
         }
