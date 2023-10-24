@@ -18,6 +18,7 @@ use super::ui_graphics::{UIGraphicsPopContext, UIGraphicsPushContext};
 use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContextRef};
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::core_graphics::cg_affine_transform::CGAffineTransform;
+use crate::frameworks::foundation::ns_array;
 use crate::frameworks::foundation::ns_string::get_static_str;
 use crate::frameworks::foundation::NSUInteger;
 use crate::mem::MutVoidPtr;
@@ -198,6 +199,11 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 - (id)superview {
     env.objc.borrow::<UIViewHostObject>(this).superview
+}
+
+-(id)subviews {
+    let views = env.objc.borrow::<UIViewHostObject>(this).subviews.clone();
+    ns_array::from_vec(env, views)
 }
 // TODO: subviews accessor
 

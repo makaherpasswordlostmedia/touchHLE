@@ -11,7 +11,7 @@ use crate::frameworks::foundation::{ns_string, unichar};
 use crate::libc::posix_io::{STDERR_FILENO, STDOUT_FILENO};
 use crate::libc::stdio::FILE;
 use crate::mem::{ConstPtr, GuestUSize, Mem, MutPtr, MutVoidPtr};
-use crate::objc::{id, msg};
+use crate::objc::{id, msg, nil};
 use crate::Environment;
 use std::io::Write;
 
@@ -158,7 +158,11 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                 let description: id = msg![env; object description];
                 // TODO: avoid copy
                 // TODO: what if the description isn't valid UTF-16?
-                let description = ns_string::to_rust_string(env, description);
+                let description = if description == nil {
+                    "(nil)".to_string()
+                } else {
+                    ns_string::to_rust_string(env, description).to_string()
+                };
                 write!(&mut res, "{}", description).unwrap();
             }
             b'x' | b'X' => {

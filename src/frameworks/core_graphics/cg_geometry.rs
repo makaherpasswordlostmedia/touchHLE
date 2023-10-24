@@ -180,6 +180,13 @@ fn CGRectGetMaxY(_env: &mut Environment, rect: CGRect) -> CGFloat {
     rect.origin.y + rect.size.height
 }
 
+fn CGRectContainsPoint(_env: &mut Environment, rect: CGRect, point: CGPoint) -> bool {
+    rect.origin.x < point.x &&
+        rect.origin.x + rect.size.width > point.x &&
+        rect.origin.y < point.y &&
+        rect.origin.y + rect.size.height > point.y
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGPointEqualToPoint(_, _)),
     export_c_func!(CGSizeEqualToSize(_, _)),
@@ -190,4 +197,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGRectGetMaxX(_)),
     export_c_func!(CGRectGetMinY(_)),
     export_c_func!(CGRectGetMaxY(_)),
+    export_c_func!(CGRectContainsPoint(_, _)),
 ];

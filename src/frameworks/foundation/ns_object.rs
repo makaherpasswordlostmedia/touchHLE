@@ -153,6 +153,9 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.class_has_method(class, selector)
 }
 
+- (())performSelectorOnMainThread:(SEL)sel withObject:(id)arg waitUntilDone:(bool)wait {
+
+}
 
 @end
 

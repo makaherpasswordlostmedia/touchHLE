@@ -721,6 +721,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (id)stringByAppendingPathComponent:(id)component { // NSString*
+    if component == nil {
+        return msg![env; this copy];
+    }
     // TODO: avoid copying
     // FIXME: check if Rust join() matches NSString (it probably doesn't)
     let combined = GuestPath::new(&to_rust_string(env, this))

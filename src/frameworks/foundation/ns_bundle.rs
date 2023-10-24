@@ -127,6 +127,14 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)pathForResource:(id)name // NSString*
                ofType:(id)extension // NSString*
           inDirectory:(id)directory { // NSString*
+    if name == nil && extension == nil && directory == nil {
+        return nil
+    }
+    log_dbg!("pathForResource '{}' '{}' '{}'",
+            if name == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, name) },
+            if extension == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, extension) },
+            if directory == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, directory) }
+    );
     assert!(name != nil); // TODO
 
     // TODO: cache result of lookups

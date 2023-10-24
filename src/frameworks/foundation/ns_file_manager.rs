@@ -84,6 +84,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (bool)fileExistsAtPath:(id)path { // NSString*
+    if path == nil {
+        return false
+    }
     let path = ns_string::to_rust_string(env, path); // TODO: avoid copy
     // fileExistsAtPath: will return true for directories, hence Fs::exists()
     // rather than Fs::is_file() is appropriate.
