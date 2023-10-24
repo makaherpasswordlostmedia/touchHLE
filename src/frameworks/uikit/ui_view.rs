@@ -19,6 +19,7 @@ pub mod ui_window;
 use super::ui_graphics::{UIGraphicsPopContext, UIGraphicsPushContext};
 use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContextRef};
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
+use crate::frameworks::core_graphics::cg_context::CGContextConcatCTM;
 use crate::frameworks::foundation::ns_string::get_static_str;
 use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger};
 use crate::objc::{
@@ -390,8 +391,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     if env.objc.borrow::<UIViewHostObject>(this).clears_context_before_drawing {
         CGContextClearRect(env, context, bounds);
     }
+    let affine_transformation = msg![env; layer affineTransform];
     UIGraphicsPushContext(env, context);
+    CGContextConcatCTM(env, context, affine_transformation);
     () = msg![env; this drawRect:bounds];
+    CGContextConcatCTM(env, context, affine_transformation.invert());
     UIGraphicsPopContext(env);
 }
 
@@ -455,6 +459,18 @@ pub const CLASSES: ClassExports = objc_classes! {
     let this_layer = env.objc.borrow::<UIViewHostObject>(this).layer;
     let other_layer = env.objc.borrow::<UIViewHostObject>(other).layer;
     msg![env; this_layer convertPoint:point toLayer:other_layer]
+}
+
+- (())setTransform:(CGAffineTransform)transform {
+    log!("setTransform: {:?}", transform);
+    let layer = env.objc.borrow_mut::<UIViewHostObject>(this).layer;
+    () = msg![env; layer setAffineTransform:transform];
+    () = msg![env; layer setNeedsDisplay];
+    () = msg![env; layer displayIfNeeded];
+}
+
+- (())setAutoresizingMask:(NSUInteger)mask {
+    log!("WARNING: Ignoring setAutoresizingMask: for an UIView");
 }
 
 @end

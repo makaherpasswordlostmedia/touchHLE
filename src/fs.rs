@@ -488,6 +488,22 @@ impl Fs {
             .with_child(
                 "libsqlite3.dylib",
                 FsNode::resource_file(format!("{}/libsqlite3.0.8.6.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.1.2.3.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.1.1.3.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.1.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
             );
 
         let root = FsNode::dir()

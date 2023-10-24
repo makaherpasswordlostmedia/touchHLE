@@ -45,6 +45,7 @@ pub struct State {
     pthread: pthread::State,
     pub semaphore: semaphore::State,
     stdlib: stdlib::State,
+    stream: stdio::State,
     string: string::State,
     time: time::State,
     errno: errno::State,

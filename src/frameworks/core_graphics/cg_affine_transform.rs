@@ -51,7 +51,7 @@ impl_GuestRet_for_large_struct!(CGAffineTransform);
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C, packed)]
-struct CATransform3D {
+pub struct CATransform3D {
     m11: CGFloat,
     m12: CGFloat,
     m13: CGFloat,
@@ -316,7 +316,13 @@ pub fn CGRectApplyAffineTransform(
 fn CATransform3DRotate(
     _env: &mut Environment, t: CATransform3D, angle: CGFloat, x: CGFloat, y: CGFloat, z: CGFloat
 ) -> CATransform3D {
-    return CATransform3D { m11: 0.0, m12: 0.0, m13: 0.0, m14: 0.0 }
+    return t
+}
+
+fn CATransform3DScale(
+    _env: &mut Environment, t: CATransform3D, sx: CGFloat, sy: CGFloat, sz: CGFloat
+) -> CATransform3D {
+    return t
 }
 
 pub const FUNCTIONS: FunctionExports = &[
@@ -335,4 +341,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGSizeApplyAffineTransform(_, _)),
     export_c_func!(CGRectApplyAffineTransform(_, _)),
     export_c_func!(CATransform3DRotate(_, _, _, _, _)),
+    export_c_func!(CATransform3DScale(_, _, _, _)),
 ];

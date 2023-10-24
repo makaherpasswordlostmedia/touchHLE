@@ -81,6 +81,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 }
 
+- (bool)isReadableFileAtPath:(id)path { // NSString*
+    let path = ns_string::to_rust_string(env, path); // TODO: avoid copy
+    log!("isReadableFileAtPath: {:?}", path);
+    true
+}
+
 - (bool)fileExistsAtPath:(id)path { // NSString*
     let path = ns_string::to_rust_string(env, path); // TODO: avoid copy
     // fileExistsAtPath: will return true for directories, hence Fs::exists()

@@ -312,8 +312,8 @@ impl Environment {
         // in the app binary.
         // TODO: once we support more libraries, replace this hard-coded order
         //       with e.g. a topological sort.
-        assert!(env.bins.len() <= 4);
-        for bin_idx in [1, 2, 3, 0] {
+        assert!(env.bins.len() <= 5);
+        for bin_idx in [1, 2, 3, 4, 0] {
             let Some(bin) = env.bins.get(bin_idx) else {
                 continue;
             };
