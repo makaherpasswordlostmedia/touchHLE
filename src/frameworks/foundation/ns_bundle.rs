@@ -221,14 +221,8 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (id)objectForInfoDictionaryKey:(id)key { // NSString*
-    let key_str = ns_string::to_rust_string(env, key).to_string(); // TODO: avoid copy
-    match key_str.as_str() {
-        "kCFBundleExecutableKey" =>
-            ns_string::from_rust_string(env, env.bundle.executable().to_string()),
-        "CFBundleVersion" =>
-            ns_string::from_rust_string(env, env.bundle.bundle_version().to_string()),
-        x => unimplemented!("{}", x)
-    }
+    let dict = msg![env; this infoDictionary];
+    msg![env; dict objectForKey:key]
 }
 
 // TODO: constructors, more accessors
