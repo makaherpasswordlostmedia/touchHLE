@@ -6,16 +6,18 @@
 //! `NSBundle`.
 
 use std::borrow::Cow;
+use std::collections::HashMap;
 
 use super::ns_array;
 use super::ns_string;
 use crate::bundle::Bundle;
 use crate::objc::{
-    autorelease, id, msg, msg_class, nil, objc_classes, release, ClassExports, HostObject,
+    autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
 };
 use crate::Environment;
 use crate::frameworks::foundation::ns_dictionary::dict_from_keys_and_objects;
 use crate::frameworks::core_foundation::cf_run_loop::kCFBundleExecutableKey;
+use crate::frameworks::foundation::ns_string::get_static_str;
 
 // Should be ISO 639-1 (or ISO 639-2) compliant
 // TODO: complete this list or use some crate for mapping
@@ -36,6 +38,7 @@ const LANG_ID_TO_LANG_PROJ: &[(&str, &str)] = &[
 #[derive(Default)]
 pub struct State {
     main_bundle: Option<id>,
+    localization_tables: HashMap<id, id>, // NSString* to NSDictionary*
 }
 
 struct NSBundleHostObject {
@@ -191,15 +194,33 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)localizedStringForKey:(id)key
                       value:(id)value
                       table:(id)tableName {
-    log!("localizedStringForKey '{}' '{}' '{}'",
+    log_dbg!("localizedStringForKey '{}' '{}' '{}'",
             if key == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, key) },
             if value == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, value) },
             if tableName == nil { std::borrow::Cow::from("(null)") } else { ns_string::to_rust_string(env, tableName) }
     );
-    if value == nil || ns_string::to_rust_string(env, value).len() == 0 {
-        return key;
+    if key == nil {
+        return value;
     }
-    value
+    let name = if tableName == nil {
+        get_static_str(env, "Localizable")
+    } else {
+        tableName
+    };
+    let dict = if let Some(&table_dict) = env.framework_state.foundation.ns_bundle.localization_tables.get(&name) {
+        table_dict
+    } else {
+        let extension = get_static_str(env, "strings");
+
+        let dict_url: id = msg![env; this URLForResource:name withExtension:extension];
+        let dict: id = msg_class![env; NSDictionary dictionaryWithContentsOfURL:dict_url];
+        assert!(dict != nil);
+        retain(env, name);
+        retain(env, dict);
+        env.framework_state.foundation.ns_bundle.localization_tables.insert(name, dict);
+        dict
+    };
+    msg![env; dict objectForKey:key]
 }
 
 - (id)infoDictionary {
