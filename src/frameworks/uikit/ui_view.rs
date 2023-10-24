@@ -18,6 +18,7 @@ use super::ui_graphics::{UIGraphicsPopContext, UIGraphicsPushContext};
 use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContextRef};
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::core_graphics::cg_affine_transform::CGAffineTransform;
+use crate::frameworks::core_graphics::cg_context::CGContextConcatCTM;
 use crate::frameworks::foundation::ns_string::get_static_str;
 use crate::frameworks::foundation::NSUInteger;
 use crate::mem::MutVoidPtr;
@@ -391,8 +392,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     if env.objc.borrow::<UIViewHostObject>(this).clears_context_before_drawing {
         CGContextClearRect(env, context, bounds);
     }
+    let affine_transformation = msg![env; layer affineTransform];
     UIGraphicsPushContext(env, context);
+    CGContextConcatCTM(env, context, affine_transformation);
     () = msg![env; this drawRect:bounds];
+    CGContextConcatCTM(env, context, affine_transformation.invert());
     UIGraphicsPopContext(env);
 }
 
@@ -451,8 +455,13 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (())setTransform:(CGAffineTransform)transform {
-    log!("WARNING: Ignoring setTransform: for an UIView");
+    log!("setTransform: {:?}", transform);
+    let layer = env.objc.borrow_mut::<UIViewHostObject>(this).layer;
+    () = msg![env; layer setAffineTransform:transform];
+    () = msg![env; layer setNeedsDisplay];
+    () = msg![env; layer displayIfNeeded];
 }
+
 - (())setAutoresizingMask:(NSUInteger)mask {
     log!("WARNING: Ignoring setAutoresizingMask: for an UIView");
 }

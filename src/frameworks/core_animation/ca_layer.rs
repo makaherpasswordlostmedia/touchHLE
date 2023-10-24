@@ -11,7 +11,7 @@ use crate::frameworks::core_graphics::cg_bitmap_context::{
 };
 use crate::frameworks::core_graphics::cg_color_space::CGColorSpaceCreateDeviceRGB;
 use crate::frameworks::core_graphics::cg_context::{
-    CGContextClearRect, CGContextRef, CGContextRelease, CGContextTranslateCTM,
+    CGContextClearRect, CGContextRef, CGContextRelease, CGContextTranslateCTM, CGContextConcatCTM,
 };
 use crate::frameworks::core_graphics::cg_image::{
     kCGImageAlphaPremultipliedLast, kCGImageByteOrder32Big,
@@ -20,6 +20,7 @@ use crate::frameworks::core_graphics::{CGPoint, CGRect, CGSize};
 use crate::mem::{GuestUSize, Ptr};
 use crate::objc::{id, msg, nil, objc_classes, release, retain, ClassExports, HostObject, ObjC};
 use std::collections::HashMap;
+use crate::frameworks::core_graphics::cg_affine_transform::{CGAffineTransform, CGAffineTransformIdentity};
 
 pub(super) struct CALayerHostObject {
     /// Possibly nil, usually a UIView. This is a weak reference.
@@ -48,6 +49,7 @@ pub(super) struct CALayerHostObject {
     pub(super) gles_texture: Option<crate::gles::gles11_raw::types::GLuint>,
     /// Internal state for compositor
     pub(super) gles_texture_is_up_to_date: bool,
+    pub(super) affine_transformation: CGAffineTransform,
 }
 impl HostObject for CALayerHostObject {}
 
@@ -79,6 +81,7 @@ pub const CLASSES: ClassExports = objc_classes! {
         cg_context: None,
         gles_texture: None,
         gles_texture_is_up_to_date: false,
+        affine_transformation: CGAffineTransformIdentity,
     });
     env.objc.alloc_object(this, host_object, &mut env.mem)
 }
@@ -213,6 +216,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     };
 }
 
+- (CGAffineTransform)affineTransform {
+    env.objc.borrow::<CALayerHostObject>(this).affine_transformation
+}
+- (())setAffineTransform:(CGAffineTransform)m {
+    env.objc.borrow_mut::<CALayerHostObject>(this).affine_transformation = m;
+}
+
 - (bool)isHidden {
     env.objc.borrow::<CALayerHostObject>(this).hidden
 }
@@ -313,6 +323,7 @@ pub const CLASSES: ClassExports = objc_classes! {
         cg_context,
         ref mut gles_texture_is_up_to_date,
         bounds: CGRect { origin, size },
+        affine_transformation,
         ..
     } = env.objc.borrow_mut(this);
 
@@ -355,9 +366,11 @@ pub const CLASSES: ClassExports = objc_classes! {
     };
 
     CGContextTranslateCTM(env, cg_context, -origin.x, -origin.y);
+    CGContextConcatCTM(env, cg_context, affine_transformation);
     // TODO: move clearing to UIKit (clearsContextBeforeDrawing)?
     CGContextClearRect(env, cg_context, CGRect { origin, size });
     () = msg![env; delegate drawLayer:this inContext:cg_context];
+    CGContextConcatCTM(env, cg_context, affine_transformation.invert());
     CGContextTranslateCTM(env, cg_context, origin.x, origin.y);
 }
 
