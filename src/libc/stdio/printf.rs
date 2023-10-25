@@ -325,7 +325,11 @@ fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: 
         format_char_idx += 1;
 
         match specifier {
-            b'd' => {
+            b'd' | b'i' => {
+                if specifier == b'i' {
+                    // TODO: hexs and octals
+                    assert_ne!(env.mem.read(src_ptr), b'0');
+                }
                 let mut val: i32 = 0;
                 while let c @ b'0'..=b'9' = env.mem.read(src_ptr) {
                     val = val * 10 + (c - b'0') as i32;
