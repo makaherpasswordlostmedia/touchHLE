@@ -794,6 +794,16 @@ fn glCopyTexSubImage2D(
         gles.CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
     })
 }
+fn glPointSize(env: &mut Environment, size: GLfloat) {
+    with_ctx_and_mem(env, |gles, _mem| unsafe {
+        gles.PointSize(size)
+    })
+}
+fn glLineWidth(env: &mut Environment, width: GLfloat) {
+    with_ctx_and_mem(env, |gles, _mem| unsafe {
+        gles.LineWidth(width)
+    })
+}
 fn glTexEnvf(env: &mut Environment, target: GLenum, pname: GLenum, param: GLfloat) {
     with_ctx_and_mem(env, |gles, _mem| unsafe {
         gles.TexEnvf(target, pname, param)
@@ -1059,6 +1069,8 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(glCompressedTexImage2D(_, _, _, _, _, _, _, _)),
     export_c_func!(glCopyTexImage2D(_, _, _, _, _, _, _, _)),
     export_c_func!(glCopyTexSubImage2D(_, _, _, _, _, _, _, _)),
+    export_c_func!(glPointSize(_)),
+    export_c_func!(glLineWidth(_)),
     export_c_func!(glTexEnvf(_, _, _)),
     export_c_func!(glTexEnvx(_, _, _)),
     export_c_func!(glTexEnvi(_, _, _)),

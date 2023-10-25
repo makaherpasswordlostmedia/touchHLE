@@ -1672,4 +1672,12 @@ impl GLES for GLES1OnGL2 {
     unsafe fn PolygonOffset(&mut self, factor: GLfloat, units: GLfloat) {
         gl21::PolygonOffset(factor, units)
     }
+
+    unsafe fn PointSize(&mut self, size: GLfloat) {
+        gl21::PointSize(size)
+    }
+
+    unsafe fn LineWidth(&mut self, width: GLfloat) {
+        gl21::LineWidth(width)
+    }
 }

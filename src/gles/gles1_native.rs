@@ -629,4 +629,12 @@ impl GLES for GLES1Native {
     unsafe fn PolygonOffset(&mut self, factor: GLfloat, units: GLfloat) {
         gles11::PolygonOffset(factor, units)
     }
+
+    unsafe fn PointSize(&mut self, size: GLfloat) {
+        gles11::PointSize(size)
+    }
+
+    unsafe fn LineWidth(&mut self, width: GLfloat) {
+        gles11::LineWidth(width)
+    }
 }

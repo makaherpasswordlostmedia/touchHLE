@@ -240,6 +240,8 @@ pub trait GLES {
         width: GLsizei,
         height: GLsizei,
     );
+    unsafe fn PointSize(&mut self, size: GLfloat);
+    unsafe fn LineWidth(&mut self, width: GLfloat);
     unsafe fn TexEnvf(&mut self, target: GLenum, pname: GLenum, param: GLfloat);
     unsafe fn TexEnvx(&mut self, target: GLenum, pname: GLenum, param: GLfixed);
     unsafe fn TexEnvi(&mut self, target: GLenum, pname: GLenum, param: GLint);
