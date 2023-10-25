@@ -1652,4 +1652,12 @@ impl GLES for GLES1OnGL2 {
     unsafe fn GenerateMipmapOES(&mut self, target: GLenum) {
         gl21::GenerateMipmapEXT(target)
     }
+
+    unsafe fn PointSize(&mut self, size: GLfloat) {
+        gl21::PointSize(size)
+    }
+
+    unsafe fn LineWidth(&mut self, width: GLfloat) {
+        gl21::LineWidth(width)
+    }
 }
