@@ -40,9 +40,9 @@ where
             .expect("OpenGL ES is not supported in headless mode"),
         env.current_thread,
     );
-    panic_on_gl_errors(&mut *gles);
+    //panic_on_gl_errors(&mut *gles);
     let res = f(gles, &mut env.mem);
-    panic_on_gl_errors(&mut *gles);
+    //panic_on_gl_errors(&mut *gles);
     #[allow(clippy::let_and_return)]
     res
 }

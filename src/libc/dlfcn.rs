@@ -25,7 +25,9 @@ fn dlopen(env: &mut Environment, path: ConstPtr<u8>, _mode: i32) -> MutVoidPtr {
 }
 
 fn dlsym(env: &mut Environment, handle: MutVoidPtr, symbol: ConstPtr<u8>) -> MutVoidPtr {
-    assert!(ALLOWED_LIBRARIES.contains(&env.mem.cstr_at_utf8(handle.cast())));
+    if !ALLOWED_LIBRARIES.contains(&env.mem.cstr_at_utf8(handle.cast())) {
+        return Ptr::null()
+    }
     // For some reason, the symbols passed to dlsym() don't have the leading _.
     let symbol = format!("_{}", env.mem.cstr_at_utf8(symbol).unwrap());
     // TODO: error handling. dlsym() should just return NULL in this case, but

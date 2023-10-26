@@ -82,6 +82,23 @@ pub const CLASSES: ClassExports = objc_classes! {
    }
 }
 
++ (id)bundleWithPath:(id)path {
+    let bundle_path = ns_string::to_rust_string(env, path);
+    log!("bundleWithPath: {}", bundle_path);
+    let host_object = NSBundleHostObject {
+        _bundle: None,
+        bundle_path: path,
+        bundle_url: None,
+        info_dictionary: None,
+    };
+    let new = env.objc.alloc_object(
+        this,
+        Box::new(host_object),
+        &mut env.mem
+    );
+    autorelease(env, new)
+}
+
 - (())dealloc {
     let &NSBundleHostObject {
         _bundle: _,

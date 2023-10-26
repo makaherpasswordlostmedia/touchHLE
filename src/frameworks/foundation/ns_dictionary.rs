@@ -15,6 +15,8 @@ use crate::objc::{
 };
 use crate::Environment;
 use std::collections::HashMap;
+use crate::mem::MutPtr;
+use crate::frameworks::foundation::ns_enumerator::NSFastEnumerationState;
 
 /// Alias for the return type of the `hash` method of the `NSObject` protocol.
 type Hash = NSUInteger;
@@ -303,6 +305,48 @@ pub const CLASSES: ClassExports = objc_classes! {
     let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
     host_obj.insert(env, key, anObject, false);
     *env.objc.borrow_mut(this) = host_obj;
+}
+
+// NSFastEnumeration implementation
+- (NSUInteger)countByEnumeratingWithState:(MutPtr<NSFastEnumerationState>)state
+                                  objects:(MutPtr<id>)stackbuf
+                                    count:(NSUInteger)len {
+    let host_object = env.objc.borrow::<DictionaryHostObject>(this);
+
+    if host_object.count == 0 {
+        return 0;
+    }
+
+    let NSFastEnumerationState {
+        state: start_index,
+        ..
+    } = env.mem.read(state);
+
+    let mut dict_iter = host_object.map.iter();
+    if start_index >= 1 {
+       _ = dict_iter.nth((start_index-1).try_into().unwrap());
+    }
+
+    let mut batch_count = 0;
+    while batch_count < len {
+        if let Some((_, &ref object)) = dict_iter.next() {
+            let object = object.get(0).unwrap().0;
+            env.mem.write(stackbuf + batch_count, object);
+            batch_count += 1;
+        } else {
+            break;
+        }
+    }
+    env.mem.write(state, NSFastEnumerationState {
+        state: start_index + batch_count,
+        items_ptr: stackbuf,
+        // can be anything as long as it's dereferenceable and the same
+        // each iteration
+        // Note: stackbuf can be different each time, it's better to return self pointer
+        mutations_ptr: this.cast(),
+        extra: Default::default(),
+    });
+    batch_count
 }
 
 @end

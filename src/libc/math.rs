@@ -7,6 +7,7 @@
 
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::Environment;
+use crate::mem::MutPtr;
 
 // The sections in this file are organized to match the C standard.
 
@@ -218,6 +219,15 @@ fn hypot(env: &mut Environment, arg1: f64, arg2: f64) -> f64 {
     sqrt(env, arg1*arg1 + arg2*arg2)
 }
 
+fn OSAtomicCompareAndSwapIntBarrier(env: &mut Environment, old_value: i32, new_value: i32, the_value: MutPtr<i32>) -> bool {
+    if old_value == env.mem.read(the_value) {
+        env.mem.write(the_value, new_value);
+        true
+    } else {
+        false
+    }
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     // Trigonometric functions
     export_c_func!(sin(_)),
@@ -285,4 +295,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fmin(_, _)),
     export_c_func!(fminf(_, _)),
     export_c_func!(hypot(_, _)),
+    export_c_func!(OSAtomicCompareAndSwapIntBarrier(_, _, _)),
 ];

@@ -13,11 +13,13 @@ use crate::frameworks::core_foundation::cf_allocator::kCFAllocatorDefault;
 use crate::frameworks::core_foundation::cf_data::{CFDataCreate, CFDataRef};
 use crate::frameworks::core_foundation::{CFRelease, CFRetain, CFTypeRef};
 use crate::frameworks::foundation::NSUInteger;
-use crate::mem::{ConstVoidPtr, GuestUSize, MutVoidPtr};
-use crate::objc::{id, msg, msg_class, objc_classes, ClassExports, HostObject};
+use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, MutVoidPtr, Ptr};
+use crate::objc::{id, msg, msg_class, objc_classes, ClassExports, HostObject, nil};
 use crate::Environment;
+use crate::frameworks::core_foundation::cf_url::CFURLRef;
 
 pub type CGDataProviderRef = CFTypeRef;
+pub type CGFontRef = CFTypeRef;
 
 /// `(*void)(void *info, const void *data, size_t size)`
 type CGDataProviderReleaseDataCallback = GuestFunction;
@@ -112,6 +114,31 @@ fn CGDataProviderCreateWithData(
     )
 }
 
+fn CGDataProviderCreateWithFilename(env: &mut Environment, filename: ConstPtr<u8>) -> CGDataProviderRef {
+    if filename.is_null() {
+        return nil
+    }
+    // let x = env.mem.cstr_at_utf8(filename).unwrap();
+    // log!("CGDataProviderCreateWithFilename {}", x);
+    let filename_str: id = msg_class![env; NSString stringWithUTF8String:filename];
+    let data: id = msg_class![env; NSData dataWithContentsOfFile:filename_str];
+    let bytes: ConstVoidPtr = msg![env; data bytes];
+    let length: GuestUSize = msg![env; data length];
+    CGDataProviderCreateWithData(env, Ptr::null(), bytes, length, GuestFunction::from_addr_with_thumb_bit(0))
+}
+
+fn CGDataProviderCreateWithURL(env: &mut Environment, url: CFURLRef) -> CGDataProviderRef {
+    let path: id = msg![env; url path];
+    let data: id = msg_class![env; NSData dataWithContentsOfFile:path];
+    let bytes: ConstVoidPtr = msg![env; data bytes];
+    let length: GuestUSize = msg![env; data length];
+    CGDataProviderCreateWithData(env, Ptr::null(), bytes, length, GuestFunction::from_addr_with_thumb_bit(0))
+}
+
+fn CGFontCreateWithDataProvider(env: &mut Environment, provider: CGDataProviderRef) -> CGFontRef {
+    msg_class![env; UIFont systemFontOfSize:14.0f32]
+}
+
 /// This is for use by [super::cg_image::CGImageGetDataProvider].
 pub(super) fn from_cg_image(env: &mut Environment, cg_image: CGImageRef) -> CGDataProviderRef {
     CGImageRetain(env, cg_image);
@@ -167,4 +194,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGDataProviderRelease(_)),
     export_c_func!(CGDataProviderCreateWithData(_, _, _, _)),
     export_c_func!(CGDataProviderCopyData(_)),
+    export_c_func!(CGDataProviderCreateWithFilename(_)),
+    export_c_func!(CGDataProviderCreateWithURL(_)),
+    export_c_func!(CGFontCreateWithDataProvider(_)),
 ];

@@ -371,6 +371,29 @@ fn fprintf(
     res.len().try_into().unwrap()
 }
 
+fn vfprintf(
+    env: &mut Environment,
+    stream: MutPtr<FILE>,
+    format: ConstPtr<u8>,
+    arg: VaList
+) -> i32 {
+    log_dbg!(
+        "vfprintf({:?}, {:?} ({:?}), ...)",
+        stream,
+        format,
+        env.mem.cstr_at_utf8(format)
+    );
+
+    let res = printf_inner::<false, _>(env, |mem, idx| mem.read(format + idx), arg);
+    // TODO: I/O error handling
+    match env.mem.read(stream).fd {
+        STDOUT_FILENO => _ = std::io::stdout().write_all(&res),
+        STDERR_FILENO => _ = std::io::stderr().write_all(&res),
+        _ => unimplemented!(),
+    }
+    res.len().try_into().unwrap()
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(sscanf(_, _, _)),
     export_c_func!(snprintf(_, _, _, _)),
@@ -380,4 +403,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(sprintf(_, _, _)),
     export_c_func!(printf(_, _)),
     export_c_func!(fprintf(_, _, _)),
+    export_c_func!(vfprintf(_, _, _)),
 ];

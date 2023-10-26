@@ -97,6 +97,9 @@ fn CGImageCreateWithPNGDataProvider(
     _intent: i32,              // TODO (should be CGColorRenderingIntent)
 ) -> CGImageRef {
     assert!(decode.is_null()); // TODO
+    if source == nil {
+        return nil
+    }
 
     let bytes = cg_data_provider::borrow_bytes(env, source);
     let Ok(image) = Image::from_bytes(bytes) else {

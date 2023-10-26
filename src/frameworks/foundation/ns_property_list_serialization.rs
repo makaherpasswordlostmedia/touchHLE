@@ -185,11 +185,17 @@ fn build_plist_id_rec(env: &mut Environment, value: Value) -> id {
             let int: NSInteger = int_val.as_signed().unwrap().try_into().unwrap();
             msg_class![env; NSNumber numberWithInteger:int]
         }
+        Value::Boolean(bool_val) => {
+            msg_class![env; NSNumber numberWithBool:bool_val]
+        }
         _ => unimplemented!("build_plist_id_rec value {:?}", value)
     }
 }
 
 fn build_plist_value_rec(env: &mut Environment, plist: id) -> Value {
+    if plist == nil {
+        return Value::from(0);
+    }
     let class: Class = msg![env; plist class];
 
     // TODO: check subclass instead of exact match
@@ -224,6 +230,6 @@ fn build_plist_value_rec(env: &mut Environment, plist: id) -> Value {
             _ => todo!()
         }
     } else {
-        unimplemented!()
+        unimplemented!("{}", env.objc.get_class_name(class).to_string())
     };
 }

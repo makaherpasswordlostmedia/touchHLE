@@ -81,6 +81,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     this
 }
 
+- (NSUInteger)retainCount {
+    env.objc.get_refcount(this).into()
+}
+
 - (())dealloc {
     log_dbg!("[{:?} dealloc]", this);
     env.objc.dealloc_object(this, &mut env.mem)

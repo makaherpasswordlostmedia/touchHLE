@@ -7,7 +7,7 @@
 
 use crate::dyld::FunctionExports;
 use crate::export_c_func;
-use crate::mem::MutPtr;
+use crate::mem::{ConstPtr, MutPtr, MutVoidPtr};
 use crate::Environment;
 
 // TODO: struct definition
@@ -19,4 +19,13 @@ fn getifaddrs(_env: &mut Environment, _ifap: MutPtr<MutPtr<ifaddrs>>) -> i32 {
     -1
 }
 
-pub const FUNCTIONS: FunctionExports = &[export_c_func!(getifaddrs(_))];
+// int
+//      inet_pton(int af, const char * restrict src, void * restrict dst);
+fn inet_pton(_env: &mut Environment, af: i32, src: ConstPtr<u8>, dst: MutVoidPtr) -> i32 {
+    -1
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(getifaddrs(_)),
+    export_c_func!(inet_pton(_, _, _)),
+];

@@ -295,6 +295,10 @@ impl super::ObjC {
         *refcount = refcount.checked_add(1).unwrap();
     }
 
+    pub fn get_refcount(&mut self, object: id) -> NonZeroU32 {
+        self.objects.get(&object).unwrap().refcount.unwrap()
+    }
+
     /// Decrease the refcount of a reference-counted object. Do not call this
     /// directly unless you're implementing `release` on `NSObject`. That method
     /// may be overridden.

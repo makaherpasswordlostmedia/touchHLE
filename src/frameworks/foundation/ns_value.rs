@@ -201,6 +201,16 @@ pub const CLASSES: ClassExports = objc_classes! {
     value.try_into().unwrap()
 }
 
+- (bool)boolValue {
+    match env.objc.borrow::<NSNumberHostObject>(this) {
+        NSNumberHostObject::Bool(b) => *b,
+        NSNumberHostObject::UnsignedLongLong(u) => *u != 0,
+        NSNumberHostObject::LongLong(l) => *l != 0,
+        NSNumberHostObject::Double(d) => *d != 0.0,
+        _ => todo!()
+    }
+}
+
 // TODO: accessors etc
 
 @end

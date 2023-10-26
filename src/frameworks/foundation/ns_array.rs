@@ -251,6 +251,17 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.alloc_object(this, host_object, &mut env.mem)
 }
 
+-(id)initWithArray:(id)other {
+    let size: NSUInteger = msg![env; other count];
+    let mut v = Vec::with_capacity(size as usize);
+    for i in 0..size {
+        let obj = msg![env; other objectAtIndex: i];
+        v.push(retain(env, obj));
+    }
+    env.objc.borrow_mut::<ArrayHostObject>(this).array = v;
+    this
+}
+
 // NSCoding implementation
 - (id)initWithCoder:(id)coder {
     let objects = ns_keyed_unarchiver::decode_current_array(env, coder);
