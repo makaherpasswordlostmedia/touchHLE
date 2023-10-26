@@ -141,6 +141,9 @@ const GET_PARAMS: ParamTable = ParamTable(&[
     (gl21::CLIENT_ACTIVE_TEXTURE, ParamType::Int, 1),
     // TODO: arbitrary number of clip planes?
     (gl21::CLIP_PLANE0, ParamType::Boolean, 1),
+    (gl21::CLIP_PLANE1, ParamType::Boolean, 1),
+    (gl21::CLIP_PLANE2, ParamType::Boolean, 1),
+    (gl21::CLIP_PLANE3, ParamType::Boolean, 1),
     (gl21::COLOR_ARRAY, ParamType::Boolean, 1),
     (gl21::COLOR_ARRAY_BUFFER_BINDING, ParamType::Int, 1),
     (gl21::COLOR_ARRAY_SIZE, ParamType::Int, 1),
@@ -220,6 +223,7 @@ const GET_PARAMS: ParamTable = ParamTable(&[
     (gl21::POINT_SIZE_RANGE, ParamType::Float, 2),
     (gl21::POINT_SMOOTH, ParamType::Boolean, 2),
     (gl21::POINT_SMOOTH_HINT, ParamType::Int, 2),
+    (gl21::POINT_SPRITE, ParamType::Boolean, 1),
     (gl21::POLYGON_OFFSET_FACTOR, ParamType::Float, 1),
     (gl21::POLYGON_OFFSET_FILL, ParamType::Boolean, 1),
     (gl21::POLYGON_OFFSET_UNITS, ParamType::Float, 1),

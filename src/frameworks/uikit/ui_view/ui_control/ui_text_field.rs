@@ -34,6 +34,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     // TODO
 }
 
+- (bool)becomeFirstResponder {
+    false
+}
+
 // weak/non-retaining
 - (())setDelegate:(id)_delegate { // something implementing UITextFieldDelegate
     // TODO

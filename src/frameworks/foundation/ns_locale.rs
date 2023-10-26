@@ -5,17 +5,24 @@
  */
 //! `NSLocale`.
 
-use super::{ns_array, ns_string};
 use crate::dyld::{ConstantExports, HostConstant};
-use crate::objc::{id, objc_classes, ClassExports, HostObject};
+use super::{ns_array, ns_string};
+use crate::objc::{id, nil, objc_classes, ClassExports, HostObject};
 use crate::Environment;
 
 const NSLocaleCountryCode: &str = "NSLocaleCountryCode";
+const NSLocaleIdentifier: &str = "NSLocaleIdentifier";
 
-pub const CONSTANTS: ConstantExports = &[(
-    "_NSLocaleCountryCode",
-    HostConstant::NSString(NSLocaleCountryCode),
-)];
+pub const CONSTANTS: ConstantExports = &[
+    (
+        "_NSLocaleCountryCode",
+        HostConstant::NSString(NSLocaleCountryCode),
+    ),
+    (
+        "_NSLocaleIdentifier",
+        HostConstant::NSString(NSLocaleIdentifier),
+    ),
+];
 
 #[derive(Default)]
 pub struct State {
@@ -97,6 +104,15 @@ pub const CLASSES: ClassExports = objc_classes! {
         },
         _ => unimplemented!()
     }
+}
+
+- (id)localeIdentifier {
+    nil
+}
+
+- (id)displayNameForKey:(id)key
+                  value:(id)value {
+    nil
 }
 
 @end
