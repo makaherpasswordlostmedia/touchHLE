@@ -72,7 +72,7 @@ fn lstat(env: &mut Environment, path: ConstPtr<u8>, buf: MutVoidPtr) -> i32 {
 
 fn fstat(env: &mut Environment, fd: FileDescriptor, buf: MutVoidPtr) -> i32 {
     // TODO: error handling for unknown fd?
-    let file = env.libc_state.posix_io.file_for_fd(fd).unwrap();
+    let mut file = env.libc_state.posix_io.file_for_fd(fd).unwrap();
 
     log!("Warning: fstat() call, this function is mostly unimplemented");
     // FIXME: This implementation is highly incomplete. fstat() returns a huge
@@ -104,9 +104,15 @@ fn fstat(env: &mut Environment, fd: FileDescriptor, buf: MutVoidPtr) -> i32 {
     0 // success
 }
 
+fn statfs(_: &mut Environment, _: MutVoidPtr, _: MutVoidPtr) -> i32 {
+    log!("Warning: statfs() call, this is completely unimplemented, but should be enough for sqlite");
+    -1
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(mkdir(_, _)),
     export_c_func!(stat(_, _)),
     export_c_func!(lstat(_, _)),
-    export_c_func!(fstat(_, _))
+    export_c_func!(fstat(_, _)),
+    export_c_func!(statfs(_, _)),
 ];

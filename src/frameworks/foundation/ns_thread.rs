@@ -91,6 +91,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 // TODO: construction etc
 
++ (())setName:(id)_name {
+}
+
 @end
 
 };

@@ -18,5 +18,9 @@ pub const CONSTANTS: ConstantExports = &[
     ("_mach_task_self_", HostConstant::NullPtr),
     ("_kCATransitionPush", HostConstant::NullPtr),
     ("_kCATransitionFromLeft", HostConstant::NullPtr),
+    ("_kCATransitionFromTop", HostConstant::NullPtr),
+    ("_kCATransitionFade", HostConstant::NullPtr),
+    ("_kCATransitionFromRight", HostConstant::NullPtr),
+    ("_kCATransitionFromBottom", HostConstant::NullPtr),
     ("_kCAMediaTimingFunctionEaseInEaseOut", HostConstant::NullPtr)
 ];

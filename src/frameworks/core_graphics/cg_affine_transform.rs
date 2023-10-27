@@ -49,6 +49,36 @@ impl GuestArg for CGAffineTransform {
 }
 impl_GuestRet_for_large_struct!(CGAffineTransform);
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(C, packed)]
+struct CATransform3D {
+    m11: CGFloat,
+    m12: CGFloat,
+    m13: CGFloat,
+    m14: CGFloat,
+}
+unsafe impl SafeRead for CATransform3D {}
+impl GuestArg for CATransform3D {
+    const REG_COUNT: usize = 4;
+
+    fn from_regs(regs: &[u32]) -> Self {
+        CATransform3D {
+            m11: GuestArg::from_regs(&regs[0..1]),
+            m12: GuestArg::from_regs(&regs[1..2]),
+            m13: GuestArg::from_regs(&regs[2..3]),
+            m14: GuestArg::from_regs(&regs[3..4]),
+        }
+    }
+
+    fn to_regs(self, regs: &mut [u32]) {
+        self.m11.to_regs(&mut regs[0..1]);
+        self.m12.to_regs(&mut regs[1..2]);
+        self.m13.to_regs(&mut regs[2..3]);
+        self.m14.to_regs(&mut regs[3..4]);
+    }
+}
+impl_GuestRet_for_large_struct!(CATransform3D);
+
 // These conversions allow sharing code with the touchHLE Matrix type.
 impl TryFrom<Matrix<3>> for CGAffineTransform {
     type Error = ();
@@ -283,6 +313,12 @@ pub fn CGRectApplyAffineTransform(
     transform.apply_to_rect(rect)
 }
 
+fn CATransform3DRotate(
+    _env: &mut Environment, t: CATransform3D, angle: CGFloat, x: CGFloat, y: CGFloat, z: CGFloat
+) -> CATransform3D {
+    return CATransform3D { m11: 0.0, m12: 0.0, m13: 0.0, m14: 0.0 }
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGAffineTransformIsIdentity(_)),
     export_c_func!(CGAffineTransformEqualToTransform(_, _)),
@@ -298,4 +334,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGPointApplyAffineTransform(_, _)),
     export_c_func!(CGSizeApplyAffineTransform(_, _)),
     export_c_func!(CGRectApplyAffineTransform(_, _)),
+    export_c_func!(CATransform3DRotate(_, _, _, _, _)),
 ];

@@ -6,6 +6,7 @@ use crate::dyld::{export_c_func, FunctionExports};
 use crate::libc::stdio::printf::printf_inner;
 use crate::objc::id;
 use crate::Environment;
+use crate::mem::MutVoidPtr;
 
 fn NSLog(
     env: &mut Environment,
@@ -37,4 +38,11 @@ fn NSLog(
     );
 }
 
-pub const FUNCTIONS: FunctionExports = &[export_c_func!(NSLog(_, _))];
+fn NSSetUncaughtExceptionHandler(env: &mut Environment, handler: MutVoidPtr) {
+
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(NSLog(_, _)),
+    export_c_func!(NSSetUncaughtExceptionHandler(_))
+];

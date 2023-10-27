@@ -93,6 +93,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     });
 }
 
+- (())removeObserver:(id)observer {
+
+}
+
 - (())removeObserver:(id)observer
                 name:(NSNotificationName)name
               object:(id)object {

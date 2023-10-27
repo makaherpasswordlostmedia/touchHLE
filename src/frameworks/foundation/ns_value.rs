@@ -75,10 +75,29 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new)
 }
 
++ (id)numberWithInteger:(NSInteger)value {
+    // TODO: for greater efficiency we could return a static-lifetime value
+
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithInteger:value];
+    autorelease(env, new)
+}
+
++ (id)numberWithInt:(i32)value {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithInteger:value];
+    autorelease(env, new)
+}
+
 // TODO: types other than booleans and long longs
 
 - (id)initWithBool:(bool)value {
     *env.objc.borrow_mut(this) = NSNumberHostObject::Bool(value);
+    this
+}
+
+- (id)initWithInteger:(NSInteger)value {
+    *env.objc.borrow_mut(this) = NSNumberHostObject::Int(value);
     this
 }
 

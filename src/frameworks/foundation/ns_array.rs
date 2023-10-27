@@ -5,9 +5,12 @@
  */
 //! The `NSArray` class cluster, including `NSMutableArray`.
 
+use super::NSRange;
 use super::ns_property_list_serialization::deserialize_plist_from_file;
 use super::{ns_keyed_unarchiver, ns_string, ns_url, NSUInteger};
+use super::ns_enumerator::NSFastEnumerationState;
 use crate::fs::GuestPath;
+use crate::mem::MutPtr;
 use crate::objc::{
     autorelease, id, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
     NSZonePtr,
@@ -100,6 +103,49 @@ pub const CLASSES: ClassExports = objc_classes! {
     retain(env, this)
 }
 
+// NSFastEnumeration implementation
+- (NSUInteger)countByEnumeratingWithState:(MutPtr<NSFastEnumerationState>)state
+                                  objects:(MutPtr<id>)stackbuf
+                                    count:(NSUInteger)len {
+    // assert!(this == env.objc.get_known_class("NSArray", &mut env.mem));
+
+    let host_object = env.objc.borrow::<ArrayHostObject>(this);
+
+    if host_object.array.len() == 0 {
+        return 0;
+    }
+
+    let NSFastEnumerationState {
+        state: start_index,
+        ..
+    } = env.mem.read(state);
+
+    let mut array_iter = host_object.array.iter();
+    if start_index >= 1 {
+       _ = array_iter.nth((start_index-1).try_into().unwrap());
+    }
+
+    let mut batch_count = 0;
+    while batch_count < len {
+        if let Some(object) = array_iter.next() {
+            env.mem.write(stackbuf + batch_count, *object);
+            batch_count += 1;
+        } else {
+            break;
+        }
+    }
+    env.mem.write(state, NSFastEnumerationState {
+        state: start_index + batch_count,
+        items_ptr: stackbuf,
+        // can be anything as long as it's dereferenceable and the same
+        // each iteration
+        // Note: stackbuf can be different each time, it's better to return self pointer
+        mutations_ptr: this.cast(),
+        extra: Default::default(),
+    });
+    batch_count
+}
+
 @end
 
 // NSMutableArray is an abstract class. A subclass must provide everything
@@ -182,6 +228,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, enumerator)
 }
 
+- (id)subarrayWithRange:(NSRange)range {
+    let array_host_object: &mut ArrayHostObject = env.objc.borrow_mut(this);
+    let vec = &array_host_object.array;
+    let loc: usize = range.location.try_into().unwrap();
+    let len: usize = range.length.try_into().unwrap();
+    let x = vec[loc..(loc + len)].to_vec();
+    from_vec(env, x)
+}
+
 // TODO: more init methods, etc
 
 - (NSUInteger)count {
@@ -235,6 +290,11 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 
 // TODO: init methods etc
+
+- (id)initWithCapacity:(NSUInteger)numItems {
+    env.objc.borrow_mut::<ArrayHostObject>(this).array.reserve(numItems as usize);
+    this
+}
 
 - (NSUInteger)count {
     env.objc.borrow::<ArrayHostObject>(this).array.len().try_into().unwrap()

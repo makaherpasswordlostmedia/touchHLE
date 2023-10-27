@@ -8,8 +8,9 @@
 mod path_algorithms;
 
 use super::ns_array;
+use super::ns_character_set::CharacterSetHostObject;
 use super::{
-    NSComparisonResult, NSOrderedAscending, NSOrderedDescending, NSOrderedSame, NSUInteger,
+    NSComparisonResult, NSOrderedAscending, NSOrderedDescending, NSOrderedSame, NSUInteger, NSRange,
 };
 use crate::abi::VaList;
 use crate::frameworks::core_foundation::CFRange;
@@ -507,6 +508,44 @@ pub const CLASSES: ClassExports = objc_classes! {
     assert!(res);
 }
 
+- (id)componentsSeparatedByCharactersInSet:(id)set { // NSCharacterSet *
+    assert_ne!(set, nil);
+
+    // TODO: support foreign subclasses (perhaps via a helper function that
+    // copies the string first)
+    let mut main_iter = env.objc.borrow::<StringHostObject>(this)
+        .iter_code_units();
+    let s = &env.objc.borrow::<CharacterSetHostObject>(set).set;
+
+    let mut components = Vec::<Utf16String>::new();
+    let mut current_component: Utf16String = Vec::new();
+    loop {
+        match main_iter.next() {
+            Some(cur) => {
+                if s.contains(&cur) {
+                    components.push(std::mem::take(&mut current_component));
+                } else {
+                    current_component.push(cur)
+                }
+            },
+            None => break,
+        }
+    }
+    components.push(current_component);
+
+    // TODO: For a foreign subclass of NSString, do we have to return that
+    // subclass? The signature implies this isn't the case and it's probably not
+    // worth the effort, but it's an interesting question.
+    let class = env.objc.get_known_class("_touchHLE_NSString", &mut env.mem);
+
+    let component_ns_strings = components.drain(..).map(|utf16| {
+        let host_object = Box::new(StringHostObject::Utf16(utf16));
+        env.objc.alloc_object(class, host_object, &mut env.mem)
+    }).collect();
+    let array = ns_array::from_vec(env, component_ns_strings);
+    autorelease(env, array)
+}
+
 - (id)componentsSeparatedByString:(id)separator { // NSString*
     // TODO: support foreign subclasses (perhaps via a helper function that
     // copies the string first)
@@ -861,6 +900,24 @@ pub const CLASSES: ClassExports = objc_classes! {
     success
 }
 
+- (i32)intValue {
+    let str = to_rust_string(env, this);
+    let mut cutoff = str.len();
+    for (i, c) in str.char_indices() {
+        if !c.is_ascii_digit() {
+            cutoff = i;
+            break;
+        }
+    }
+    str[..cutoff].parse().unwrap_or(0)
+}
+
+- (bool)hasPrefix:(id)prefix {
+    let str = to_rust_string(env, this);
+    let prefix = to_rust_string(env, prefix);
+    str.starts_with(prefix.as_ref())
+}
+
 @end
 
 // Our private subclass that is the single implementation of NSString for the
@@ -948,6 +1005,25 @@ pub const CLASSES: ClassExports = objc_classes! {
     // TODO: avoid copy?
     let path = to_rust_string(env, this);
     path.starts_with('/')
+}
+
+@end
+
+@implementation NSMutableString: _touchHLE_NSString
+
++ (id)stringWithCapacity:(NSUInteger)_capacity {
+    msg_class![env; NSMutableString string]
+}
+
+- (NSUInteger)replaceOccurrencesOfString:(id)target // NSString *
+                              withString:(id)replacement // NSString *
+                                 options:(NSStringCompareOptions)options
+                                   range:(NSRange)searchRange {
+    let str = to_rust_string(env, this);
+    let t = to_rust_string(env, target);
+    let r = to_rust_string(env, replacement);
+    log!("{} {} {}", str, t, r);
+    0
 }
 
 @end

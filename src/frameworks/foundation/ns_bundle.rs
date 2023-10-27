@@ -188,6 +188,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     dict
 }
 
+- (id)objectForInfoDictionaryKey:(id)key { // NSString*
+    let dict = msg![env; this infoDictionary];
+    msg![env; dict objectForKey:key]
+}
+
+
 // TODO: constructors, more accessors
 
 @end

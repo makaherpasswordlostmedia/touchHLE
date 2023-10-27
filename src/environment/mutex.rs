@@ -135,10 +135,11 @@ impl Environment {
             match mutex.type_ {
                 MutexType::PTHREAD_MUTEX_NORMAL => {
                     // This case would be a deadlock, we may as well panic.
-                    panic!(
+                    log!(
                         "Attempted to lock non-error-checking mutex #{} for thread {}, already locked by same thread!",
                         mutex_id, current_thread,
                     );
+                    return Err(EPERM);
                 }
                 MutexType::PTHREAD_MUTEX_ERRORCHECK => {
                     log_dbg!("Attempted to lock error-checking mutex #{} for thread {}, already locked by same thread! Returning EDEADLK.", mutex_id, current_thread);
@@ -176,10 +177,11 @@ impl Environment {
             match mutex.type_ {
                 MutexType::PTHREAD_MUTEX_NORMAL => {
                     // This case is undefined, we may as well panic.
-                    panic!(
+                    log!(
                         "Attempted to unlock non-error-checking mutex #{} for thread {}, already unlocked!",
                         mutex_id, current_thread,
                     );
+                    return Err(EPERM);
                 }
                 MutexType::PTHREAD_MUTEX_ERRORCHECK | MutexType::PTHREAD_MUTEX_RECURSIVE => {
                     log_dbg!(

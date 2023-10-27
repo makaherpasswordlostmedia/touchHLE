@@ -250,16 +250,6 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; this objectForKey:key]
 }
 
-// FIXME: those are from NSUserDefaults!
-- (NSInteger)integerForKey:(id)defaultName {
-    let val: id = msg![env; this objectForKey:defaultName];
-    msg![env; val integerValue]
-}
-- (bool)boolForKey:(id)defaultName {
-    let val: id = msg![env; this objectForKey:defaultName];
-    msg![env; val boolValue]
-}
-
 @end
 
 @implementation _touchHLE_NSMutableDictionary: NSMutableDictionary
@@ -277,6 +267,17 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (NSUInteger)count {
     env.objc.borrow::<DictionaryHostObject>(this).count
 }
+- (id)objectForKey:(id)key {
+    let host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let res = host_obj.lookup(env, key);
+    *env.objc.borrow_mut(this) = host_obj;
+    res
+}
+- (id)valueForKey:(id)key {
+    let key_str = ns_string::to_rust_string(env, key);
+    assert!(!key_str.starts_with('@'));
+    msg![env; this objectForKey:key]
+}
 
 - (())setValue:(id)value
         forKey:(id)key { // NSString*
@@ -291,6 +292,44 @@ pub const CLASSES: ClassExports = objc_classes! {
     let keys: Vec<id> = dict_host_obj.iter_keys().collect();
     ns_array::from_vec(env, keys)
 }
+
+// FIXME: those are from NSUserDefaults!
+- (NSInteger)integerForKey:(id)defaultName {
+    let val: id = msg![env; this objectForKey:defaultName];
+    msg![env; val integerValue]
+}
+- (bool)boolForKey:(id)defaultName {
+    let val: id = msg![env; this objectForKey:defaultName];
+    msg![env; val boolValue]
+}
+- (id)dictionaryRepresentation {
+    this
+}
+- (id)dataForKey:(id)name {
+    msg![env; this objectForKey:name]
+}
+- (())registerDefaults:(id)dict {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(dict));
+    for (_, key_value) in host_obj.map {
+        let key = key_value[0].0;
+        let value = key_value[0].1;
+        let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+        host_obj.insert(env, key, value, false);
+        *env.objc.borrow_mut(this) = host_obj;
+    }
+}
+- (())synchronize {
+}
+- (())setObject:(id)value
+        forKey:(id)key { // NSString*
+    msg![env; this setValue:value forKey:key]
+}
+- (())setBool:(bool)value
+       forKey:(id)key { // NSString*
+    let num: id = msg_class![env; NSNumber numberWithBool:value];
+    msg![env; this setObject:num forKey:key]
+}
+
 
 @end
 
@@ -326,7 +365,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 /// with a more intuitive argument order. Unlike [super::ns_array::from_vec],
 /// this **does** copy and retain!
 pub fn dict_from_keys_and_objects(env: &mut Environment, keys_and_objects: &[(id, id)]) -> id {
-    let dict: id = msg_class![env; NSDictionary alloc];
+    let dict: id = msg_class![env; NSMutableDictionary alloc];
 
     let mut host_object = <DictionaryHostObject as Default>::default();
     for &(key, object) in keys_and_objects {

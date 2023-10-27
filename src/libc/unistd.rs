@@ -80,11 +80,10 @@ fn access(env: &mut Environment, path: ConstPtr<u8>, mode: i32) -> i32 {
 
 fn fsync(env: &mut Environment, fd: FileDescriptor) -> i32 {
     let file = env.libc_state.posix_io.file_for_fd(fd).unwrap();
-    match file.file {
-        File(_) => _ = file.file.flush(),
-        _ => {}
+    match file.file.sync_all() {
+        Ok(()) => 0,
+        Err(_) => -1 // TODO: set errno
     }
-    0
 }
 
 pub const FUNCTIONS: FunctionExports = &[

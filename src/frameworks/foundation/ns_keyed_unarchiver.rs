@@ -19,9 +19,11 @@ use crate::frameworks::uikit::ui_geometry::{
 use crate::objc::{
     autorelease, id, msg, nil, objc_classes, release, retain, ClassExports, HostObject, NSZonePtr,
 };
+use crate::msg_class;
 use crate::Environment;
 use plist::{Dictionary, Uid, Value};
 use std::io::Cursor;
+use crate::frameworks::foundation::ns_string;
 
 struct NSKeyedUnarchiverHostObject {
     plist: Dictionary,
@@ -44,6 +46,15 @@ pub const CLASSES: ClassExports = objc_classes! {
         already_unarchived: Vec::new(),
     });
     env.objc.alloc_object(this, unarchiver, &mut env.mem)
+}
+
++ (id)unarchiveObjectWithFile:(id)path { // NSString *
+    let file_manager: id = msg_class![env; NSFileManager defaultManager];
+    let file_exists: bool = msg![env; file_manager fileExistsAtPath:path];
+    if !file_exists {
+        return nil
+    }
+    todo!()
 }
 
 // TODO: real init methods. This is currently only initialized by the shortcut
@@ -101,6 +112,14 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (CGRect)decodeCGRectForKey:(id)key { // NSString*
     let string: id = msg![env; this decodeObjectForKey:key];
     CGRectFromString(env, string)
+}
+
+@end
+
+@implementation NSKeyedArchiver: NSCoder
+
++ (bool)archiveRootObject:(id)object toFile:(id)path {
+    false
 }
 
 @end

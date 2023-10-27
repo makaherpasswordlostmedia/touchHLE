@@ -64,6 +64,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     true
 }
 
++ (id)instanceMethodSignatureForSelector:(SEL)selector {
+    log!("instanceMethodSignatureForSelector: {}", selector.as_str(&env.mem));
+    //msg_class![env; NSObject new]
+    crate::objc::nil
+}
+
 - (id)init {
     this
 }
@@ -197,7 +203,6 @@ forUndefinedKey:(id)key { // NSString*
     let class = msg![env; this class];
     env.objc.class_has_method(class, selector)
 }
-
 
 @end
 
