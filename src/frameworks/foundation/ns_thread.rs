@@ -59,6 +59,9 @@ pub const CLASSES: ClassExports = objc_classes! {
     // need to support other methods.
     this
 }
++ (bool)isCancelled {
+    false
+}
 
 + (())detachNewThreadSelector:(SEL)selector
                        toTarget:(id)target

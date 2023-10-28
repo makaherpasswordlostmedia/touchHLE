@@ -19,7 +19,9 @@ use super::{
 };
 use crate::mach_o::MachO;
 use crate::mem::{guest_size_of, ConstPtr, ConstVoidPtr, GuestUSize, Mem, Ptr, SafeRead};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use crate::environment::Environment;
+use crate::objc::protocols::{collect_protocols_from_bin, protocol_list_t, protocol_t};
 
 /// Generic pointer to an Objective-C class or metaclass.
 ///
@@ -39,6 +41,7 @@ pub(super) struct ClassHostObject {
     pub(super) is_metaclass: bool,
     pub(super) superclass: Class,
     pub(super) methods: HashMap<SEL, IMP>,
+    pub(super) protocols: HashSet<ConstPtr<protocol_t>>,
     pub(super) ivars: HashMap<SEL, ConstPtr<GuestUSize>>,
     /// Offset into the allocated memory for the object where the ivars of
     /// instances of this class or metaclass (respectively: normal objects or
@@ -95,7 +98,7 @@ struct class_rw_t {
     _reserved: u32,
     name: ConstPtr<u8>,
     base_methods: ConstPtr<method_list_t>,
-    _base_protocols: ConstVoidPtr, // protocol list (TODO)
+    base_protocols: ConstPtr<protocol_list_t>, // protocol list
     ivars: ConstPtr<ivar_list_t>,
     _weak_ivar_layout: u32,
     _base_properties: ConstVoidPtr, // property list (TODO)
@@ -348,6 +351,7 @@ impl ClassHostObject {
                     (objc.selectors[name], IMP::Host(host_imp))
                 }),
             ),
+            protocols: HashSet::new(),
             // maybe this should be 0 for NSObject? does it matter?
             _instance_start: size,
             instance_size: size,
@@ -364,6 +368,7 @@ impl ClassHostObject {
             instance_size,
             name,
             base_methods,
+            base_protocols,
             ivars,
             ..
         } = mem.read(data);
@@ -378,10 +383,14 @@ impl ClassHostObject {
             _instance_start: instance_start,
             instance_size,
             ivars: HashMap::new(),
+            protocols: HashSet::new(),
         };
 
         if !base_methods.is_null() {
             host_object.add_methods_from_bin(base_methods, mem, objc);
+        }
+        if !base_protocols.is_null() {
+            host_object.protocols.extend(collect_protocols_from_bin(base_protocols, &mem));
         }
 
         if !ivars.is_null() {
@@ -651,6 +660,7 @@ impl ObjC {
                         methods: Default::default(),
                         _instance_start: Default::default(),
                         instance_size: Default::default(),
+                        protocols: Default::default(),
                         ivars: Default::default(),
                     },
                 );
@@ -709,4 +719,9 @@ impl ObjC {
             panic!();
         }
     }
+}
+
+pub fn class_conformsToProtocol(env: &mut Environment, cls: Class, proto: id) -> bool {
+    let host_object: &ClassHostObject = env.objc.borrow(cls);
+    host_object.protocols.contains(&proto.cast_const().cast())
 }

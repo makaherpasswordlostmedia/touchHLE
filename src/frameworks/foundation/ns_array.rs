@@ -12,7 +12,7 @@ use super::ns_enumerator::NSFastEnumerationState;
 use crate::fs::GuestPath;
 use crate::mem::MutPtr;
 use crate::objc::{
-    autorelease, id, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
+    autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
     NSZonePtr,
 };
 use crate::Environment;
@@ -314,6 +314,28 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (())removeObjectAtIndex:(NSUInteger)index {
     let object = env.objc.borrow_mut::<ArrayHostObject>(this).array.remove(index as usize);
     release(env, object)
+}
+
+- (())removeObject:(id)needle {
+    let mut objects = std::mem::take(&mut env.objc.borrow_mut::<ArrayHostObject>(this).array);
+    retain(env, needle);
+    objects.retain(|&obj| {
+        if obj == needle || msg![env; needle isEqual: obj] {
+            release(env, obj);
+            false
+        } else {
+            true
+        }
+    });
+    release(env, needle);
+    env.objc.borrow_mut::<ArrayHostObject>(this).array = objects;
+}
+
+-(())removeAllObjects {
+    let objects = std::mem::take(&mut env.objc.borrow_mut::<ArrayHostObject>(this).array);
+    for object in objects {
+        release(env, object);
+    }
 }
 
 @end

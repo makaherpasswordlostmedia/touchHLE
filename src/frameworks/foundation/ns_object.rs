@@ -19,7 +19,7 @@ use super::NSUInteger;
 use crate::mem::MutVoidPtr;
 use crate::objc::{
     id, msg, msg_class, msg_send, objc_classes, Class, ClassExports, NSZonePtr, ObjC,
-    TrivialHostObject, SEL,
+    TrivialHostObject, SEL, class_conformsToProtocol
 };
 
 pub const CLASSES: ClassExports = objc_classes! {
@@ -202,6 +202,20 @@ forUndefinedKey:(id)key { // NSString*
 - (bool)respondsToSelector:(SEL)selector {
     let class = msg![env; this class];
     env.objc.class_has_method(class, selector)
+}
+
+- (bool)conformsToProtocol:(id)protocol {
+    let class = msg![env; this class];
+    class_conformsToProtocol(env, class, protocol)
+}
+
+- (id)performSelector:(SEL)sel {
+    msg_send(env, (this, sel))
+}
+
+- (())performSelectorOnMainThread:(SEL)sel withObject:(id)arg waitUntilDone:(bool)wait {
+    // FIXME: main thread...
+    () = msg_send(env, (this, sel, arg));
 }
 
 @end
