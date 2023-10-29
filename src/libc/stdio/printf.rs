@@ -17,7 +17,7 @@ use std::collections::HashSet;
 use std::io::Write;
 
 const INTEGER_SPECIFIERS: [u8; 6] = [b'd', b'i', b'o', b'u', b'x', b'X'];
-const FLOAT_SPECIFIERS: [u8; 1] = [b'f'];
+const FLOAT_SPECIFIERS: [u8; 2] = [b'f', b'g'];
 
 /// String formatting implementation for `printf` and `NSLog` function families.
 ///
@@ -86,7 +86,8 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
 
         if precision.is_some() {
             assert!(
-                INTEGER_SPECIFIERS.contains(&specifier) || FLOAT_SPECIFIERS.contains(&specifier)
+                INTEGER_SPECIFIERS.contains(&specifier) || FLOAT_SPECIFIERS.contains(&specifier),
+                "{}", specifier as char
             )
         }
 
@@ -149,7 +150,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                     res.extend_from_slice(int_with_precision.as_bytes());
                 }
             }
-            b'f' => {
+            b'f' | b'g' => {
                 let float: f64 = args.next(env);
                 let precision_value = precision.unwrap_or(6);
                 if pad_width > 0 {

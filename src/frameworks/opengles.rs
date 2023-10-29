@@ -34,7 +34,10 @@ fn sync_context<'a>(
     window: &mut crate::window::Window,
     current_thread: crate::ThreadId,
 ) -> &'a mut dyn crate::gles::GLES {
-    let current_ctx = state.current_ctx_for_thread(current_thread);
+    let mut current_ctx = state.current_ctx_for_thread(current_thread);
+    if current_ctx.is_none() {
+        current_ctx = state.current_ctx_for_thread(0);
+    }
     let host_obj = objc.borrow_mut::<eagl::EAGLContextHostObject>(current_ctx.unwrap());
     let gles_ctx = host_obj.gles_ctx.as_deref_mut().unwrap();
 

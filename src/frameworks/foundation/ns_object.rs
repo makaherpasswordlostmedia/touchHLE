@@ -198,6 +198,10 @@ forUndefinedKey:(id)key { // NSString*
     env.objc.class_has_method(class, selector)
 }
 
+- (())performSelectorOnMainThread:(SEL)sel withObject:(id)arg waitUntilDone:(bool)wait {
+    // FIXME: main thread...
+    () = msg_send(env, (this, sel, arg));
+}
 
 @end
 

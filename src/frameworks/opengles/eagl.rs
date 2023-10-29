@@ -234,6 +234,7 @@ pub const CLASSES: ClassExports = objc_classes! {
         unsafe {
             present_renderbuffer(gles, env.window.as_mut().unwrap());
         }
+        crate::frameworks::uikit::handle_events(env);
     } else {
         if fullscreen_layer != nil {
             // If there's a single layer that covers the screen, and this isn't

@@ -12,7 +12,7 @@ use crate::libc::pthread::thread::{
     pthread_attr_init, pthread_attr_setdetachstate, pthread_attr_t, pthread_create, pthread_t,
     PTHREAD_CREATE_DETACHED,
 };
-use crate::mem::{guest_size_of, MutPtr};
+use crate::mem::{guest_size_of, ConstPtr, MutPtr};
 use crate::objc::{
     id, msg_send, nil, objc_classes, release, retain, Class, ClassExports, HostObject, NSZonePtr,
     SEL,
@@ -57,6 +57,9 @@ pub const CLASSES: ClassExports = objc_classes! {
     // need to support other methods.
     this
 }
++ (bool)isCancelled {
+    false
+}
 
 + (())detachNewThreadSelector:(SEL)selector
                        toTarget:(id)target
@@ -90,6 +93,25 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 // TODO: construction etc
+
+- (id)initWithTarget:(id)target selector:(SEL)selector object:(id)object {
+    let host_object: &mut NSThreadHostObject = env.objc.borrow_mut(this);
+    host_object.target = target;
+    host_object.selector = Some(selector);
+    host_object.object = object;
+    this
+}
+
+- (())start {
+    let symb = "__ns_thread_invocation";
+    let gf = env
+        .dyld
+        .create_private_proc_address(&mut env.mem, &mut env.cpu, symb)
+        .unwrap_or_else(|_| panic!("create_private_proc_address failed {}", symb));
+
+    let thread_ptr: MutPtr<pthread_t> = env.mem.alloc(guest_size_of::<pthread_t>()).cast();
+    pthread_create(env, thread_ptr, ConstPtr::null(), gf, this.cast());
+}
 
 @end
 

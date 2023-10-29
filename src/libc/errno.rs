@@ -10,6 +10,7 @@ use crate::export_c_func;
 use crate::mem::{ConstPtr, MutPtr};
 use crate::Environment;
 use std::io::{Read, Write};
+use sdl2::libc::FILE;
 
 pub const EPERM: i32 = 1;
 pub const EDEADLK: i32 = 11;
@@ -70,9 +71,14 @@ fn __assert_rtn(env: &mut Environment, s1: ConstPtr<u8>, s2: ConstPtr<u8>, i: i3
     todo!()
 }
 
+fn ferror(env: &mut Environment, file_ptr: MutPtr<FILE>) -> i32 {
+    0
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(__error()),
     export_c_func!(perror(_)),
     export_c_func!(strerror(_)),
-    export_c_func!(__assert_rtn(_, _, _, _))
+    export_c_func!(__assert_rtn(_, _, _, _)),
+    export_c_func!(ferror(_))
 ];

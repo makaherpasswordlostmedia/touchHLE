@@ -129,6 +129,12 @@ fn pthread_mutex_lock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> 
     env.lock_mutex(mutex_data.mutex_id).err().unwrap_or(0)
 }
 
+fn pthread_mutex_trylock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
+    let mutex_data = env.mem.read(mutex);
+    check_or_register_mutex(env, mutex);
+    env.lock_mutex(mutex_data.mutex_id).err().unwrap_or(0)
+}
+
 fn pthread_mutex_unlock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
     let mutex_data = env.mem.read(mutex);
     check_or_register_mutex(env, mutex);
@@ -154,6 +160,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_mutexattr_destroy(_)),
     export_c_func!(pthread_mutex_init(_, _)),
     export_c_func!(pthread_mutex_lock(_)),
+    export_c_func!(pthread_mutex_trylock(_)),
     export_c_func!(pthread_mutex_unlock(_)),
     export_c_func!(pthread_mutex_destroy(_)),
 ];
