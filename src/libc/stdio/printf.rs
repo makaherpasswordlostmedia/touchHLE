@@ -94,6 +94,10 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
             specifier = get_format_char(&env.mem, format_char_idx);
             format_char_idx += 1;
         }
+        if specifier == b'l' {
+            specifier = get_format_char(&env.mem, format_char_idx);
+            format_char_idx += 1;
+        }
 
         match specifier {
             b'c' => {

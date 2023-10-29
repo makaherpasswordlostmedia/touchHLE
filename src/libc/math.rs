@@ -238,6 +238,10 @@ fn OSSpinLockUnlock(env: &mut Environment, lock: MutPtr<OSSpinLock>) {
     env.mem.write(lock, 0);
 }
 
+fn OSMemoryBarrier(env: &mut Environment) {
+
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     // Trigonometric functions
     export_c_func!(sin(_)),
@@ -308,4 +312,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(OSAtomicAdd32(_, _)),
     export_c_func!(OSSpinLockLock(_)),
     export_c_func!(OSSpinLockUnlock(_)),
+    export_c_func!(OSMemoryBarrier()),
 ];

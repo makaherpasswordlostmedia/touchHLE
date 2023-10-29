@@ -176,10 +176,11 @@ impl Environment {
             match mutex.type_ {
                 MutexType::PTHREAD_MUTEX_NORMAL => {
                     // This case is undefined, we may as well panic.
-                    panic!(
+                    log!(
                         "Attempted to unlock non-error-checking mutex #{} for thread {}, already unlocked!",
                         mutex_id, current_thread,
                     );
+                    return Err(EPERM);
                 }
                 MutexType::PTHREAD_MUTEX_ERRORCHECK | MutexType::PTHREAD_MUTEX_RECURSIVE => {
                     log_dbg!(
