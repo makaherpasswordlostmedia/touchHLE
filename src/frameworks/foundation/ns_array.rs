@@ -7,11 +7,13 @@
 
 use super::ns_property_list_serialization::deserialize_plist_from_file;
 use super::{ns_keyed_unarchiver, ns_string, ns_url, NSUInteger};
+use super::ns_enumerator::NSFastEnumerationState;
 use crate::fs::GuestPath;
 use crate::objc::{
-    autorelease, id, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
-    NSZonePtr,
+    autorelease, id, msg, msg_class, msg_send, nil, objc_classes, release, retain, ClassExports, HostObject,
+    NSZonePtr, SEL,
 };
+use crate::mem::MutPtr;
 use crate::Environment;
 
 struct ObjectEnumeratorHostObject {
@@ -98,6 +100,49 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)copyWithZone:(NSZonePtr)_zone {
     // TODO: override this once we have NSMutableArray!
     retain(env, this)
+}
+
+// NSFastEnumeration implementation
+- (NSUInteger)countByEnumeratingWithState:(MutPtr<NSFastEnumerationState>)state
+                                  objects:(MutPtr<id>)stackbuf
+                                    count:(NSUInteger)len {
+    // assert!(this == env.objc.get_known_class("NSArray", &mut env.mem));
+
+    let host_object = env.objc.borrow::<ArrayHostObject>(this);
+
+    if host_object.array.len() == 0 {
+        return 0;
+    }
+
+    let NSFastEnumerationState {
+        state: start_index,
+        ..
+    } = env.mem.read(state);
+
+    let mut array_iter = host_object.array.iter();
+    if start_index >= 1 {
+       _ = array_iter.nth((start_index-1).try_into().unwrap());
+    }
+
+    let mut batch_count = 0;
+    while batch_count < len {
+        if let Some(object) = array_iter.next() {
+            env.mem.write(stackbuf + batch_count, *object);
+            batch_count += 1;
+        } else {
+            break;
+        }
+    }
+    env.mem.write(state, NSFastEnumerationState {
+        state: start_index + batch_count,
+        items_ptr: stackbuf,
+        // can be anything as long as it's dereferenceable and the same
+        // each iteration
+        // Note: stackbuf can be different each time, it's better to return self pointer
+        mutations_ptr: this.cast(),
+        extra: Default::default(),
+    });
+    batch_count
 }
 
 @end
@@ -233,6 +278,9 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.dealloc_object(this, &mut env.mem)
 }
 
+- (id)initWithCapacity:(NSUInteger)_capacity {
+    this
+}
 
 // TODO: init methods etc
 
@@ -244,6 +292,14 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.borrow::<ArrayHostObject>(this).array[index as usize]
 }
 
+- (())makeObjectsPerformSelector:(SEL)sel {
+    let mut objects = std::mem::take(&mut env.objc.borrow_mut::<ArrayHostObject>(this).array);
+    for object in &objects {
+        () = msg_send(env, (*object, sel));
+    }
+    env.objc.borrow_mut::<ArrayHostObject>(this).array = objects;
+}
+
 // TODO: more mutation methods
 
 - (())addObject:(id)object {
@@ -253,6 +309,47 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 - (())removeObjectAtIndex:(NSUInteger)index {
     let object = env.objc.borrow_mut::<ArrayHostObject>(this).array.remove(index as usize);
+    release(env, object)
+}
+
+- (())removeObject:(id)needle {
+    let mut objects = std::mem::take(&mut env.objc.borrow_mut::<ArrayHostObject>(this).array);
+    retain(env, needle);
+    objects.retain(|&obj| {
+        if obj == needle || msg![env; needle isEqual: obj] {
+            release(env, obj);
+            false
+        } else {
+            true
+        }
+    });
+    release(env, needle);
+    env.objc.borrow_mut::<ArrayHostObject>(this).array = objects;
+}
+
+- (())insertObject:(id)obj
+           atIndex:(NSUInteger)index {
+    let obj = retain(env, obj);
+    env.objc.borrow_mut::<ArrayHostObject>(this).array.insert(index as usize, obj);
+}
+
+- (())replaceObjectAtIndex:(NSUInteger)index
+                withObject:(id)obj {
+    let obj = retain(env, obj);
+    let old = env.objc.borrow_mut::<ArrayHostObject>(this).array[index as usize];
+    env.objc.borrow_mut::<ArrayHostObject>(this).array[index as usize] = obj;
+    release(env, old);
+}
+
+-(())removeAllObjects {
+    let objects = std::mem::take(&mut env.objc.borrow_mut::<ArrayHostObject>(this).array);
+    for object in objects {
+        release(env, object);
+    }
+}
+
+-(())removeLastObject {
+    let object = env.objc.borrow_mut::<ArrayHostObject>(this).array.pop().unwrap();
     release(env, object)
 }
 

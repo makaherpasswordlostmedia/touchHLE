@@ -266,6 +266,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 }
 
+- (())setAdjustsImageWhenHighlighted:(bool)_adj {
+    // TODO
+}
+
 @end
 
 };

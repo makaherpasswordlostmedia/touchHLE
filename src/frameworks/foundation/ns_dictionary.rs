@@ -251,6 +251,22 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 // FIXME: those are from NSUserDefaults!
+- (())setObject:(id)anObject
+         forKey:(id)key { // NSString*
+    assert!(!anObject.is_null());
+    assert!(anObject != nil);
+    assert!(!key.is_null());
+    assert!(key != nil);
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert(env, key, anObject, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+- (())setInteger:(NSInteger)value forKey:(id)defaultName {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let value_id: id = msg_class![env; NSNumber numberWithInteger:value];
+    host_obj.insert(env, defaultName, value_id, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
 - (NSInteger)integerForKey:(id)defaultName {
     let val: id = msg![env; this objectForKey:defaultName];
     msg![env; val integerValue]
@@ -258,6 +274,11 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (bool)boolForKey:(id)defaultName {
     let val: id = msg![env; this objectForKey:defaultName];
     msg![env; val boolValue]
+}
+- (id)stringForKey:(id)defaultName {
+    msg![env; this objectForKey:defaultName]
+}
+- (())synchronize {
 }
 
 @end

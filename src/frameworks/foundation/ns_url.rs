@@ -6,7 +6,7 @@
 //! `NSURL`.
 
 use super::ns_string::{to_rust_string, NSUTF8StringEncoding};
-use super::NSUInteger;
+use super::{NSUInteger, NSTimeInterval};
 use crate::fs::GuestPath;
 use crate::mem::MutPtr;
 use crate::objc::{
@@ -138,6 +138,25 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 // TODO: more constructors, more accessors
 
+@end
+
+@implementation NSURLRequest: NSObject
++ (id)requestWithURL:(id)URL // NSURL *
+                   cachePolicy:(NSUInteger)cachePolicy
+               timeoutInterval:(NSTimeInterval)timeoutInterval {
+    nil
+}
+@end
+
+@implementation NSURLConnection: NSObject
++ (id)sendSynchronousRequest:(id)request
+           returningResponse:(MutPtr<id>)response
+                       error:(MutPtr<id>)error {
+    nil
+}
+- (id)initWithRequest:(id)req delegate:(id)deleg {
+    nil
+}
 @end
 
 };

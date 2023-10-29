@@ -180,6 +180,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (())setMultipleTouchEnabled:(bool)_enabled {
     // TODO: enable multitouch
 }
+- (())setExclusiveTouch:(bool)_enabled {
+    // TODO
+}
+
 
 - (())layoutSubviews {
     // On iOS 5.1 and earlier, the default implementation of this method does nothing.

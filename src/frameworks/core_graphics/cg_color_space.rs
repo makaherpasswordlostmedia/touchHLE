@@ -11,6 +11,8 @@ use crate::frameworks::core_foundation::{CFRelease, CFRetain, CFTypeRef};
 use crate::frameworks::foundation::ns_string;
 use crate::objc::{msg, objc_classes, ClassExports, HostObject};
 use crate::Environment;
+use crate::frameworks::core_graphics::cg_image::CGImageRef;
+use crate::mem::GuestISize;
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -88,6 +90,15 @@ pub fn CGColorSpaceRetain(env: &mut Environment, cs: CGColorSpaceRef) -> CGColor
     }
 }
 
+pub fn CGColorSpaceGetModel(_env: &mut Environment) -> i32 {
+    // kCGColorSpaceModelRGB
+    1
+}
+
+pub fn CGImageGetBitsPerPixel(_env: &mut Environment, _image: CGImageRef) -> GuestISize {
+    4 * 8
+}
+
 pub const kCGColorSpaceGenericRGB: &str = "kCGColorSpaceGenericRGB";
 pub const kCGColorSpaceGenericGray: &str = "kCGColorSpaceGenericGray";
 
@@ -108,4 +119,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGColorSpaceCreateDeviceGray()),
     export_c_func!(CGColorSpaceRetain(_)),
     export_c_func!(CGColorSpaceRelease(_)),
+    export_c_func!(CGColorSpaceGetModel()),
+    export_c_func!(CGImageGetBitsPerPixel(_)),
 ];

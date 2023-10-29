@@ -5,7 +5,8 @@
  */
 //! `UIScrollView`.
 
-use crate::frameworks::core_graphics::{CGPoint, CGRect, CGSize};
+use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect, CGSize};
+use crate::frameworks::uikit::ui_view::NSInteger;
 use crate::objc::{
     id, impl_HostObject_with_superclass, msg, objc_classes, ClassExports, NSZonePtr,
 };
@@ -114,6 +115,35 @@ pub const CLASSES: ClassExports = objc_classes! {
         () = msg![env; this setNeedsDisplay];
     }
 }
+
+@end
+
+@implementation UITableView: UIScrollView
+
+- (id)initWithFrame:(CGRect)frame style:(NSInteger)_style {
+    // TODO: proper init
+    msg![env; this init]
+}
+
+- (())setRowHeight:(CGFloat)_height {
+    // TODO
+}
+
+- (())setDelegate:(id)_delegate {
+    // TODO
+}
+
+- (())setDataSource:(id)_source {
+    // TODO
+}
+
+- (())setShowsVerticalScrollIndicator:(bool)_show {
+    // TODO
+}
+- (())setShowsHorizontalScrollIndicator:(bool)_show {
+    // TODO
+}
+
 
 @end
 

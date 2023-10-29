@@ -26,3 +26,6 @@ tests/TestApp_source/build
 local.properties
 android/app/src/main/jniLibs
 android/app/build
+touchHLE_dylibs/libsqlite3.0.8.6.dylib
+touchHLE_dylibs/libxml2.2.dylib
+touchHLE_dylibs/libz.1.2.3.dylib
