@@ -9,10 +9,9 @@ mod path_algorithms;
 
 use super::ns_array;
 use super::{
-    NSComparisonResult, NSOrderedAscending, NSOrderedDescending, NSOrderedSame, NSUInteger,
+    NSComparisonResult, NSOrderedAscending, NSOrderedDescending, NSOrderedSame, NSUInteger, NSRange,
 };
 use crate::abi::VaList;
-use crate::frameworks::core_foundation::CFRange;
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect, CGSize};
 use crate::frameworks::uikit::ui_font::{
     self, UILineBreakMode, UILineBreakModeWordWrap, UITextAlignment, UITextAlignmentLeft,
@@ -331,15 +330,18 @@ pub const CLASSES: ClassExports = objc_classes! {
     utf16[index as usize]
 }
 
-// TODO: define and use NSRange
-- (CFRange)rangeOfString:(id)searchString options:(NSStringCompareOptions)options { // NSString *
+- (NSRange)rangeOfString:(id)searchString {
+    msg![env; this rangeOfString:searchString options:0u32]
+}
+
+- (NSRange)rangeOfString:(id)searchString options:(NSStringCompareOptions)options { // NSString *
     // TODO: search options
     log_dbg!("options {}", options);
     let len: NSUInteger = msg![env; this length];
     let len_search: NSUInteger = msg![env; searchString length];
     if len_search == 0 {
         // TODO: define NSNotFound
-        return CFRange { location: 0x7fffffff, length: 0 };
+        return NSRange { location: 0x7fffffff, length: 0 };
     }
     for i in 0..len {
         let mut match_found = true;
@@ -356,11 +358,23 @@ pub const CLASSES: ClassExports = objc_classes! {
             }
         }
         if match_found {
-            return CFRange { location: i.try_into().unwrap(), length: len_search.try_into().unwrap() }
+            return NSRange { location: i.try_into().unwrap(), length: len_search.try_into().unwrap() }
         }
     }
     // TODO: define NSNotFound
-    CFRange { location: 0x7fffffff, length: 0 }
+    NSRange { location: 0x7fffffff, length: 0 }
+}
+
+- (id)lowercaseString {
+    let rs = to_rust_string(env, this);
+    let nss = from_rust_string(env, rs.to_lowercase());
+    autorelease(env, nss)
+}
+
+- (id)uppercaseString {
+    let rs = to_rust_string(env, this);
+    let nss = from_rust_string(env, rs.to_uppercase());
+    autorelease(env, nss)
 }
 
 - (id)description {

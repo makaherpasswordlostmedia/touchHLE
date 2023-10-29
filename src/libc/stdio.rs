@@ -34,6 +34,9 @@ unsafe impl SafeRead for FILE {}
 type fpos_t = off_t;
 
 fn fopen(env: &mut Environment, filename: ConstPtr<u8>, mode: ConstPtr<u8>) -> MutPtr<FILE> {
+    if filename.is_null() {
+        return Ptr::null();
+    }
     // all valid modes are UTF-8
     let flags = match env.mem.cstr_at_utf8(mode).unwrap() {
         "r" | "rb" => O_RDONLY,
@@ -205,6 +208,10 @@ fn fseek(env: &mut Environment, file_ptr: MutPtr<FILE>, offset: i32, whence: i32
     }
 }
 
+fn rewind(env: &mut Environment, file_ptr: MutPtr<FILE>) {
+    fseek(env, file_ptr, 0, SEEK_SET);
+}
+
 fn ftell(env: &mut Environment, file_ptr: MutPtr<FILE>) -> i32 {
     let FILE { fd } = env.mem.read(file_ptr);
 
@@ -340,6 +347,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fflush(_)),
     export_c_func!(fwrite(_, _, _, _)),
     export_c_func!(fseek(_, _, _)),
+    export_c_func!(rewind(_)),
     export_c_func!(ftell(_)),
     export_c_func!(fsetpos(_, _)),
     export_c_func!(fgetpos(_, _)),

@@ -5,6 +5,8 @@
  */
 //! `NSDate`.
 
+use std::time;
+
 use super::NSTimeInterval;
 use crate::frameworks::core_foundation::time::apple_epoch;
 use crate::objc::{autorelease, id, objc_classes, ClassExports, HostObject};
@@ -50,6 +52,12 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 - (NSTimeInterval)timeIntervalSinceReferenceDate {
     env.objc.borrow::<NSDateHostObject>(this).instant
+}
+
+- (NSTimeInterval)timeIntervalSince1970 {
+    let host_object = env.objc.borrow::<NSDateHostObject>(this);
+    let result = host_object.instant + 978_307_200.0;
+    result
 }
 
 @end

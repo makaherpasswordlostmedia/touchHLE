@@ -476,6 +476,22 @@ impl Fs {
             .with_child(
                 "libstdc++.6.0.4.dylib",
                 FsNode::resource_file(format!("{}/libstdc++.6.0.4.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.1.2.3.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.1.1.3.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.1.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
+            )
+            .with_child(
+                "libz.dylib",
+                FsNode::resource_file(format!("{}/libz.1.2.3.dylib", DYLIBS_DIR)),
             );
 
         let root = FsNode::dir()

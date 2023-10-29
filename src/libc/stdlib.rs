@@ -148,6 +148,30 @@ fn strtof(env: &mut Environment, nptr: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>)
     strtod(env, nptr, endptr) as f32
 }
 
+fn strtol(env: &mut Environment, str: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>, base: i32) -> i32 {
+    assert_eq!(base, 16);
+    assert!(endptr.is_null());
+
+    let (start, _) = skip_whitespace(env, str);
+    let mut len = 0;
+    let maybe_sign = env.mem.read(start + len);
+    if maybe_sign == b'+' || maybe_sign == b'-' || maybe_sign.is_ascii_digit() {
+        len += 1;
+    }
+    while env.mem.read(start + len).is_ascii_digit() {
+        len += 1;
+    }
+
+    let s = std::str::from_utf8(env.mem.bytes_at(start, len)).unwrap();
+    log!("strtol {}", s);
+
+    if s == "0" {
+        return 0;
+    }
+
+    todo!()
+}
+
 fn prng(state: u32) -> u32 {
     // The state must not be zero for this algorithm to work. This also makes
     // the default seed be 1, which matches the C standard.
@@ -281,6 +305,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(atof(_)),
     export_c_func!(strtod(_, _)),
     export_c_func!(strtof(_, _)),
+    export_c_func!(strtol(_, _, _)),
     export_c_func!(srand(_)),
     export_c_func!(rand()),
     export_c_func!(srandom(_)),
