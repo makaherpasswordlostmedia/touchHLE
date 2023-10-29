@@ -162,6 +162,20 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                 } else {
                     write!(&mut res, "{:.1$}", float, precision_value).unwrap();
                 }
+                if specifier == b'g' {
+                    while let Some(&c) = res.last() {
+                        if c == b'0' {
+                            res.pop();
+                        } else {
+                            break;
+                        }
+                    }
+                    if let Some(&c) = res.last() {
+                        if c == b'.' {
+                            res.pop();
+                        }
+                    }
+                }
             }
             b'@' if NS_LOG => {
                 let object: id = args.next(env);
