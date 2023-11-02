@@ -48,6 +48,34 @@ pub const CONSTANTS: ConstantExports = &[
         "_MPMoviePlayerContentPreloadDidFinishNotification",
         HostConstant::NSString(MPMoviePlayerContentPreloadDidFinishNotification),
     ),
+    (
+        "_UIKeyboardWillShowNotification",
+        HostConstant::NSString("UIKeyboardWillShowNotification"),
+    ),
+    (
+        "_UIKeyboardDidShowNotification",
+        HostConstant::NSString("UIKeyboardDidShowNotification"),
+    ),
+    (
+        "_UIKeyboardBoundsUserInfoKey",
+        HostConstant::NSString("UIKeyboardBoundsUserInfoKey"),
+    ),
+    (
+        "_UIKeyboardDidHideNotification",
+        HostConstant::NSString("UIKeyboardDidHideNotification"),
+    ),
+    (
+        "_UIKeyboardWillHideNotification",
+        HostConstant::NSString("UIKeyboardWillHideNotification"),
+    ),
+    (
+        "_UIDeviceOrientationDidChangeNotification",
+        HostConstant::NSString("UIDeviceOrientationDidChangeNotification"),
+    ),
+    (
+        "_kCFPreferencesCurrentApplication",
+        HostConstant::NSString("CFPreferencesCurrentApplication"),
+    ),
 ];
 
 pub const CLASSES: ClassExports = objc_classes! {

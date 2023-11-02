@@ -30,6 +30,9 @@ pub const CLASSES: ClassExports = objc_classes! {
     // TODO: implement this once views are actually rendered
 }
 
+- (())setClearButtonMode:(NSInteger)mode {
+
+}
 - (())setClearsOnBeginEditing:(bool)_clear {
     // TODO
 }
