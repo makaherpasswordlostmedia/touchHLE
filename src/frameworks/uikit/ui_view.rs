@@ -461,6 +461,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; this_layer convertPoint:point toLayer:other_layer]
 }
 
+- (())setAutoresizingMask:(NSUInteger)mask {
+    log!("WARNING: Ignoring setAutoresizingMask: for an UIView");
+}
+- (())setAutoresizesSubviews:(bool)_b {
+    log!("WARNING: Ignoring setAutoresizesSubviews: for an UIView");
+}
+
 @end
 
 };
