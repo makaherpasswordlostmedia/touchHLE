@@ -98,6 +98,26 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 // TODO: construction etc
 
+- (id)initWithTarget:(id)target selector:(SEL)selector object:(id)object {
+    let host_object: &mut NSThreadHostObject = env.objc.borrow_mut(this);
+    host_object.target = target;
+    host_object.selector = Some(selector);
+    host_object.object = object;
+    this
+}
+
+- (())start {
+    let symb = "__ns_thread_invocation";
+    let gf = env
+        .dyld
+        .create_private_proc_address(&mut env.mem, &mut env.cpu, symb)
+        .unwrap_or_else(|_| panic!("create_private_proc_address failed {}", symb));
+
+    let thread_ptr: MutPtr<pthread_t> = env.mem.alloc(guest_size_of::<pthread_t>()).cast();
+    pthread_create(env, thread_ptr, crate::mem::ConstPtr::null(), gf, this.cast());
+    //env.objc.borrow_mut::<NSThreadHostObject>(this).thread = Some(env.mem.read(thread_ptr));
+}
+
 @end
 
 };
