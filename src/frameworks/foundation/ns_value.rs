@@ -6,10 +6,8 @@
 //! The `NSValue` class cluster, including `NSNumber`.
 
 use super::NSUInteger;
-use crate::objc::{
-    autorelease, id, msg, msg_class, objc_classes, retain, Class, ClassExports, HostObject,
-    NSZonePtr,
-};
+use crate::mem::ConstVoidPtr;
+use crate::objc::{autorelease, id, msg, msg_class, objc_classes, retain, Class, ClassExports, HostObject, NSZonePtr, nil};
 
 enum NSNumberHostObject {
     Bool(bool),
@@ -27,6 +25,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 // NSValue is an abstract class. None of the things it should provide are
 // implemented here yet (TODO).
 @implementation NSValue: NSObject
+
++ (id)valueWithPointer:(ConstVoidPtr)ptr {
+    nil
+}
 
 // NSCopying implementation
 - (id)copyWithZone:(NSZonePtr)_zone {

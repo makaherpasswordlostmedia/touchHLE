@@ -226,6 +226,12 @@ fn OSAtomicAdd32Barrier(
     new
 }
 
+fn OSAtomicCompareAndSwap32(
+    env: &mut Environment, old_value: i32, new_value: i32, the_value: MutPtr<i32>
+) -> bool {
+    OSAtomicCompareAndSwap32Barrier(env, old_value, new_value, the_value)
+}
+
 fn OSAtomicCompareAndSwap32Barrier(
     env: &mut Environment, old_value: i32, new_value: i32, the_value: MutPtr<i32>
 ) -> bool {
@@ -242,6 +248,7 @@ fn OSMemoryBarrier(env: &mut Environment) {
 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(OSAtomicCompareAndSwap32Barrier(_, _, _)),
+    export_c_func!(OSAtomicCompareAndSwap32(_, _, _)),
     export_c_func!(OSMemoryBarrier()),
     export_c_func!(OSAtomicAdd32Barrier(_, _)),
     // Trigonometric functions

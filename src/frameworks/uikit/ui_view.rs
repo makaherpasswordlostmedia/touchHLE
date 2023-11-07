@@ -20,9 +20,10 @@ use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContext
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::foundation::ns_string::get_static_str;
 use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger};
+use crate::mem::MutVoidPtr;
 use crate::objc::{
     autorelease, id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject,
-    NSZonePtr,
+    NSZonePtr, SEL,
 };
 use crate::Environment;
 
@@ -94,6 +95,20 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (Class)layerClass {
     env.objc.get_known_class("CALayer", &mut env.mem)
+}
+
++ (())beginAnimations:(id)animId
+              context:(MutVoidPtr)context {
+    log!("WARNING: Ignoring beginAnimations:context:");
+}
++ (())setAnimationDelegate:(id)delegate {
+    log!("WARNING: Ignoring setAnimationDelegate:");
+}
++ (())setAnimationDidStopSelector:(SEL)selector {
+    log!("WARNING: Ignoring setAnimationDidStopSelector:");
+}
++ (())commitAnimations {
+    log!("WARNING: Ignoring commitAnimations");
 }
 
 // TODO: accessors etc

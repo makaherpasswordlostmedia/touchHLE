@@ -78,6 +78,10 @@ fn pthread_mutexattr_destroy(env: &mut Environment, attr: MutPtr<pthread_mutexat
     0 // success
 }
 
+fn pthread_mutexattr_setpshared(env: &mut Environment, attr: MutPtr<pthread_mutexattr_t>, pshared: MutPtr<i32>) -> i32 {
+    0
+}
+
 fn pthread_mutex_init(
     env: &mut Environment,
     mutex: MutPtr<pthread_mutex_t>,
@@ -151,6 +155,7 @@ fn pthread_mutex_destroy(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) 
 }
 
 pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(pthread_mutexattr_setpshared(_, _)),
     export_c_func!(pthread_mutexattr_init(_)),
     export_c_func!(pthread_mutexattr_settype(_, _)),
     export_c_func!(pthread_mutexattr_destroy(_)),

@@ -53,6 +53,12 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (())endGeneratingDeviceOrientationNotifications {
     log!("TODO: endGeneratingDeviceOrientationNotifications");
 }
+- (id)name {
+    ns_string::get_static_str(env, "iPhone")
+}
+- (id)systemName {
+    ns_string::get_static_str(env, "iOS")
+}
 - (id)model {
     // TODO: Hardcoded to iPhone for now
     ns_string::get_static_str(env, "iPhone")

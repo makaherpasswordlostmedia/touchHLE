@@ -47,6 +47,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.alloc_object(this, unarchiver, &mut env.mem)
 }
 
++ (id)unarchiveObjectWithData:(id)data { // NSData *
+    // let unarchiver = msg![env; this alloc];
+    //
+    // init_for_reading_with_data(env, unarchiver, &data);
+    nil
+}
+
 // TODO: real init methods. This is currently only initialized by the shortcut
 // function below.
 

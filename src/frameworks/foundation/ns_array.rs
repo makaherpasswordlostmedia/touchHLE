@@ -8,6 +8,7 @@
 use super::ns_property_list_serialization::deserialize_plist_from_file;
 use super::{ns_keyed_unarchiver, ns_string, ns_url, NSUInteger};
 use crate::fs::GuestPath;
+use crate::mem::MutPtr;
 use crate::objc::{
     autorelease, id, msg, msg_class, nil, objc_classes, release, retain, ClassExports, HostObject,
     NSZonePtr,
@@ -20,6 +21,7 @@ struct ObjectEnumeratorHostObject {
 impl HostObject for ObjectEnumeratorHostObject {}
 
 /// Belongs to _touchHLE_NSArray
+#[derive(Default)]
 struct ArrayHostObject {
     array: Vec<id>,
 }
@@ -122,6 +124,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     // to have the normal behaviour. Unimplemented: call superclass alloc then.
     assert!(this == env.objc.get_known_class("NSMutableArray", &mut env.mem));
     msg_class![env; _touchHLE_NSMutableArray allocWithZone:zone]
+}
+
++ (id)array {
+    assert!(this == env.objc.get_known_class("NSMutableArray", &mut env.mem));
+    let null: NSZonePtr = MutPtr::null();
+    msg_class![env; _touchHLE_NSMutableArray allocWithZone:null]
 }
 
 // NSCopying implementation
@@ -238,6 +246,16 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.dealloc_object(this, &mut env.mem)
 }
 
+- (id)objectEnumerator { // NSEnumerator*
+    let array_host_object: &mut ArrayHostObject = env.objc.borrow_mut(this);
+    let vec = array_host_object.array.to_vec();
+    let host_object = Box::new(ObjectEnumeratorHostObject {
+        iterator: vec.into_iter(),
+    });
+    let class = env.objc.get_known_class("_touchHLE_NSArray_ObjectEnumerator", &mut env.mem);
+    let enumerator = env.objc.alloc_object(class, host_object, &mut env.mem);
+    autorelease(env, enumerator)
+}
 
 // TODO: init methods etc
 
@@ -252,6 +270,20 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)objectAtIndex:(NSUInteger)index {
     // TODO: throw real exception rather than panic if out-of-bounds?
     env.objc.borrow::<ArrayHostObject>(this).array[index as usize]
+}
+
+- (bool)containsObject:(id)object {
+    let enumer = msg![env; this objectEnumerator];
+    loop {
+        let next = msg![env; enumer nextObject];
+        if next == nil {
+            break;
+        }
+        if msg![env; next isEqual:object] {
+            return true;
+        }
+    }
+    false
 }
 
 // TODO: more mutation methods
