@@ -333,6 +333,16 @@ pub const CLASSES: ClassExports = objc_classes! {
     utf16[index as usize]
 }
 
+- (())getCharacters:(MutPtr<u16>)buffer
+              range:(NSRange)range {
+    let mut buffer = buffer;
+    for i in range.location..(range.location + range.length) {
+        let c = msg![env; this characterAtIndex:i];
+        env.mem.write(buffer, c);
+        buffer += 1;
+    }
+}
+
 - (NSRange)rangeOfString:(id)search_string
                  options:(NSStringCompareOptions)options { // NSString *
     // TODO: search options
@@ -533,6 +543,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     // TODO: other encodings
     assert!(encoding == NSUTF8StringEncoding || encoding == NSASCIIStringEncoding);
     // FIXME: validate ASCII
+    msg![env; this UTF8String]
+}
+
+- (ConstPtr<u8>)cString {
     msg![env; this UTF8String]
 }
 
@@ -935,6 +949,30 @@ pub const CLASSES: ClassExports = objc_classes! {
     // TODO: avoid copy?
     let path = to_rust_string(env, this);
     path.starts_with('/') || path.starts_with('~')
+}
+
+// FIXME: this should be a NSMutableString method
+-(())setString:(id)aString { // NSString*
+    let str = to_rust_string(env, aString);
+    let host_object = StringHostObject::Utf8(str);
+    *env.objc.borrow_mut(this) = host_object;
+}
+
+@end
+
+@implementation NSMutableString: _touchHLE_NSString
+
++ (id)stringWithCapacity:(NSUInteger)cap {
+    let new_str: id = msg![env; this alloc];
+    msg![env; new_str init]
+}
+
+- (())appendFormat:(id)format, // NSString*
+                     ...args {
+    let res = with_format(env, format, args.start());
+    let res = from_rust_string(env, res);
+    let new_str: id = msg![env; this stringByAppendingString:res];
+    msg![env; this setString:new_str]
 }
 
 @end
