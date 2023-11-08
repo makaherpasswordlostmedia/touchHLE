@@ -53,6 +53,7 @@ pub const CLASSES: ClassExports = objc_classes! {
     let second = greg_date.seconds;
 
     format = format.replace("yyyy", format!("{:04}", year).as_str());
+    format = format.replace("YYYY", format!("{:04}", year).as_str());
     format = format.replace("MM", format!("{:02}", month).as_str());
     format = format.replace("dd", format!("{}", day).as_str());
     format = format.replace("HH", format!("{}", hour).as_str());
@@ -61,7 +62,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 
     for c in format.chars() {
         match c {
-            'A'..='Z' | 'a'..='z' => unimplemented!("date string contains unsubstituted format patterns"),
+            'A'..='Z' | 'a'..='z' => unimplemented!("date string contains unsubstituted format patterns {:?}", format),
             _ => {}
         }
     }

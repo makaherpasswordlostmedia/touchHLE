@@ -674,6 +674,14 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, result_ns_string)
 }
 
+- (id)stringByAppendingFormat:(id)format, // NSString*
+                               ...args {
+    let res = with_format(env, format, args.start());
+    let res = from_rust_string(env, res);
+    let res = autorelease(env, res);
+    msg![env; this stringByAppendingString:res]
+}
+
 - (id)stringByAppendingString:(id)other { // NSString*
     assert!(other != nil); // TODO: raise exception
 
@@ -860,6 +868,18 @@ pub const CLASSES: ClassExports = objc_classes! {
         todo!(); // TODO: create an NSError if requested
     }
     success
+}
+
+- (i32)intValue {
+    let str = to_rust_string(env, this);
+    let mut cutoff = str.len();
+    for (i, c) in str.char_indices() {
+        if !c.is_ascii_digit() {
+            cutoff = i;
+            break;
+        }
+    }
+    str[..cutoff].parse().unwrap_or(0)
 }
 
 @end

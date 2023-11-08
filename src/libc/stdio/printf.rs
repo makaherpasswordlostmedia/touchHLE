@@ -11,7 +11,7 @@ use crate::frameworks::foundation::{ns_string, unichar};
 use crate::libc::posix_io::{STDERR_FILENO, STDOUT_FILENO};
 use crate::libc::stdio::FILE;
 use crate::mem::{ConstPtr, GuestUSize, Mem, MutPtr, MutVoidPtr};
-use crate::objc::{id, msg};
+use crate::objc::{id, msg, nil};
 use crate::Environment;
 use std::collections::HashSet;
 use std::io::Write;
@@ -183,8 +183,14 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
                 let description: id = msg![env; object description];
                 // TODO: avoid copy
                 // TODO: what if the description isn't valid UTF-16?
-                let description = ns_string::to_rust_string(env, description);
-                write!(&mut res, "{}", description).unwrap();
+                if description != nil {
+                    // TODO: avoid copy
+                    // TODO: what if the description isn't valid UTF-16?
+                    let description = ns_string::to_rust_string(env, description);
+                    write!(&mut res, "{}", description).unwrap();
+                } else {
+                    write!(&mut res, "(nil)").unwrap();
+                }
             }
             b'x' => {
                 // Note: on 32-bit system unsigned int and unsigned long
@@ -365,6 +371,29 @@ fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: 
                 while let c @ b'0'..=b'9' = env.mem.read(src_ptr) {
                     val = val * 10 + (c - b'0') as i32;
                     src_ptr += 1;
+                }
+                let c_int_ptr: ConstPtr<i32> = args.next(env);
+                env.mem.write(c_int_ptr.cast_mut(), val);
+            }
+            b'x' => {
+                let mut val: i32 = 0;
+                loop {
+                    let next = env.mem.read(src_ptr);
+                    match next {
+                        c @ b'0'..=b'9' => {
+                            val = val * 16 + (c - b'0') as i32;
+                            src_ptr += 1;
+                        },
+                        c @ b'a'..=b'f' => {
+                            val = val * 16 + (c - b'a' + 10) as i32;
+                            src_ptr += 1;
+                        },
+                        c @ b'A'..=b'F' => {
+                            val = val * 16 + (c - b'A' + 10) as i32;
+                            src_ptr += 1;
+                        },
+                        _ => break
+                    }
                 }
                 let c_int_ptr: ConstPtr<i32> = args.next(env);
                 env.mem.write(c_int_ptr.cast_mut(), val);

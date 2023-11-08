@@ -622,7 +622,7 @@ impl GLES for GLES1OnGL2 {
         gl21::EnableClientState(array);
     }
     unsafe fn DisableClientState(&mut self, array: GLenum) {
-        assert!(ARRAYS.iter().any(|&ArrayInfo { name, .. }| name == array));
+        //assert!(ARRAYS.iter().any(|&ArrayInfo { name, .. }| name == array));
         gl21::DisableClientState(array);
     }
     unsafe fn GetBooleanv(&mut self, pname: GLenum, params: *mut GLboolean) {

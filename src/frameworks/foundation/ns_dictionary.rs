@@ -7,7 +7,7 @@
 
 use super::ns_enumerator::NSFastEnumerationState;
 use super::ns_property_list_serialization::deserialize_plist_from_file;
-use super::{ns_string, ns_url, NSUInteger};
+use super::{ns_array, ns_string, ns_url, NSUInteger};
 use crate::abi::VaList;
 use crate::fs::GuestPath;
 use crate::mem::MutPtr;
@@ -231,6 +231,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     let res = host_obj.lookup(env, key);
     *env.objc.borrow_mut(this) = host_obj;
     res
+}
+
+- (id)allKeys {
+    let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let keys: Vec<id> = dict_host_obj.iter_keys().collect();
+    ns_array::from_vec(env, keys)
 }
 
 @end
