@@ -8,8 +8,10 @@
 use super::NSTimeInterval;
 use crate::frameworks::core_foundation::time::apple_epoch;
 use crate::objc::{autorelease, id, objc_classes, ClassExports, HostObject};
+use crate::objc::nil;
 
 use std::time::SystemTime;
+use crate::frameworks::foundation::ns_string;
 
 struct NSDateHostObject {
     instant: NSTimeInterval,
@@ -50,6 +52,39 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 - (NSTimeInterval)timeIntervalSinceReferenceDate {
     env.objc.borrow::<NSDateHostObject>(this).instant
+}
+
+- (id)addTimeInterval:(NSTimeInterval)seconds {
+    let host_object = env.objc.borrow::<NSDateHostObject>(this);
+    let new_host_object = Box::new(NSDateHostObject {
+        instant: host_object.instant + seconds
+    });
+    let isa = env
+        .objc
+        .get_known_class("NSDate", &mut env.mem);
+    let new = env.objc.alloc_object(isa, new_host_object, &mut env.mem);
+    autorelease(env, new)
+}
+
+@end
+
+@implementation NSTimeZone: NSObject
+
++ (id)localTimeZone {
+    nil
+}
+
++ (id)timeZoneWithName:(id)_name { // NSString*
+    nil
+}
+
+@end
+
+@implementation NSScanner: NSObject
+
++ (id)scannerWithString:(id)str { // NSString*
+    log!("scannerWithString: {}", ns_string::to_rust_string(env, str));
+    nil
 }
 
 @end

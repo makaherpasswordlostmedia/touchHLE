@@ -6,7 +6,7 @@
 //! The `NSArray` class cluster, including `NSMutableArray`.
 
 use super::ns_property_list_serialization::deserialize_plist_from_file;
-use super::{ns_keyed_unarchiver, ns_string, ns_url, NSUInteger};
+use super::{ns_keyed_unarchiver, ns_string, ns_url, NSNotFound, NSUInteger};
 use crate::fs::GuestPath;
 use crate::mem::MutPtr;
 use crate::objc::{
@@ -271,6 +271,22 @@ pub const CLASSES: ClassExports = objc_classes! {
     false
 }
 
+- (NSUInteger)indexOfObject:(id)object {
+    let enumer = msg![env; this objectEnumerator];
+    let mut idx: NSUInteger = 0;
+    loop {
+        let next = msg![env; enumer nextObject];
+        if next == nil {
+            break;
+        }
+        if msg![env; next isEqual:object] {
+            return idx;
+        }
+        idx += 1;
+    }
+    NSNotFound.try_into().unwrap()
+}
+
 // TODO: more mutation methods
 
 - (())addObject:(id)object {
@@ -286,6 +302,17 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (())removeLastObject {
     let object = env.objc.borrow_mut::<ArrayHostObject>(this).array.pop().unwrap();
     release(env, object)
+}
+
+- (id)componentsJoinedByString:(id)sep { // NSString *
+    let array_host_object: &mut ArrayHostObject = env.objc.borrow_mut(this);
+    let arr = array_host_object.array.to_vec();
+    for obj in arr {
+        let desc = msg![env; obj description];
+        log!("desc {}", ns_string::to_rust_string(env, desc));
+        todo!()
+    }
+    ns_string::get_static_str(env, "")
 }
 
 @end
