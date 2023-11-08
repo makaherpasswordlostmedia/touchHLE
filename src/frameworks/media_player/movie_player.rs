@@ -120,6 +120,17 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 @end
 
+@implementation MPMusicPlayerController: NSObject
+
++ (id)iPodMusicPlayer {
+    crate::objc::nil
+}
+
+@end
+
+@implementation SKProduct: NSObject
+@end
+
 };
 
 /// For use by `NSRunLoop` via [super::handle_players]: check movie players'

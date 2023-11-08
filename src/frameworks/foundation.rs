@@ -11,6 +11,7 @@
 //! Being aware of this concept will make common types like `NSArray` and
 //! `NSString` easier to understand.
 
+pub(crate) mod fake_cftimer_target;
 pub mod ns_array;
 pub mod ns_autorelease_pool;
 pub mod ns_bundle;

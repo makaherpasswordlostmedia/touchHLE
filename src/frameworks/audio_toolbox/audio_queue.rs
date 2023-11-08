@@ -531,7 +531,11 @@ fn prime_audio_queue(
     let state = State::get(&mut env.framework_state);
 
     let context_manager = context_manager.unwrap_or_else(|| state.make_al_context_current());
-    let host_object = state.audio_queues.get_mut(&in_aq).unwrap();
+    let maybe_host_object = state.audio_queues.get_mut(&in_aq);
+    if maybe_host_object.is_none() {
+        return context_manager;
+    }
+    let host_object = maybe_host_object.unwrap();
 
     if !is_supported_audio_format(&host_object.format) {
         return context_manager;
@@ -756,10 +760,14 @@ pub fn AudioQueueStart(
 
     let _context_manager = prime_audio_queue(env, in_aq, None);
 
-    let host_object = State::get(&mut env.framework_state)
+    let maybe_host_object = State::get(&mut env.framework_state)
         .audio_queues
-        .get_mut(&in_aq)
-        .unwrap();
+        .get_mut(&in_aq);
+    if maybe_host_object.is_none() {
+        return -1;
+    }
+
+    let host_object = maybe_host_object.unwrap();
 
     host_object.is_running = AudioQueueIsRunning::Running;
 
