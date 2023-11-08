@@ -367,11 +367,18 @@ fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: 
 
         match specifier {
             b'd' => {
+                let mut sign: i32 = 1;
+                let sign_c = env.mem.read(src_ptr);
+                if sign_c == b'-' {
+                    sign = -1;
+                    src_ptr += 1;
+                }
                 let mut val: i32 = 0;
                 while let c @ b'0'..=b'9' = env.mem.read(src_ptr) {
                     val = val * 10 + (c - b'0') as i32;
                     src_ptr += 1;
                 }
+                val *= sign;
                 let c_int_ptr: ConstPtr<i32> = args.next(env);
                 env.mem.write(c_int_ptr.cast_mut(), val);
             }
@@ -397,6 +404,32 @@ fn sscanf(env: &mut Environment, src: ConstPtr<u8>, format: ConstPtr<u8>, args: 
                 }
                 let c_int_ptr: ConstPtr<i32> = args.next(env);
                 env.mem.write(c_int_ptr.cast_mut(), val);
+            }
+            b'f' => {
+                let mut sign: f32 = 1.0;
+                let sign_c = env.mem.read(src_ptr);
+                if sign_c == b'-' {
+                    sign = -1.0;
+                    src_ptr += 1;
+                }
+                let mut val: f32 = 0.0;
+                while let c @ b'0'..=b'9' = env.mem.read(src_ptr) {
+                    val = val * 10.0 + (c - b'0') as f32;
+                    src_ptr += 1;
+                }
+                let det = env.mem.read(src_ptr);
+                assert_eq!(det, b'.');
+                src_ptr += 1;
+                let mut decim: f32 = 0.0;
+                let mut denom: f32 = 1.0;
+                while let c @ b'0'..=b'9' = env.mem.read(src_ptr) {
+                    decim = decim * 10.0 + (c - b'0') as f32;
+                    denom = denom * 10.0;
+                    src_ptr += 1;
+                }
+                let res = (val + decim / denom) * sign;
+                let c_float_ptr: ConstPtr<f32> = args.next(env);
+                env.mem.write(c_float_ptr.cast_mut(), res);
             }
             b'h' => {
                 // signed short* or unsigned short*
