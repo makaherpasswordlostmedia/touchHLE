@@ -60,7 +60,7 @@ pub mod gles1_native;
 pub mod gles1_on_gl2;
 mod gles_generic;
 pub mod present;
-mod util;
+pub mod util;
 
 use touchHLE_gl_bindings::gl21compat as gl21compat_raw;
 pub use touchHLE_gl_bindings::gles11 as gles11_raw;

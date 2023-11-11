@@ -312,9 +312,8 @@ const MATERIAL_PARAMS: ParamTable = ParamTable(&[
 
 /// Table of `glTexEnv` parameters for the `GL_TEXTURE_ENV` target shared by
 /// OpenGL ES 1.1 and OpenGL 2.1.
-const TEX_ENV_PARAMS: ParamTable = ParamTable(&[
+pub const TEX_ENV_PARAMS: ParamTable = ParamTable(&[
     (gl21::TEXTURE_ENV_MODE, ParamType::Int, 1),
-    (gl21::COORD_REPLACE, ParamType::Int, 1),
     (gl21::COMBINE_RGB, ParamType::Int, 1),
     (gl21::COMBINE_ALPHA, ParamType::Int, 1),
     (gl21::SRC0_RGB, ParamType::Int, 1),
@@ -333,6 +332,24 @@ const TEX_ENV_PARAMS: ParamTable = ParamTable(&[
     (gl21::RGB_SCALE, ParamType::Float, 1),
     (gl21::ALPHA_SCALE, ParamType::Float, 1),
 ]);
+
+pub const TEX_ENV_INT_PARAMS_DEFAULTS: &[(GLenum, GLenum)] = &[
+    (gl21::TEXTURE_ENV_MODE, gl21::MODULATE),
+    (gl21::COMBINE_RGB, gl21::MODULATE),
+    (gl21::COMBINE_ALPHA, gl21::MODULATE),
+    (gl21::SRC0_RGB, gl21::TEXTURE),
+    (gl21::SRC1_RGB, gl21::PREVIOUS),
+    (gl21::SRC2_RGB, gl21::CONSTANT),
+    (gl21::SRC0_ALPHA, gl21::TEXTURE),
+    (gl21::SRC1_ALPHA, gl21::PREVIOUS),
+    (gl21::SRC2_ALPHA, gl21::CONSTANT),
+    (gl21::OPERAND0_RGB, gl21::SRC_COLOR),
+    (gl21::OPERAND1_RGB, gl21::SRC_COLOR),
+    (gl21::OPERAND2_RGB, gl21::SRC_ALPHA),
+    (gl21::OPERAND0_ALPHA, gl21::SRC_ALPHA),
+    (gl21::OPERAND1_ALPHA, gl21::SRC_ALPHA),
+    (gl21::OPERAND2_ALPHA, gl21::SRC_ALPHA),
+];
 
 /// Table of `glTexParameter` parameters.
 const TEX_PARAMS: ParamTable = ParamTable(&[
@@ -643,6 +660,12 @@ impl GLES for GLES1OnGL2 {
         // TODO: type conversion
         assert!(type_ == ParamType::Int);
         gl21::GetIntegerv(pname, params);
+    }
+    unsafe fn GetTexEnvfv(&mut self, target: GLenum, pname: GLenum, params: *mut GLfloat) {
+        let (type_, _count) = TEX_ENV_PARAMS.get_type_info(pname);
+        assert!(type_ == ParamType::Float);
+        assert_eq!(target, gl21::TEXTURE_ENV);
+        gl21::GetTexEnvfv(target, pname, params);
     }
     unsafe fn GetTexEnviv(&mut self, target: GLenum, pname: GLenum, params: *mut GLint) {
         let (type_, _count) = TEX_ENV_PARAMS.get_type_info(pname);
