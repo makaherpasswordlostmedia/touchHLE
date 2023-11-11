@@ -9,6 +9,7 @@ use super::{NSInteger, NSUInteger};
 use crate::mem::ConstVoidPtr;
 use crate::objc::{autorelease, id, msg, msg_class, objc_classes, retain, Class, ClassExports, HostObject, NSZonePtr, nil};
 
+#[derive(Debug)]
 enum NSNumberHostObject {
     Bool(bool),
     UnsignedLongLong(u64),
@@ -148,6 +149,14 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 // TODO: accessors etc
+
+- (i32)intValue {
+    match env.objc.borrow(this) {
+        &NSNumberHostObject::Int(value) => value,
+        &NSNumberHostObject::LongLong(value) => value.try_into().unwrap(),
+        _x => unimplemented!("{:?}", _x)
+    }
+}
 
 @end
 

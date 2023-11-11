@@ -589,6 +589,21 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, res)
 }
 
+- (id)dataUsingEncoding:(NSStringEncoding)encoding {
+    msg![env; this dataUsingEncoding:encoding allowLossyConversion:false]
+}
+
+- (id)dataUsingEncoding:(NSStringEncoding)encoding
+   allowLossyConversion:(bool)_lossy {
+    assert!(encoding == NSUTF8StringEncoding || encoding == NSASCIIStringEncoding);
+    let string = to_rust_string(env, this);
+    let size = string.len() as NSUInteger;
+    let alloc = env.mem.alloc(size);
+    let slice = env.mem.bytes_at_mut(alloc.cast(), size);
+    slice.copy_from_slice(string.as_bytes());
+    msg_class![env; NSData dataWithBytesNoCopy:alloc length:size]
+}
+
 - (id)stringByTrimmingCharactersInSet:(id)set { // NSCharacterSet*
     let initial_length: NSUInteger = msg![env; this length];
 
@@ -680,6 +695,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     let res = from_rust_string(env, res);
     let res = autorelease(env, res);
     msg![env; this stringByAppendingString:res]
+}
+
+- (id)stringByAddingPercentEscapesUsingEncoding:(NSStringEncoding)encoding {
+    this
 }
 
 - (id)stringByAppendingString:(id)other { // NSString*
@@ -880,6 +899,26 @@ pub const CLASSES: ClassExports = objc_classes! {
         }
     }
     str[..cutoff].parse().unwrap_or(0)
+}
+
+- (f32)floatValue {
+    let str = to_rust_string(env, this);
+    let mut cutoff = str.len();
+    for (i, c) in str.char_indices() {
+        if !c.is_ascii_digit() && c != '.' && c != '+' && c != '-' {
+            cutoff = i;
+            break;
+        }
+    }
+    str[..cutoff].parse().unwrap_or(0.0)
+}
+
+- (bool)boolValue {
+    let str = to_rust_string(env, this).to_string();
+    match str.as_str() {
+        "F" => false,
+        _x => unimplemented!("{}", _x)
+    }
 }
 
 @end
