@@ -13,7 +13,7 @@ use crate::dyld::{export_c_func, ConstantExports, FunctionExports, HostConstant}
 use crate::frameworks::core_foundation::cf_allocator::CFAllocatorRef;
 use crate::frameworks::core_foundation::time::{CFAbsoluteTime, CFTimeInterval};
 use crate::frameworks::core_foundation::CFIndex;
-use crate::mem::MutVoidPtr;
+use crate::mem::{MutPtr, MutVoidPtr};
 use crate::objc::{id, msg, msg_class, nil, Class};
 use crate::Environment;
 
@@ -49,10 +49,13 @@ fn CFRunLoopTimerCreate(
 ) -> CFRunLoopTimerRef {
     assert_eq!(flags, 0);
     assert_eq!(order, 0);
-    // assert!(context.is_null());
+
+    let ptr: MutPtr<CFIndex> = context.cast();
+    assert_eq!(env.mem.read(ptr), 0);
+    let info: MutVoidPtr = env.mem.read((ptr+1).cast());
 
     let fake_target: id = msg_class![env; FakeCFTimerTarget alloc];
-    let fake_target: id = msg![env; fake_target initWithCallout:callout context:context];
+    let fake_target: id = msg![env; fake_target initWithCallout:callout info:info];
 
     let selector = env.objc.lookup_selector("timerFireMethod:").unwrap();
 

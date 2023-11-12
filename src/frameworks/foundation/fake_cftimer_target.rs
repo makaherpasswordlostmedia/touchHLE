@@ -4,7 +4,7 @@ use crate::objc::{id, objc_classes, ClassExports, HostObject, NSZonePtr};
 
 struct FakeCFTimerTargetHostObject {
     callout: GuestFunction,
-    context: MutVoidPtr,
+    info: MutVoidPtr,
 }
 impl HostObject for FakeCFTimerTargetHostObject {}
 
@@ -17,24 +17,24 @@ pub const CLASSES: ClassExports = objc_classes! {
 + (id)allocWithZone:(NSZonePtr)_zone {
     let host_object = Box::new(FakeCFTimerTargetHostObject {
         callout: GuestFunction::from_addr_with_thumb_bit(0),
-        context: MutVoidPtr::null()
+        info: MutVoidPtr::null()
     });
     env.objc.alloc_object(this, host_object, &mut env.mem)
 }
 
-- (id)initWithCallout:(GuestFunction)callout context:(MutVoidPtr)context {
+- (id)initWithCallout:(GuestFunction)callout info:(MutVoidPtr)info {
     let host_object: &mut FakeCFTimerTargetHostObject = env.objc.borrow_mut(this);
     host_object.callout = callout;
-    host_object.context = context;
+    host_object.info = info;
     this
 }
 
 - (())timerFireMethod:(id)timer { // NSTimer *
     let &FakeCFTimerTargetHostObject {
         callout,
-        context
+        info
     } = env.objc.borrow(this);
-    () = callout.call_from_host(env, (timer, context));
+    () = callout.call_from_host(env, (timer, info));
 }
 
 @end
