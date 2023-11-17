@@ -150,7 +150,13 @@ fn glGetString(env: &mut Environment, name: GLenum) -> ConstPtr<GLubyte> {
             name,
         );
         log_dbg!("glGetString({}) => {:?}", name, s);
-        mem.alloc_and_write_cstr(s.to_bytes()).cast_const()
+        if name == gles11::EXTENSIONS {
+            // extracted from iPhone 3GS
+            let s = b"GL_APPLE_framebuffer_multisample GL_APPLE_texture_2D_limited_npot GL_APPLE_texture_max_level GL_EXT_blend_minmax GL_EXT_discard_framebuffer GL_EXT_read_format_bgra GL_EXT_texture_filter_anisotropic GL_EXT_texture_lod_bias GL_IMG_read_format GL_IMG_texture_compression_pvrtc GL_IMG_texture_format_BGRA8888 GL_OES_blend_equation_separate GL_OES_blend_func_separate GL_OES_blend_subtract GL_OES_compressed_paletted_texture GL_OES_depth24 GL_OES_draw_texture GL_OES_fbo_render_mipmap GL_OES_framebuffer_object GL_OES_mapbuffer GL_OES_matrix_palette GL_OES_packed_depth_stencil GL_OES_point_size_array GL_OES_point_sprite GL_OES_read_format GL_OES_rgb8_rgba8 GL_OES_stencil8 GL_OES_stencil_wrap GL_OES_texture_mirrored_repeat GL_OES_vertex_array_object ";
+            mem.alloc_and_write_cstr(s).cast_const()
+        } else {
+            mem.alloc_and_write_cstr(s.to_bytes()).cast_const()
+        }
     })
 }
 
