@@ -101,6 +101,25 @@ fn atof(env: &mut Environment, s: ConstPtr<u8>) -> f64 {
     atof_inner(env, s).map_or(0.0, |tuple| tuple.0)
 }
 
+/*
+fn strtof(env: &mut Environment, nptr: ConstPtr<u8>, endptr: MutPtr<ConstPtr<u8>>) -> f32 {
+    let (number, length) = atof_inner(env, nptr).unwrap_or((0.0, 0));
+    if !endptr.is_null() {
+        env.mem.write(endptr, nptr + length);
+    }
+    number as f32
+}
+ */
+
+// unsigned long long
+//      strtoull(const char *restrict str, char **restrict endptr, int base);
+fn strtoull(env: &mut Environment, str: ConstPtr<u8>, endptr: MutPtr<ConstPtr<u8>>, base: i32) -> i64 {
+    log!("strtoull '{}'", env.mem.cstr_at_utf8(str).unwrap());
+    assert_eq!(base, 0);
+    assert!(endptr.is_null());
+    atol(env, str).try_into().unwrap()
+}
+
 fn prng(state: u32) -> u32 {
     // The state must not be zero for this algorithm to work. This also makes
     // the default seed be 1, which matches the C standard.
@@ -250,6 +269,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(exit(_)),
     export_c_func!(bsearch(_, _, _, _, _)),
     export_c_func!(strtof(_, _)),
+    export_c_func!(strtoull(_, _, _)),
 ];
 
 /// Returns a tuple containing the parsed number and the length of the number in

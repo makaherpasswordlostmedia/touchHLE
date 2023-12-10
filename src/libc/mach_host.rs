@@ -20,6 +20,12 @@ type natural_t = u32;
 type mach_msg_type_number_t = natural_t;
 type kern_return_t = i32;
 
+type task_t = mach_port_t;
+type task_name_t = mach_port_t;
+type task_flavor_t = natural_t;
+
+type task_info_t = MutPtr<integer_t>;
+
 type vm_size_t = natural_t;
 
 type clock_id_t = i32;
@@ -126,10 +132,31 @@ fn clock_get_time(
     0 // Success
 }
 
+/*
+kern_return_t task_info
+(
+	task_name_t target_task,
+	task_flavor_t flavor,
+	task_info_t task_info_out,
+	mach_msg_type_number_t *task_info_outCnt
+);
+ */
+
+fn task_info(
+    env: &mut Environment,
+    target_task: task_name_t,
+    flavor: task_flavor_t,
+    task_info_out: task_info_t,
+    task_info_outCnt: MutPtr<mach_msg_type_number_t>
+) -> kern_return_t {
+    0 // Success
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(mach_host_self()),
     export_c_func!(host_statistics(_, _, _, _)),
     export_c_func!(host_page_size(_, _)),
     export_c_func!(host_get_clock_service(_, _, _)),
     export_c_func!(clock_get_time(_, _)),
+    export_c_func!(task_info(_, _, _, _)),
 ];
