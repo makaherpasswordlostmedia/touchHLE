@@ -76,6 +76,15 @@ fn access(env: &mut Environment, path: ConstPtr<u8>, mode: i32) -> i32 {
     }
 }
 
+fn sysconf(env: &mut Environment, name: i32) -> i32 {
+    log!("sysconf {}", name);
+    match name {
+        // _SC_PAGESIZE => 4 Kib
+        29 => 4096,
+        _ => -1
+    }
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(sleep(_)),
     export_c_func!(usleep(_)),
@@ -83,4 +92,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(getppid()),
     export_c_func!(isatty(_)),
     export_c_func!(access(_, _)),
+    export_c_func!(sysconf(_)),
 ];

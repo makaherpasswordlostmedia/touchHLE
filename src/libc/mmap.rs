@@ -28,6 +28,10 @@ fn mmap(
 ) -> MutVoidPtr {
     assert!(addr.is_null());
     assert_eq!(offset, 0);
+    if (flags & MAP_ANON) != 0 {
+        assert_eq!(fd, -1);
+        return env.mem.alloc(len);
+    }
     assert_eq!((flags & MAP_ANON), 0);
     let new_offset = posix_io::lseek(env, fd, offset, SEEK_SET);
     assert_eq!(new_offset, offset);
