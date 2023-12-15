@@ -333,6 +333,18 @@ pub const CLASSES: ClassExports = objc_classes! {
     utf16[index as usize]
 }
 
+- (id)lowercaseString {
+    let rs = to_rust_string(env, this);
+    let nss = from_rust_string(env, rs.to_lowercase());
+    autorelease(env, nss)
+}
+
+- (id)uppercaseString {
+    let rs = to_rust_string(env, this);
+    let nss = from_rust_string(env, rs.to_uppercase());
+    autorelease(env, nss)
+}
+
 - (NSRange)rangeOfString:(id)search_string
                  options:(NSStringCompareOptions)options { // NSString *
     // TODO: search options

@@ -130,6 +130,9 @@ fn alcDestroyContext(env: &mut Environment, context: MutPtr<GuestALCcontext>) {
 }
 
 fn alcProcessContext(env: &mut Environment, context: MutPtr<GuestALCcontext>) {
+    if context.is_null() {
+        return;
+    }
     let host_context = State::get(env).contexts.get(&context).copied().unwrap();
     unsafe { al::alcProcessContext(host_context) }
 }
