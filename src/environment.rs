@@ -21,6 +21,7 @@ use std::net::TcpListener;
 use std::time::{Duration, Instant};
 
 pub use mutex::{MutexId, MutexType, PTHREAD_MUTEX_DEFAULT};
+use crate::libc::pthread::cond::pthread_cond_t;
 
 /// Index into the [Vec] of threads. Thread 0 is always the main thread.
 pub type ThreadId = usize;
@@ -31,7 +32,7 @@ pub struct Thread {
     pub active: bool,
     /// If this is not [ThreadBlock::NotBlocked], the thread is not executing
     /// until a certain condition is fufilled.
-    blocked_by: ThreadBlock,
+    pub blocked_by: ThreadBlock,
     /// Set to [true] when a thread is running its startup routine (i.e. the
     /// function pointer passed to `pthread_create`). When it returns to the
     /// host, it should become inactive.
@@ -111,7 +112,7 @@ enum ThreadNextAction {
 
 /// If/what a thread is blocked by.
 #[derive(Debug, Clone)]
-enum ThreadBlock {
+pub enum ThreadBlock {
     // Default state. (thread is not blocked)
     NotBlocked,
     // Thread is sleeping. (until Instant)
@@ -120,6 +121,8 @@ enum ThreadBlock {
     Mutex(MutexId),
     // Thread is waiting on a semaphore.
     Semaphore(MutPtr<sem_t>),
+    // Thread is wating on a condition variable
+    Condition(pthread_cond_t),
     // Thread is waiting for another thread to finish (joining).
     Joining(ThreadId, MutPtr<MutVoidPtr>),
     // Deferred guest-to-host return
@@ -956,6 +959,21 @@ impl Environment {
                                 break;
                             }
                         }
+                        ThreadBlock::Condition(cond) => {
+                            let x = self.libc_state.pthread.cond.condition_variables.get(&cond).unwrap();
+                            if x.done {
+                                log_dbg!(
+                                    "Thread {} is unblocking on cond var {:?}.",
+                                    self.current_thread,
+                                    cond
+                                );
+                                self.threads[i].blocked_by = ThreadBlock::NotBlocked;
+                                suitable_thread = Some(i);
+                                let y = self.libc_state.pthread.cond.mutexes.remove(&cond).unwrap();
+                                mutex_to_relock = Some(y.mutex_id);
+                                break;
+                            }
+                        },
                         ThreadBlock::Joining(joinee_thread, ptr) => {
                             if !self.threads[joinee_thread].active {
                                 log_dbg!(

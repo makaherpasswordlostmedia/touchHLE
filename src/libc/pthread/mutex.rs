@@ -26,11 +26,11 @@ unsafe impl SafeRead for pthread_mutexattr_t {}
 /// Apple's implementation is a 4-byte magic number followed by a 56-byte opaque
 /// region. We will store the actual data on the host, determined by a mutex identifier.
 #[repr(C, packed)]
-struct pthread_mutex_t {
+pub struct pthread_mutex_t {
     /// Magic number (must be [MAGIC_MUTEX])
     magic: u32,
     /// Unique mutex identifier, used in matching the mutex to it's host object.
-    mutex_id: MutexId,
+    pub mutex_id: MutexId,
 }
 unsafe impl SafeRead for pthread_mutex_t {}
 
@@ -124,15 +124,19 @@ fn check_or_register_mutex(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>
 }
 
 fn pthread_mutex_lock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
-    let mutex_data = env.mem.read(mutex);
     check_or_register_mutex(env, mutex);
-    env.lock_mutex(mutex_data.mutex_id).err().unwrap_or(0)
+    let mutex_data = env.mem.read(mutex);
+    let mutex_id = mutex_data.mutex_id;
+    log_dbg!("About to lock mutex #{} ({:#x})", mutex_id, mutex.to_bits());
+    env.lock_mutex(mutex_id).err().unwrap_or(0)
 }
 
-fn pthread_mutex_unlock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
-    let mutex_data = env.mem.read(mutex);
+pub fn pthread_mutex_unlock(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {
     check_or_register_mutex(env, mutex);
-    env.unlock_mutex(mutex_data.mutex_id).err().unwrap_or(0)
+    let mutex_data = env.mem.read(mutex);
+    let mutex_id = mutex_data.mutex_id;
+    log_dbg!("About to unlock mutex #{} ({:#x})", mutex_id, mutex.to_bits());
+    env.unlock_mutex(mutex_id).err().unwrap_or(0)
 }
 
 fn pthread_mutex_destroy(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>) -> i32 {

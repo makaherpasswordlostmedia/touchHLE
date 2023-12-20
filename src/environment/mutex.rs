@@ -108,12 +108,23 @@ impl Environment {
     /// Relock mutex that was just unblocked. This should probably only be used
     /// by the thread scheduler.
     pub fn relock_unblocked_mutex(&mut self, mutex_id: MutexId) {
-        self.lock_mutex(mutex_id).unwrap();
-        self.mutex_state
+        log_dbg!("Relocking unblocked mutex {}, waiting count {}", mutex_id, self.mutex_state
             .mutexes
             .get_mut(&mutex_id)
             .unwrap()
-            .waiting_count -= 1;
+            .waiting_count);
+        self.lock_mutex(mutex_id).unwrap();
+        if self.mutex_state
+            .mutexes
+            .get_mut(&mutex_id)
+            .unwrap()
+            .waiting_count > 0 {
+            self.mutex_state
+                .mutexes
+                .get_mut(&mutex_id)
+                .unwrap()
+                .waiting_count -= 1;
+        }
     }
 
     /// Locks a mutex and returns the lock count or an error (as errno). Similar

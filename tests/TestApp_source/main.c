@@ -69,11 +69,37 @@ int usleep(useconds_t);
 typedef struct opaque_pthread_t opaque_pthread_t;
 typedef struct opaque_pthread_t *__pthread_t;
 typedef __pthread_t pthread_t;
+
 typedef struct opaque_pthread_attr_t opaque_pthread_attr_t;
 typedef struct opaque_pthread_attr_t *__pthread_attr_t;
 typedef __pthread_attr_t pthread_attr_t;
+
+struct _opaque_pthread_mutex_t { long __sig; char __opaque[40]; };
+typedef struct _opaque_pthread_mutex_t __pthread_mutex_t;
+typedef __pthread_mutex_t pthread_mutex_t;
+
+typedef struct opaque_pthread_mutexattr_t opaque_pthread_mutexattr_t;
+typedef struct opaque_pthread_mutexattr_t *__pthread_mutexattr_t;
+typedef __pthread_mutexattr_t pthread_mutexattr_t;
+
+typedef struct opaque_pthread_cond_t opaque_pthread_cond_t;
+typedef struct opaque_pthread_cond_t *__pthread_cond_t;
+typedef __pthread_cond_t pthread_cond_t;
+
+typedef struct opaque_pthread_condattr_t opaque_pthread_condattr_t;
+typedef struct opaque_pthread_condattr_t *__pthread_condattr_t;
+typedef __pthread_condattr_t pthread_condattr_t;
+
 int pthread_create(pthread_t *, const pthread_attr_t *, void *(*)(void *),
                    void *);
+
+int pthread_cond_init(pthread_cond_t *, const pthread_condattr_t *);
+int pthread_cond_signal(pthread_cond_t *);
+int pthread_cond_wait(pthread_cond_t *, pthread_mutex_t *);
+
+int pthread_mutex_init(pthread_mutex_t *, const pthread_mutexattr_t *);
+int pthread_mutex_lock(pthread_mutex_t *);
+int pthread_mutex_unlock(pthread_mutex_t *);
 
 // <semaphore.h>
 #define SEM_FAILED ((sem_t *)-1)
@@ -272,6 +298,120 @@ int test_sem() {
   return shared_int == 1 ? 0 : -1;
 }
 
+int done = 0;
+pthread_mutex_t m;
+pthread_cond_t c;
+
+void thr_exit() {
+  pthread_mutex_lock(&m);
+  done = 1;
+  pthread_cond_signal(&c);
+  pthread_mutex_unlock(&m);
+}
+
+void *child(void *arg) {
+  thr_exit();
+  return NULL;
+}
+
+void thr_join() {
+  pthread_mutex_lock(&m);
+  while (done == 0) {
+    pthread_cond_wait(&c, &m);
+  }
+  pthread_mutex_unlock(&m);
+}
+
+int test_cond_var() {
+  pthread_t p;
+
+  pthread_mutex_init(&m, NULL);
+  pthread_cond_init(&c, NULL);
+
+  pthread_create(&p, NULL, child, NULL);
+  thr_join();
+
+  return done == 1 ? 0 : -1;
+}
+
+int test_strncpy() {
+  char *src = "test\0abcd";
+  char dst[10];
+  char *retval;
+
+  char expected1[] = "test\x00\x7F\x7F\x7F\x7F\x7F";
+  memset(dst, 0x7F, 10);
+  retval = strncpy(dst, src, 5);
+  if (retval != dst || memcmp(retval, expected1, 10))
+    return 1;
+
+  char expected2[] = "te\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F";
+  memset(dst, 0x7F, 10);
+  retval = strncpy(dst, src, 2);
+  if (retval != dst || memcmp(retval, expected2, 10))
+    return 2;
+
+  char expected3[] = "test\x00\x00\x00\x00\x00\x00";
+  memset(dst, 0x7F, 10);
+  retval = strncpy(dst, src, 10);
+  if (retval != dst || memcmp(retval, expected3, 10))
+    return 3;
+
+  return 0;
+}
+
+int test_strncat() {
+  {
+    char uno[] = "uno\0zzzz";
+    char dos[] = "dos\0ZZZZ";
+
+    char expected[] = "unodos\0z";
+    char *new = strncat(uno, dos, 100);
+    if (new != uno || memcmp(new, expected, 8))
+      return 1;
+  }
+
+  {
+    char uno[] = "uno\0zzzz";
+    char dos[] = "dos\0ZZZZ";
+
+    char expected[] = "unod\0zzz";
+    char *new = strncat(uno, dos, 1);
+    if (new != uno || memcmp(new, expected, 8))
+      return 2;
+  }
+
+  {
+    char uno[] = "uno\0zzzz";
+    char dos[] = "dosZZZZZ";
+
+    char expected[] = "unodos\0z";
+    char *new = strncat(uno, dos, 3);
+    if (new != uno || memcmp(new, expected, 8))
+      return 3;
+  }
+
+  return 0;
+}
+
+void jmpfunction(jmp_buf env_buf) { longjmp(env_buf, 432); }
+
+int test_setjmp() {
+  int val;
+  jmp_buf env_buffer;
+
+  /* save calling environment for longjmp */
+  val = setjmp(env_buffer);
+
+  if (val != 0) {
+    return val == 432 ? 0 : -2;
+  }
+
+  jmpfunction(env_buffer);
+
+  return -1;
+}
+
 #define FUNC_DEF(func)                                                         \
   { &func, #func }
 struct {
@@ -280,8 +420,11 @@ struct {
 } test_func_array[] = {
     FUNC_DEF(test_qsort),   FUNC_DEF(test_vsnprintf),
     FUNC_DEF(test_sscanf),  FUNC_DEF(test_errno),
-    FUNC_DEF(test_realloc), FUNC_DEF(test_getcwd_chdir),
+    FUNC_DEF(test_realloc), FUNC_DEF(test_atof),
+    FUNC_DEF(test_strtof),  FUNC_DEF(test_getcwd_chdir),
     FUNC_DEF(test_sem),     FUNC_DEF(test_CGAffineTransform),
+    FUNC_DEF(test_strncpy), FUNC_DEF(test_strncat),
+    FUNC_DEF(test_setjmp), FUNC_DEF(test_cond_var),
 };
 
 // Because no libc is linked into this executable, there is no libc entry point
