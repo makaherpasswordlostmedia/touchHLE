@@ -232,6 +232,8 @@ pub struct Mem {
     null_segment_size: VAddr,
 
     allocator: allocator::Allocator,
+
+    pub secondary_thread_stack_size_override: Option<GuestUSize>,
 }
 
 impl Drop for Mem {
@@ -269,6 +271,7 @@ impl Mem {
             bytes,
             null_segment_size: 0,
             allocator,
+            secondary_thread_stack_size_override: None
         }
     }
 
@@ -282,6 +285,7 @@ impl Mem {
             bytes: _,
             null_segment_size: _,
             ref mut allocator,
+            ..
         } = mem;
         let used_chunks = allocator.reset_and_drain_used_chunks();
         for allocator::Chunk { base, size } in used_chunks {

@@ -8,9 +8,10 @@
 use crate::abi::GuestFunction;
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::libc::errno::{EDEADLK, EINVAL};
-use crate::mem::{ConstPtr, MutPtr, MutVoidPtr, SafeRead};
+use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, SafeRead};
 use crate::{Environment, ThreadId};
 use std::collections::HashMap;
+use crate::libc::pthread::cond::pthread_condattr_t;
 
 #[derive(Default)]
 pub struct State {
@@ -70,6 +71,30 @@ pub const PTHREAD_CREATE_DETACHED: DetachState = 2;
 
 pub fn pthread_attr_init(env: &mut Environment, attr: MutPtr<pthread_attr_t>) -> i32 {
     env.mem.write(attr, DEFAULT_ATTR);
+    0 // success
+}
+pub fn pthread_attr_getstacksize(
+    env: &mut Environment,
+    attr: MutPtr<pthread_attr_t>,
+    stacksize: MutPtr<GuestUSize>,
+) -> i32 {
+    check_magic!(env, attr, MAGIC_ATTR);
+    let stack_size = env.mem
+        .secondary_thread_stack_size_override
+        .or_else(|| Some(Mem::SECONDARY_THREAD_STACK_SIZE))
+        .unwrap();
+    env.mem.write(stacksize, stack_size);
+    0 // success
+}
+fn pthread_attr_setstacksize(
+    env: &mut Environment,
+    attr: MutPtr<pthread_attr_t>,
+    stacksize: MutPtr<GuestUSize>,
+) -> i32 {
+    check_magic!(env, attr, MAGIC_ATTR);
+    let val = env.mem.read(stacksize);
+    log!("pthread_attr_setstacksize: {}", val);
+    // env.mem.secondary_thread_stack_size_override = Some(val);
     0 // success
 }
 pub fn pthread_attr_setdetachstate(
@@ -231,8 +256,48 @@ fn pthread_mach_thread_np(env: &mut Environment, thread: pthread_t) -> mach_port
     host_object.thread_id.try_into().unwrap()
 }
 
+fn pthread_getschedparam(env: &mut Environment, thread: pthread_t, policy: i32, param: MutVoidPtr) -> i32 {
+    0
+}
+
+fn pthread_setschedparam(env: &mut Environment, thread: pthread_t, policy: i32, param: ConstVoidPtr) -> i32 {
+    0
+}
+
+fn pthread_attr_setschedparam(env: &mut Environment, attr: MutPtr<pthread_attr_t>, param: MutVoidPtr) -> i32 {
+    0
+}
+
+fn pthread_condattr_setpshared(env: &mut Environment, attr: MutPtr<pthread_condattr_t>, pshared: i32) -> i32 {
+    0
+}
+
+fn pthread_condattr_init(env: &mut Environment, attr: MutPtr<pthread_condattr_t>) -> i32 {
+    0
+}
+
+fn pthread_condattr_destroy(env: &mut Environment, attr: MutPtr<pthread_condattr_t>) -> i32 {
+    0
+}
+
+fn sched_get_priority_min(env: &mut Environment, policy: i32) -> i32 {
+    1
+}
+
+fn sched_get_priority_max(env: &mut Environment, policy: i32) -> i32 {
+    99
+}
+
+fn sched_yield(env: &mut Environment) -> i32 {
+    log!("sched_yield: {}, threads count: {}", env.current_thread, env.threads.len());
+    // env.switch_thread((env.current_thread + 1) % env.threads.len());
+    0
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_attr_init(_)),
+    export_c_func!(pthread_attr_getstacksize(_, _)),
+    export_c_func!(pthread_attr_setstacksize(_, _)),
     export_c_func!(pthread_attr_setdetachstate(_, _)),
     export_c_func!(pthread_attr_destroy(_)),
     export_c_func!(pthread_create(_, _, _, _)),
@@ -240,4 +305,13 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_join(_, _)),
     export_c_func!(pthread_setcanceltype(_, _)),
     export_c_func!(pthread_mach_thread_np(_)),
+    export_c_func!(pthread_getschedparam(_, _, _)),
+    export_c_func!(pthread_setschedparam(_, _, _)),
+    export_c_func!(pthread_attr_setschedparam(_, _)),
+    export_c_func!(pthread_condattr_setpshared(_, _)),
+    export_c_func!(pthread_condattr_init(_)),
+    export_c_func!(pthread_condattr_destroy(_)),
+    export_c_func!(sched_get_priority_min(_)),
+    export_c_func!(sched_get_priority_max(_)),
+    export_c_func!(sched_yield()),
 ];

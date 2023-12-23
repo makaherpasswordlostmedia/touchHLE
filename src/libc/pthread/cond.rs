@@ -15,7 +15,7 @@ use crate::mem::{ConstPtr, MutPtr, SafeRead};
 use crate::environment::ThreadBlock;
 
 #[repr(C, packed)]
-struct pthread_condattr_t {}
+pub struct pthread_condattr_t {}
 unsafe impl SafeRead for pthread_condattr_t {}
 
 #[repr(C, packed)]
@@ -45,7 +45,7 @@ pub struct CondHostObject {
 }
 
 fn pthread_cond_init(env: &mut Environment, cond: MutPtr<pthread_cond_t>, attr: ConstPtr<pthread_condattr_t>) -> i32 {
-    assert!(attr.is_null());
+    // assert!(attr.is_null());
     let opaque = env.mem.alloc_and_write(OpaqueCond { _unused: 0 });
     env.mem.write(cond, opaque);
 

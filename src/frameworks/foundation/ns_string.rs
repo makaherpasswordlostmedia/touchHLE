@@ -343,6 +343,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 }
 
+- (NSRange)rangeOfString:(id)search_string {
+    msg![env; this rangeOfString:search_string options:0u32]
+}
+
 - (NSRange)rangeOfString:(id)search_string
                  options:(NSStringCompareOptions)options { // NSString *
     // TODO: search options
@@ -680,6 +684,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     let res = from_rust_string(env, res);
     let res = autorelease(env, res);
     msg![env; this stringByAppendingString:res]
+}
+
+- (id)stringByAddingPercentEscapesUsingEncoding:(NSStringEncoding)encoding {
+    let string = to_rust_string(env, this);
+    log!("stringByAddingPercentEscapesUsingEncoding: {}", string);
+    this
 }
 
 - (id)stringByAppendingString:(id)other { // NSString*

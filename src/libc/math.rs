@@ -215,6 +215,13 @@ fn fminf(_env: &mut Environment, arg1: f32, arg2: f32) -> f32 {
     arg1.min(arg2)
 }
 
+fn OSAtomicAdd32(env: &mut Environment, amount: i32, value_ptr: MutPtr<i32>) -> i32 {
+    let value = env.mem.read(value_ptr);
+    let new_value = value + amount;
+    env.mem.write(value_ptr, new_value);
+    new_value
+}
+
 // int32_t
 //      OSAtomicAdd32Barrier(int32_t theAmount, volatile int32_t *theValue)
 fn OSAtomicAdd32Barrier(
@@ -250,6 +257,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(OSAtomicCompareAndSwap32Barrier(_, _, _)),
     export_c_func!(OSAtomicCompareAndSwap32(_, _, _)),
     export_c_func!(OSMemoryBarrier()),
+    export_c_func!(OSAtomicAdd32(_, _)),
     export_c_func!(OSAtomicAdd32Barrier(_, _)),
     // Trigonometric functions
     export_c_func!(sin(_)),

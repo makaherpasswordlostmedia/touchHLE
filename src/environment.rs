@@ -498,7 +498,10 @@ impl Environment {
         start_routine: abi::GuestFunction,
         user_data: mem::MutVoidPtr,
     ) -> ThreadId {
-        let stack_size = mem::Mem::SECONDARY_THREAD_STACK_SIZE;
+        let stack_size = self.mem
+            .secondary_thread_stack_size_override
+            .or_else(|| Some(mem::Mem::SECONDARY_THREAD_STACK_SIZE))
+            .unwrap();
         let stack_alloc = self.mem.alloc(stack_size);
         let stack_high_addr = stack_alloc.to_bits() + stack_size;
         assert!(stack_high_addr % 4 == 0);
@@ -697,7 +700,7 @@ impl Environment {
         self.threads[self.current_thread].in_host_function = was_in_host_function;
     }
 
-    fn switch_thread(&mut self, new_thread: ThreadId) {
+    pub fn switch_thread(&mut self, new_thread: ThreadId) {
         assert!(new_thread != self.current_thread);
 
         log_dbg!(

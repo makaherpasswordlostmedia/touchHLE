@@ -160,6 +160,17 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, windows)
 }
 
+- (id)keyWindow {
+    *env
+        .framework_state
+        .uikit
+        .ui_view
+        .ui_window
+        .visible_windows
+        .last()
+        .unwrap()
+}
+
 - (())registerForRemoteNotificationTypes:(NSUInteger)_types {
 }
 

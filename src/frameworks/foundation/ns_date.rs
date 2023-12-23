@@ -54,6 +54,14 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.borrow::<NSDateHostObject>(this).instant
 }
 
+- (NSTimeInterval)timeIntervalSinceNow {
+    let instant2 = SystemTime::now()
+        .duration_since(apple_epoch())
+        .unwrap()
+        .as_secs_f64();
+    instant2 - env.objc.borrow::<NSDateHostObject>(this).instant
+}
+
 - (id)addTimeInterval:(NSTimeInterval)seconds {
     let host_object = env.objc.borrow::<NSDateHostObject>(this);
     let new_host_object = Box::new(NSDateHostObject {
