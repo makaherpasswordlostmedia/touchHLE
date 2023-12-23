@@ -7,7 +7,7 @@
 
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::Environment;
-use crate::mem::MutPtr;
+use crate::mem::{MutPtr, MutVoidPtr};
 
 // The sections in this file are organized to match the C standard.
 
@@ -215,6 +215,41 @@ fn fminf(_env: &mut Environment, arg1: f32, arg2: f32) -> f32 {
     arg1.min(arg2)
 }
 
+// int32_t
+//      OSAtomicAdd32Barrier(int32_t theAmount, volatile int32_t *theValue)
+fn OSAtomicAdd32Barrier(
+    env: &mut Environment, the_amount: i32, the_value: MutPtr<i32>
+) -> i32 {
+    let curr = env.mem.read(the_value);
+    let new = curr + the_amount;
+    env.mem.write(the_value, new);
+    new
+}
+
+fn OSAtomicCompareAndSwap32Barrier(
+    env: &mut Environment, old_value: i32, new_value: i32, the_value: MutPtr<i32>
+) -> bool {
+    if old_value == env.mem.read(the_value) {
+        env.mem.write(the_value, new_value);
+        true
+    } else {
+        false
+    }
+}
+
+// bool
+//      OSAtomicCompareAndSwapPtr(void* oldValue, void* newValue, void* volatile *theValue);
+fn OSAtomicCompareAndSwapPtr(
+    env: &mut Environment, old_value: MutVoidPtr, new_value: MutVoidPtr, the_value: MutPtr<MutVoidPtr>
+) -> bool {
+    if old_value == env.mem.read(the_value) {
+        env.mem.write(the_value, new_value);
+        true
+    } else {
+        false
+    }
+}
+
 // int32_t	OSAtomicAdd32( int32_t __theAmount, volatile int32_t *__theValue );
 fn OSAtomicAdd32(env: &mut Environment, amount: i32, value_ptr: MutPtr<i32>) -> i32 {
     let value = env.mem.read(value_ptr);
@@ -309,6 +344,9 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fmin(_, _)),
     export_c_func!(fminf(_, _)),
     // Atomic ops (libkern)
+    export_c_func!(OSAtomicCompareAndSwap32Barrier(_, _, _)),
+    export_c_func!(OSAtomicCompareAndSwapPtr(_, _, _)),
+    export_c_func!(OSAtomicAdd32Barrier(_, _)),
     export_c_func!(OSAtomicAdd32(_, _)),
     export_c_func!(OSSpinLockLock(_)),
     export_c_func!(OSSpinLockUnlock(_)),

@@ -8,7 +8,7 @@
 use crate::abi::GuestFunction;
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::libc::errno::{EDEADLK, EINVAL};
-use crate::mem::{ConstPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, SafeRead};
+use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, SafeRead};
 use crate::{Environment, mem, ThreadId};
 use std::collections::HashMap;
 
@@ -236,6 +236,22 @@ fn pthread_mach_thread_np(env: &mut Environment, thread: pthread_t) -> mach_port
     host_object.thread_id.try_into().unwrap()
 }
 
+fn pthread_getschedparam(env: &mut Environment, thread: pthread_t, policy: i32, param: MutVoidPtr) -> i32 {
+    0
+}
+
+fn pthread_setschedparam(env: &mut Environment, thread: pthread_t, policy: i32, param: ConstVoidPtr) -> i32 {
+    0
+}
+
+fn sched_get_priority_min(env: &mut Environment, policy: i32) -> i32 {
+    1
+}
+
+fn sched_get_priority_max(env: &mut Environment, policy: i32) -> i32 {
+    99
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_attr_init(_)),
     export_c_func!(pthread_attr_getstacksize(_, _)),
@@ -246,4 +262,8 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_join(_, _)),
     export_c_func!(pthread_setcanceltype(_, _)),
     export_c_func!(pthread_mach_thread_np(_)),
+    export_c_func!(pthread_getschedparam(_, _, _)),
+    export_c_func!(pthread_setschedparam(_, _, _)),
+    export_c_func!(sched_get_priority_min(_)),
+    export_c_func!(sched_get_priority_max(_)),
 ];
