@@ -277,6 +277,10 @@ fn bsearch(
     Ptr::null()
 }
 
+fn sigaction(env: &mut Environment, sig: i32, act: MutVoidPtr, oact: MutVoidPtr) -> i32 {
+    0
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(malloc(_)),
     export_c_func!(calloc(_, _)),
@@ -296,4 +300,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(setenv(_, _, _)),
     export_c_func!(exit(_)),
     export_c_func!(bsearch(_, _, _, _, _)),
+    export_c_func!(sigaction(_, _, _)),
 ];
