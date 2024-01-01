@@ -134,13 +134,27 @@ fn strtod(env: &mut Environment, nptr: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>)
     log!("strtod nptr {}", env.mem.cstr_at_utf8(nptr).unwrap());
     let (d, len) = atoi_common(env, nptr);
     if !endptr.is_null() {
-        env.mem.write(endptr, env.mem.read((nptr + len).cast()));
+        env.mem.write(endptr, (nptr + len).cast_mut());
     }
     d
 }
 
 fn strtof(env: &mut Environment, nptr: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>) -> f32 {
     strtod(env, nptr, endptr) as f32
+}
+
+fn strtoul(env: &mut Environment, str: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>, base: i32) -> i32 {
+    let s = env.mem.cstr_at_utf8(str).unwrap();
+    log!("strtoul '{}'", s);
+    assert_eq!(base, 16);
+    let without_prefix = s.trim_start_matches("0x");
+    // TODO: handle overflow properly
+    let res = i32::from_str_radix(without_prefix, 16).unwrap_or(0);
+    if !endptr.is_null() {
+        let len: GuestUSize = s.len().try_into().unwrap();
+        env.mem.write(endptr, (str + len).cast_mut());
+    }
+    res
 }
 
 fn prng(state: u32) -> u32 {
@@ -270,6 +284,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(atof(_)),
     export_c_func!(strtod(_, _)),
     export_c_func!(strtof(_, _)),
+    export_c_func!(strtoul(_, _, _)),
     export_c_func!(srand(_)),
     export_c_func!(rand()),
     export_c_func!(srandom(_)),
