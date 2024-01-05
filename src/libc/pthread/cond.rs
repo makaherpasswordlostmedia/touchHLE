@@ -13,6 +13,7 @@ use crate::libc::pthread::mutex::pthread_mutex_unlock;
 use crate::mem::{ConstPtr, MutPtr, SafeRead};
 
 use crate::environment::ThreadBlock;
+use crate::libc::time::timespec;
 
 #[repr(C, packed)]
 struct pthread_condattr_t {}
@@ -59,6 +60,13 @@ fn pthread_cond_init(env: &mut Environment, cond: MutPtr<pthread_cond_t>, attr: 
     0 // success
 }
 
+fn pthread_cond_timedwait(
+    env: &mut Environment, cond: MutPtr<pthread_cond_t>,
+    mutex: MutPtr<pthread_mutex_t>, abstime: ConstPtr<timespec>
+) -> i32 {
+    pthread_cond_wait(env, cond, mutex)
+}
+
 fn pthread_cond_wait(env: &mut Environment, cond: MutPtr<pthread_cond_t>, mutex: MutPtr<pthread_mutex_t>) -> i32 {
     let res = pthread_mutex_unlock(env, mutex);
     assert_eq!(res, 0);
@@ -101,6 +109,7 @@ fn pthread_cond_destroy(env: &mut Environment, cond: MutPtr<pthread_cond_t>) -> 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_cond_init(_, _)),
     export_c_func!(pthread_cond_wait(_, _)),
+    export_c_func!(pthread_cond_timedwait(_, _, _)),
     export_c_func!(pthread_cond_signal(_)),
     export_c_func!(pthread_cond_destroy(_)),
 ];

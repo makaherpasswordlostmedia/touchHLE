@@ -260,6 +260,48 @@ pub const CLASSES: ClassExports = objc_classes! {
     msg![env; val boolValue]
 }
 
+- (id)dictionaryRepresentation {
+    this
+}
+- (id)dataForKey:(id)name {
+    msg![env; this objectForKey:name]
+}
+- (())registerDefaults:(id)dict {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(dict));
+    for (_, key_value) in host_obj.map {
+        let key = key_value[0].0;
+        let value = key_value[0].1;
+        let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+        host_obj.insert(env, key, value, false);
+        *env.objc.borrow_mut(this) = host_obj;
+    }
+}
+- (())synchronize {
+}
+- (())setObject:(id)value
+        forKey:(id)key { // NSString*
+    msg![env; this setValue:value forKey:key]
+}
+- (())setBool:(bool)value
+       forKey:(id)key { // NSString*
+    let num: id = msg_class![env; NSNumber numberWithBool:value];
+    msg![env; this setObject:num forKey:key]
+}
+- (())setInteger:(NSInteger)value forKey:(id)defaultName {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let value_id: id = msg_class![env; NSNumber numberWithInteger:value];
+    host_obj.insert(env, defaultName, value_id, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (())setValue:(id)value
+        forKey:(id)key { // NSString*
+    assert!(!key.is_null());
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert(env, key, value, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
 @end
 
 @implementation _touchHLE_NSMutableDictionary: NSMutableDictionary

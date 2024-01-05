@@ -28,6 +28,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::iter::Peekable;
 use std::string::FromUtf16Error;
+use sdl2::log::log;
 
 pub type NSStringEncoding = NSUInteger;
 pub const NSASCIIStringEncoding: NSUInteger = 1;
@@ -716,6 +717,18 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
     let new_string = from_rust_string(env, String::from(path));
     autorelease(env, new_string)
+}
+
+- (id)stringByExpandingTildeInPath {
+    let path = to_rust_string(env, this); // TODO: avoid copying
+    log!("stringByExpandingTildeInPath {}", path);
+    if path.starts_with("~/") {
+        let path = path.strip_prefix("~/").unwrap();
+        let s = env.fs.home_directory().join(path);
+        return from_rust_string(env, String::from(s));
+    }
+    assert!(!path.contains('~'));
+    this
 }
 
 // These come from a category in UIKit (UIStringDrawing).

@@ -43,6 +43,26 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.alloc_object(this, host_object, &mut env.mem)
 }
 
++ (id)numberWithInteger:(NSInteger)value {
+    // TODO: for greater efficiency we could return a static-lifetime value
+
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithInteger:value];
+    autorelease(env, new)
+}
+
++ (id)numberWithInt:(i32)value {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithInteger:value];
+    autorelease(env, new)
+}
+
++ (id)numberWithFloat:(f32)value {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithFloat:value];
+    autorelease(env, new)
+}
+
 + (id)numberWithBool:(bool)value {
     // TODO: for greater efficiency we could return a static-lifetime value
 
@@ -76,6 +96,16 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 // TODO: types other than booleans and long longs
+
+- (id)initWithInteger:(NSInteger)value {
+    *env.objc.borrow_mut::<NSNumberHostObject>(this) = NSNumberHostObject::Int(value);
+    this
+}
+
+// - (id)initWithFloat:(f32)value {
+//     *env.objc.borrow_mut::<NSNumberHostObject>(this) = NSNumberHostObject::Float(value);
+//     this
+// }
 
 - (id)initWithBool:(bool)value {
     *env.objc.borrow_mut(this) = NSNumberHostObject::Bool(value);
