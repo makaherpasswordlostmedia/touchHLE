@@ -153,8 +153,50 @@ fn CGRectEqualToRect(_env: &mut Environment, a: CGRect, b: CGRect) -> bool {
     a == b
 }
 
+fn CGRectGetWidth(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.size.width
+}
+
+fn CGRectGetHeight(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.size.height
+}
+
+fn CGRectGetMidY(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.origin.y + rect.size.height/2.0
+}
+
+fn CGRectGetMidX(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.origin.x + rect.size.width/2.0
+}
+
+fn CGRectGetMinX(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    // is it always true? if yes, why we need this func at all?
+    rect.origin.x
+}
+
+fn CGRectGetMaxX(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.origin.x + rect.size.width
+}
+
+fn CGRectGetMinY(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    // is it always true? if yes, why we need this func at all?
+    rect.origin.y
+}
+
+fn CGRectGetMaxY(_env: &mut Environment, rect: CGRect) -> CGFloat {
+    rect.origin.y + rect.size.height
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGPointEqualToPoint(_, _)),
     export_c_func!(CGSizeEqualToSize(_, _)),
     export_c_func!(CGRectEqualToRect(_, _)),
+    export_c_func!(CGRectGetWidth(_)),
+    export_c_func!(CGRectGetHeight(_)),
+    export_c_func!(CGRectGetMidY(_)),
+    export_c_func!(CGRectGetMidX(_)),
+    export_c_func!(CGRectGetMinX(_)),
+    export_c_func!(CGRectGetMaxX(_)),
+    export_c_func!(CGRectGetMinY(_)),
+    export_c_func!(CGRectGetMaxY(_)),
 ];

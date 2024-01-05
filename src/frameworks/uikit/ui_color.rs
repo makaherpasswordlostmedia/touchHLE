@@ -6,6 +6,7 @@
 //! `UIColor`.
 
 use crate::frameworks::core_graphics::CGFloat;
+use crate::frameworks::core_foundation::CFTypeRef;
 use crate::mem::MutPtr;
 use crate::objc::{
     autorelease, id, msg, msg_class, objc_classes, ClassExports, HostObject, NSZonePtr, ObjC, SEL,
@@ -129,6 +130,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)colorWithAlphaComponent:(CGFloat)a {
     let (r, g, b, a_) = env.objc.borrow::<UIColorHostObject>(this).rgba;
     msg_class![env; UIColor colorWithRed:r green:g blue:b alpha:a]
+}
+
+- (CFTypeRef)CGColor {
+    this
 }
 
 @end

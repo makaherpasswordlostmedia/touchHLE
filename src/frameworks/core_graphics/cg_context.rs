@@ -11,6 +11,7 @@ use crate::dyld::{export_c_func, FunctionExports};
 use crate::frameworks::core_foundation::{CFRelease, CFRetain, CFTypeRef};
 use crate::objc::{objc_classes, ClassExports, HostObject};
 use crate::Environment;
+use crate::frameworks::uikit::ui_color;
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -76,6 +77,11 @@ pub fn CGContextSetRGBFillColor(
         .rgb_fill_color = color;
 }
 
+fn CGContextSetFillColorWithColor(env: &mut Environment, context: CGContextRef, color: CFTypeRef) {
+    let (r, g, b, a) = ui_color::get_rgba(&env.objc, color);
+    CGContextSetRGBFillColor(env, context, r, g, b, a);
+}
+
 fn CGContextSetGrayFillColor(
     env: &mut Environment,
     context: CGContextRef,
@@ -116,13 +122,47 @@ fn CGContextDrawImage(
     cg_bitmap_context::draw_image(env, context, rect, image);
 }
 
+fn CGContextSetLineWidth(env: &mut Environment, context: CGContextRef, width: CGFloat) {
+    log!("CGContextSetLineWidth {}", width);
+}
+fn CGContextSetStrokeColorWithColor(env: &mut Environment, context: CGContextRef, color: CFTypeRef) {
+    log!("CGContextSetStrokeColorWithColor {:?}", color);
+}
+
+fn CGContextMoveToPoint(env: &mut Environment, context: CGContextRef, x: CGFloat, y: CGFloat) {
+    let context = env.objc.borrow_mut::<CGContextHostObject>(context);
+    context.translation = (x, y);
+}
+
+fn CGContextAddArcToPoint(
+    env: &mut Environment, context: CGContextRef,
+    x1: CGFloat, y1: CGFloat,
+    x2: CGFloat, y2: CGFloat, radius: CGFloat) {
+    log!("CGContextAddArcToPoint ({},{}) ({},{}) r {}", x1, y1, x2, y2, radius);
+}
+
+fn CGContextClosePath(env: &mut Environment, context: CGContextRef) {
+    log!("CGContextClosePath");
+}
+
+fn CGContextDrawPath(env: &mut Environment, context: CGContextRef, mode: i32) {
+    log!("CGContextDrawPath {}", mode);
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGContextRetain(_)),
     export_c_func!(CGContextRelease(_)),
     export_c_func!(CGContextSetRGBFillColor(_, _, _, _, _)),
+    export_c_func!(CGContextSetFillColorWithColor(_, _)),
     export_c_func!(CGContextSetGrayFillColor(_, _, _)),
     export_c_func!(CGContextFillRect(_, _)),
     export_c_func!(CGContextClearRect(_, _)),
     export_c_func!(CGContextTranslateCTM(_, _, _)),
     export_c_func!(CGContextDrawImage(_, _, _)),
+    export_c_func!(CGContextSetLineWidth(_, _)),
+    export_c_func!(CGContextSetStrokeColorWithColor(_, _)),
+    export_c_func!(CGContextMoveToPoint(_, _, _)),
+    export_c_func!(CGContextAddArcToPoint(_, _, _, _, _, _)),
+    export_c_func!(CGContextClosePath(_)),
+    export_c_func!(CGContextDrawPath(_, _)),
 ];
