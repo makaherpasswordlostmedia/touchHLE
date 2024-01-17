@@ -493,6 +493,7 @@ checksum = "ef703b7cb59335eae2eb93ceb664c0eb7ea6bf567079d843e09420219668e072"
 [[package]]
 name = "sdl2"
 version = "0.35.2"
+source = "git+https://github.com/ciciplusplus/rust-sdl2.git?branch=touchHLE-2-ios#12a96cc94ea46f1e1e4d2ae0ee1090169c53308a"
 dependencies = [
  "bitflags",
  "lazy_static",
@@ -503,6 +504,7 @@ dependencies = [
 [[package]]
 name = "sdl2-sys"
 version = "0.35.2"
+source = "git+https://github.com/ciciplusplus/rust-sdl2.git?branch=touchHLE-2-ios#12a96cc94ea46f1e1e4d2ae0ee1090169c53308a"
 dependencies = [
  "cfg-if",
  "cmake",
