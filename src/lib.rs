@@ -66,30 +66,30 @@ const VERSION: &str = include_str!(concat!(env!("OUT_DIR"), "/version.txt"));
 
 /// This is the true entry point on Android (SDLActivity calls it after
 /// initialization). On other platforms the true entry point is in src/bin.rs.
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 #[no_mangle]
 pub extern "C" fn SDL_main(
     _argc: std::ffi::c_int,
     _argv: *const *const std::ffi::c_char,
 ) -> std::ffi::c_int {
-    unsafe { log::setup_log_file() };
+    //unsafe { log::setup_log_file() };
 
-    // Rust's default panic handler prints to stderr, but on Android that just
-    // gets discarded, so we set a custom hook to make debugging easier.
-    std::panic::set_hook(Box::new(|info| {
-        let payload = if let Some(s) = info.payload().downcast_ref::<&str>() {
-            s
-        } else if let Some(s) = info.payload().downcast_ref::<String>() {
-            &s
-        } else {
-            "(non-string payload)"
-        };
-        if let Some(location) = info.location() {
-            echo!("Panic at {}: {}", location, payload);
-        } else {
-            echo!("Panic: {}", payload);
-        }
-    }));
+    // // Rust's default panic handler prints to stderr, but on Android that just
+    // // gets discarded, so we set a custom hook to make debugging easier.
+    // std::panic::set_hook(Box::new(|info| {
+    //     let payload = if let Some(s) = info.payload().downcast_ref::<&str>() {
+    //         s
+    //     } else if let Some(s) = info.payload().downcast_ref::<String>() {
+    //         &s
+    //     } else {
+    //         "(non-string payload)"
+    //     };
+    //     if let Some(location) = info.location() {
+    //         echo!("Panic at {}: {}", location, payload);
+    //     } else {
+    //         echo!("Panic: {}", payload);
+    //     }
+    // }));
 
     // Empty args: brings up app picker.
     match main([String::new()].into_iter()) {

@@ -8,11 +8,11 @@
 /// Accessing log output on Android is more difficult than on other platforms;
 /// logcat requires a separate device. As an alternative, let's write to a file
 /// too.
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 pub static mut LOG_FILE: Option<std::fs::File> = None;
 
 /// Set up log file. Only call this once, right at the start of the program!
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 pub unsafe fn setup_log_file() {
     {
         LOG_FILE = Some(
@@ -22,7 +22,7 @@ pub unsafe fn setup_log_file() {
 }
 
 /// Only for internal use by the logging macros.
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 pub fn get_log_file() -> &'static std::fs::File {
     unsafe { LOG_FILE.as_ref().unwrap() }
 }
@@ -55,28 +55,11 @@ macro_rules! log_dbg {
 macro_rules! echo {
     ($($arg:tt)+) => {
         {
-            #[cfg(target_os = "android")]
-            {
-                let formatted_str = format!($($arg)+);
-                sdl2::log::log(&formatted_str);
-                use std::io::Write;
-                let mut log_file = $crate::log::get_log_file();
-                let _ = log_file.write_all(formatted_str.as_bytes());
-                let _ = log_file.write_all(b"\n");
-            }
-            #[cfg(not(target_os = "android"))]
             eprintln!($($arg)+);
         }
     };
     () => {
         {
-            #[cfg(target_os = "android")]
-            {
-                sdl2::log::log("");
-                use std::io::Write;
-                let _ = $crate::log::get_log_file().write_all(b"\n");
-            }
-            #[cfg(not(target_os = "android"))]
             eprintln!("");
         }
     }

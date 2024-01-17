@@ -9,9 +9,15 @@
 /* Begin PBXBuildFile section */
 		EE4ABD702B5876650046B676 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE4ABD6F2B5876650046B676 /* Assets.xcassets */; };
 		EE4ABD732B5876650046B676 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE4ABD712B5876650046B676 /* LaunchScreen.storyboard */; };
-		EE4ABDA12B5877F40046B676 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABD8C2B58771C0046B676 /* SDL2.framework */; };
 		EE4ABDA22B5877F40046B676 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABD8C2B58771C0046B676 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EE4ABDA52B5878250046B676 /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = EE4ABDA42B5878250046B676 /* SDL_uikit_main.c */; };
+		EE4ABDAE2B5887D60046B676 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABD8C2B58771C0046B676 /* SDL2.framework */; };
+		EE4ABDB52B588E540046B676 /* libtouchHLE.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDB12B588C610046B676 /* libtouchHLE.a */; };
+		EE4ABDB62B588E6D0046B676 /* libtouchHLE.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDB12B588C610046B676 /* libtouchHLE.a */; };
+		EE4ABDB82B588F060046B676 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDB72B588EEC0046B676 /* libc++.tbd */; };
+		EE4ABDBC2B588F9F0046B676 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDBB2B588F9F0046B676 /* AudioToolbox.framework */; };
+		EE4ABDBE2B588FAA0046B676 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDBD2B588FAA0046B676 /* CoreFoundation.framework */; };
+		EE4ABDC02B588FC70046B676 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDBF2B588FC70046B676 /* Security.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -102,6 +108,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				EE4ABDA22B5877F40046B676 /* SDL2.framework in Embed Frameworks */,
+				EE4ABDB62B588E6D0046B676 /* libtouchHLE.a in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -114,6 +121,13 @@
 		EE4ABD722B5876650046B676 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EE4ABD7B2B58771B0046B676 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../../vendor/SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		EE4ABDA42B5878250046B676 /* SDL_uikit_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_uikit_main.c; path = ../../../vendor/SDL/src/main/uikit/SDL_uikit_main.c; sourceTree = "<group>"; };
+		EE4ABDB12B588C610046B676 /* libtouchHLE.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtouchHLE.a; path = "../../target/aarch64-apple-ios/debug/libtouchHLE.a"; sourceTree = "<group>"; };
+		EE4ABDB42B588CC70046B676 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		EE4ABDB72B588EEC0046B676 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		EE4ABDB92B588F470046B676 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		EE4ABDBB2B588F9F0046B676 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		EE4ABDBD2B588FAA0046B676 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		EE4ABDBF2B588FC70046B676 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,7 +135,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EE4ABDA12B5877F40046B676 /* SDL2.framework in Frameworks */,
+				EE4ABDC02B588FC70046B676 /* Security.framework in Frameworks */,
+				EE4ABDBE2B588FAA0046B676 /* CoreFoundation.framework in Frameworks */,
+				EE4ABDBC2B588F9F0046B676 /* AudioToolbox.framework in Frameworks */,
+				EE4ABDB82B588F060046B676 /* libc++.tbd in Frameworks */,
+				EE4ABDAE2B5887D60046B676 /* SDL2.framework in Frameworks */,
+				EE4ABDB52B588E540046B676 /* libtouchHLE.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +168,7 @@
 		EE4ABD5F2B5876630046B676 /* touchHLE */ = {
 			isa = PBXGroup;
 			children = (
+				EE4ABDB42B588CC70046B676 /* Info.plist */,
 				EE4ABDA42B5878250046B676 /* SDL_uikit_main.c */,
 				EE4ABD6F2B5876650046B676 /* Assets.xcassets */,
 				EE4ABD712B5876650046B676 /* LaunchScreen.storyboard */,
@@ -177,6 +197,12 @@
 		EE4ABD9F2B5877DD0046B676 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EE4ABDBF2B588FC70046B676 /* Security.framework */,
+				EE4ABDBD2B588FAA0046B676 /* CoreFoundation.framework */,
+				EE4ABDBB2B588F9F0046B676 /* AudioToolbox.framework */,
+				EE4ABDB92B588F470046B676 /* CoreAudio.framework */,
+				EE4ABDB72B588EEC0046B676 /* libc++.tbd */,
+				EE4ABDB12B588C610046B676 /* libtouchHLE.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -470,11 +496,14 @@
 		EE4ABD792B5876650046B676 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7L57XJNDRA;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = touchHLE/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
@@ -485,6 +514,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../target/aarch64-apple-ios/debug\"";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ciciplusplus.touchHLE;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -496,11 +526,14 @@
 		EE4ABD7A2B5876650046B676 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7L57XJNDRA;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = touchHLE/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
@@ -511,6 +544,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../target/aarch64-apple-ios/debug\"";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ciciplusplus.touchHLE;
 				PRODUCT_NAME = "$(TARGET_NAME)";
