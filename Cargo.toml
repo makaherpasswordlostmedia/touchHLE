@@ -34,7 +34,8 @@ static = ["sdl2/bundled", "sdl2/static-link", "touchHLE_openal_soft_wrapper/stat
 
 [workspace.dependencies]
 cc = "1.0.83"
-cmake = "0.1.49"
+# cmake = "0.1.49"
+cmake = { git = "https://github.com/FlorianDenis/cmake-rs.git", branch = "fdenis/ios_cross_compile" }
 gl_generator = "0.14.0"
 
 [dependencies]
@@ -64,3 +65,10 @@ cargo-license = "0.5.1"
 cc = { workspace = true }
 cmake = { workspace = true }
 gl_generator = { workspace = true }
+
+#[replace]
+#"cmake:0.1.49" = { git = "https://github.com/FlorianDenis/cmake-rs.git", branch = "fdenis/ios_cross_compile" }
+
+[patch."https://github.com/hikari-no-yume/rust-sdl2.git"]
+sdl2 = { path = "/Users/ac27/Dev/rust-sdl2" }
+sdl2-sys = { path = "/Users/ac27/Dev/rust-sdl2/sdl2-sys" }

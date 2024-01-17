@@ -193,9 +193,8 @@ dependencies = [
 
 [[package]]
 name = "cmake"
-version = "0.1.49"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db34956e100b30725f2eb215f90d4871051239535632f84fea3bc92722c66b7c"
+version = "0.1.50"
+source = "git+https://github.com/FlorianDenis/cmake-rs.git?branch=fdenis/ios_cross_compile#9493d15a613ab2db5c4c9bb21ac8ee2cdfd69c7e"
 dependencies = [
  "cc",
 ]
@@ -494,7 +493,6 @@ checksum = "ef703b7cb59335eae2eb93ceb664c0eb7ea6bf567079d843e09420219668e072"
 [[package]]
 name = "sdl2"
 version = "0.35.2"
-source = "git+https://github.com/hikari-no-yume/rust-sdl2.git?tag=touchHLE-2#15c58be733277f4314d47298132f4ad2304cc512"
 dependencies = [
  "bitflags",
  "lazy_static",
@@ -505,7 +503,6 @@ dependencies = [
 [[package]]
 name = "sdl2-sys"
 version = "0.35.2"
-source = "git+https://github.com/hikari-no-yume/rust-sdl2.git?tag=touchHLE-2#15c58be733277f4314d47298132f4ad2304cc512"
 dependencies = [
  "cfg-if",
  "cmake",
