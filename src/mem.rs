@@ -197,7 +197,7 @@ unsafe impl<T, const MUT: bool> SafeRead for Ptr<T, MUT> {}
 pub trait SafeWrite: Sized {}
 impl<T: SafeRead> SafeWrite for T {}
 
-type Bytes = [u8; 1 << 32];
+type Bytes = [u8; 1 << 30];
 
 /// The type that owns the guest memory and provides accessors for it.
 pub struct Mem {
@@ -252,7 +252,7 @@ impl Mem {
     ///
     /// We are arbitrarily putting the stack at the top of the virtual address
     /// space (see also: stack.rs), I have no idea if this matches iPhone OS.
-    pub const MAIN_THREAD_STACK_LOW_END: VAddr = 0u32.wrapping_sub(Self::MAIN_THREAD_STACK_SIZE);
+    pub const MAIN_THREAD_STACK_LOW_END: VAddr = (1<<30) - Self::MAIN_THREAD_STACK_SIZE;
 
     /// iPhone OS secondary thread stack size.
     pub const SECONDARY_THREAD_STACK_SIZE: GuestUSize = 512 * 1024;

@@ -18,6 +18,10 @@
 		EE4ABDBC2B588F9F0046B676 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDBB2B588F9F0046B676 /* AudioToolbox.framework */; };
 		EE4ABDBE2B588FAA0046B676 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDBD2B588FAA0046B676 /* CoreFoundation.framework */; };
 		EE4ABDC02B588FC70046B676 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDBF2B588FC70046B676 /* Security.framework */; };
+		EE5F36F52B59C9FC000F815B /* touchHLE_apps in Resources */ = {isa = PBXBuildFile; fileRef = EE5F36E92B59C9FC000F815B /* touchHLE_apps */; };
+		EE5F36F82B59D477000F815B /* touchHLE_dylibs in Resources */ = {isa = PBXBuildFile; fileRef = EE5F36F62B59D477000F815B /* touchHLE_dylibs */; };
+		EE5F36F92B59D477000F815B /* touchHLE_fonts in Resources */ = {isa = PBXBuildFile; fileRef = EE5F36F72B59D477000F815B /* touchHLE_fonts */; };
+		EE5F37092B59DA18000F815B /* touchHLE_default_options.txt in Resources */ = {isa = PBXBuildFile; fileRef = EE5F36FD2B59DA18000F815B /* touchHLE_default_options.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -128,6 +132,11 @@
 		EE4ABDBB2B588F9F0046B676 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		EE4ABDBD2B588FAA0046B676 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		EE4ABDBF2B588FC70046B676 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		EE5F36E92B59C9FC000F815B /* touchHLE_apps */ = {isa = PBXFileReference; lastKnownFileType = folder; name = touchHLE_apps; path = ../../touchHLE_apps; sourceTree = "<group>"; };
+		EE5F36F62B59D477000F815B /* touchHLE_dylibs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = touchHLE_dylibs; path = ../../touchHLE_dylibs; sourceTree = "<group>"; };
+		EE5F36F72B59D477000F815B /* touchHLE_fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = touchHLE_fonts; path = ../../touchHLE_fonts; sourceTree = "<group>"; };
+		EE5F36FD2B59DA18000F815B /* touchHLE_default_options.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = touchHLE_default_options.txt; path = ../../touchHLE_default_options.txt; sourceTree = "<group>"; };
+		EE82663A2B5AA40E0063558D /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../../src; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +159,11 @@
 		EE4ABD542B5876620046B676 = {
 			isa = PBXGroup;
 			children = (
+				EE82663A2B5AA40E0063558D /* src */,
+				EE5F36FD2B59DA18000F815B /* touchHLE_default_options.txt */,
+				EE5F36F62B59D477000F815B /* touchHLE_dylibs */,
+				EE5F36F72B59D477000F815B /* touchHLE_fonts */,
+				EE5F36E92B59C9FC000F815B /* touchHLE_apps */,
 				EE4ABD7B2B58771B0046B676 /* SDL.xcodeproj */,
 				EE4ABD5F2B5876630046B676 /* touchHLE */,
 				EE4ABD5E2B5876630046B676 /* Products */,
@@ -214,6 +228,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EE4ABD782B5876650046B676 /* Build configuration list for PBXNativeTarget "touchHLE" */;
 			buildPhases = (
+				EE5F36D62B5995E6000F815B /* ShellScript */,
 				EE4ABD592B5876630046B676 /* Sources */,
 				EE4ABD5A2B5876630046B676 /* Frameworks */,
 				EE4ABD5B2B5876630046B676 /* Resources */,
@@ -351,12 +366,37 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE5F37092B59DA18000F815B /* touchHLE_default_options.txt in Resources */,
+				EE5F36F52B59C9FC000F815B /* touchHLE_apps in Resources */,
+				EE5F36F82B59D477000F815B /* touchHLE_dylibs in Resources */,
+				EE5F36F92B59D477000F815B /* touchHLE_fonts in Resources */,
 				EE4ABD732B5876650046B676 /* LaunchScreen.storyboard in Resources */,
 				EE4ABD702B5876650046B676 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		EE5F36D62B5995E6000F815B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nRUST_PROJ=\"$PROJECT_DIR/../..\"\nPATH=\"$PATH:/Users/$USER/.cargo/bin\"\n\ncd \"$RUST_PROJ\"\n\ncargo build --target aarch64-apple-ios --no-default-features --lib --features sdl2/bundled,touchHLE_openal_soft_wrapper/static\n\nrm -rf \"target/aarch64-apple-ios/debug/libtouchHLE.dylib\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		EE4ABD592B5876630046B676 /* Sources */ = {

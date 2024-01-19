@@ -104,7 +104,20 @@ pub fn user_data_base_path() -> &'static Path {
         }
         Path::new(std::ffi::CStr::from_ptr(path).to_str().unwrap())
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(target_os = "ios")]
+    unsafe {
+        extern "C" {
+            fn SDL_GetPrefPath(org: *const std::ffi::c_char, app: *const std::ffi::c_char) -> *mut std::ffi::c_char;
+        }
+        let ss = std::ffi::CString::new("touchHLE").unwrap();
+        let path = SDL_GetPrefPath(std::ptr::null(), ss.as_ptr());
+        if path.is_null() {
+            log!("Couldn't get iOS external storage path!");
+            panic!();
+        }
+        Path::new(std::ffi::CStr::from_ptr(path).to_str().unwrap())
+    }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     Path::new("")
 }
 

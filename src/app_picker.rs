@@ -46,7 +46,8 @@ struct AppInfo {
 }
 
 pub fn app_picker(options: Options) -> Result<(PathBuf, Environment), String> {
-    let apps_dir = paths::user_data_base_path().join(paths::APPS_DIR);
+    // TODO: fix me
+    let apps_dir = Path::new("").join(paths::APPS_DIR);
 
     let apps: Result<Vec<AppInfo>, String> = if !apps_dir.is_dir() {
         Err(format!("The {} directory couldn't be found. Check you're running touchHLE from the right directory.", apps_dir.display()))
