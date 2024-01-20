@@ -9,9 +9,7 @@
 /* Begin PBXBuildFile section */
 		EE4ABD702B5876650046B676 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE4ABD6F2B5876650046B676 /* Assets.xcassets */; };
 		EE4ABD732B5876650046B676 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE4ABD712B5876650046B676 /* LaunchScreen.storyboard */; };
-		EE4ABDA22B5877F40046B676 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABD8C2B58771C0046B676 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EE4ABDA52B5878250046B676 /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = EE4ABDA42B5878250046B676 /* SDL_uikit_main.c */; };
-		EE4ABDAE2B5887D60046B676 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABD8C2B58771C0046B676 /* SDL2.framework */; };
 		EE4ABDB52B588E540046B676 /* libtouchHLE.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDB12B588C610046B676 /* libtouchHLE.a */; };
 		EE4ABDB62B588E6D0046B676 /* libtouchHLE.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDB12B588C610046B676 /* libtouchHLE.a */; };
 		EE4ABDB82B588F060046B676 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABDB72B588EEC0046B676 /* libc++.tbd */; };
@@ -22,6 +20,18 @@
 		EE5F36F82B59D477000F815B /* touchHLE_dylibs in Resources */ = {isa = PBXBuildFile; fileRef = EE5F36F62B59D477000F815B /* touchHLE_dylibs */; };
 		EE5F36F92B59D477000F815B /* touchHLE_fonts in Resources */ = {isa = PBXBuildFile; fileRef = EE5F36F72B59D477000F815B /* touchHLE_fonts */; };
 		EE5F37092B59DA18000F815B /* touchHLE_default_options.txt in Resources */ = {isa = PBXBuildFile; fileRef = EE5F36FD2B59DA18000F815B /* touchHLE_default_options.txt */; };
+		EEC209442B5BE4EC0003ABAF /* libSDL2.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABD942B58771C0046B676 /* libSDL2.a */; };
+		EEC209462B5BE5300003ABAF /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4ABD942B58771C0046B676 /* libSDL2.a */; };
+		EEC209482B5BE5610003ABAF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC209472B5BE5610003ABAF /* UIKit.framework */; };
+		EEC209492B5BE5750003ABAF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC209352B5BE4440003ABAF /* OpenGLES.framework */; };
+		EEC2094B2B5BE59F0003ABAF /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC2094A2B5BE59F0003ABAF /* CoreMotion.framework */; };
+		EEC2094C2B5BE5B10003ABAF /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC209422B5BE44A0003ABAF /* Metal.framework */; };
+		EEC2094E2B5BE5BF0003ABAF /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC2094D2B5BE5BF0003ABAF /* GameController.framework */; };
+		EEC2095D2B5BE5FA0003ABAF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC209512B5BE5FA0003ABAF /* CoreGraphics.framework */; };
+		EEC2095F2B5BE6280003ABAF /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC2095E2B5BE6280003ABAF /* CoreHaptics.framework */; };
+		EEC209612B5BE63A0003ABAF /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC209602B5BE63A0003ABAF /* AVFoundation.framework */; };
+		EEC209632B5BE6540003ABAF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC209622B5BE6540003ABAF /* QuartzCore.framework */; };
+		EEC209722B5BE6800003ABAF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEC209662B5BE6800003ABAF /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,7 +121,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				EE4ABDA22B5877F40046B676 /* SDL2.framework in Embed Frameworks */,
+				EEC209442B5BE4EC0003ABAF /* libSDL2.a in Embed Frameworks */,
 				EE4ABDB62B588E6D0046B676 /* libtouchHLE.a in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -137,6 +147,16 @@
 		EE5F36F72B59D477000F815B /* touchHLE_fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = touchHLE_fonts; path = ../../touchHLE_fonts; sourceTree = "<group>"; };
 		EE5F36FD2B59DA18000F815B /* touchHLE_default_options.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = touchHLE_default_options.txt; path = ../../touchHLE_default_options.txt; sourceTree = "<group>"; };
 		EE82663A2B5AA40E0063558D /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../../src; sourceTree = "<group>"; };
+		EEC209352B5BE4440003ABAF /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		EEC209422B5BE44A0003ABAF /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		EEC209472B5BE5610003ABAF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		EEC2094A2B5BE59F0003ABAF /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		EEC2094D2B5BE5BF0003ABAF /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
+		EEC209512B5BE5FA0003ABAF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		EEC2095E2B5BE6280003ABAF /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
+		EEC209602B5BE63A0003ABAF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		EEC209622B5BE6540003ABAF /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		EEC209662B5BE6800003ABAF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,11 +164,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EEC209722B5BE6800003ABAF /* Foundation.framework in Frameworks */,
+				EEC209632B5BE6540003ABAF /* QuartzCore.framework in Frameworks */,
+				EEC209612B5BE63A0003ABAF /* AVFoundation.framework in Frameworks */,
+				EEC2095F2B5BE6280003ABAF /* CoreHaptics.framework in Frameworks */,
+				EEC2095D2B5BE5FA0003ABAF /* CoreGraphics.framework in Frameworks */,
+				EEC2094E2B5BE5BF0003ABAF /* GameController.framework in Frameworks */,
+				EEC2094C2B5BE5B10003ABAF /* Metal.framework in Frameworks */,
+				EEC2094B2B5BE59F0003ABAF /* CoreMotion.framework in Frameworks */,
+				EEC209492B5BE5750003ABAF /* OpenGLES.framework in Frameworks */,
+				EEC209482B5BE5610003ABAF /* UIKit.framework in Frameworks */,
 				EE4ABDC02B588FC70046B676 /* Security.framework in Frameworks */,
 				EE4ABDBE2B588FAA0046B676 /* CoreFoundation.framework in Frameworks */,
 				EE4ABDBC2B588F9F0046B676 /* AudioToolbox.framework in Frameworks */,
 				EE4ABDB82B588F060046B676 /* libc++.tbd in Frameworks */,
-				EE4ABDAE2B5887D60046B676 /* SDL2.framework in Frameworks */,
+				EEC209462B5BE5300003ABAF /* libSDL2.a in Frameworks */,
 				EE4ABDB52B588E540046B676 /* libtouchHLE.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -211,6 +241,16 @@
 		EE4ABD9F2B5877DD0046B676 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EEC209662B5BE6800003ABAF /* Foundation.framework */,
+				EEC209622B5BE6540003ABAF /* QuartzCore.framework */,
+				EEC209602B5BE63A0003ABAF /* AVFoundation.framework */,
+				EEC2095E2B5BE6280003ABAF /* CoreHaptics.framework */,
+				EEC209512B5BE5FA0003ABAF /* CoreGraphics.framework */,
+				EEC2094D2B5BE5BF0003ABAF /* GameController.framework */,
+				EEC2094A2B5BE59F0003ABAF /* CoreMotion.framework */,
+				EEC209472B5BE5610003ABAF /* UIKit.framework */,
+				EEC209422B5BE44A0003ABAF /* Metal.framework */,
+				EEC209352B5BE4440003ABAF /* OpenGLES.framework */,
 				EE4ABDBF2B588FC70046B676 /* Security.framework */,
 				EE4ABDBD2B588FAA0046B676 /* CoreFoundation.framework */,
 				EE4ABDBB2B588F9F0046B676 /* AudioToolbox.framework */,
