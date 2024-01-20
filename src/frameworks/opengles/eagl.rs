@@ -512,6 +512,8 @@ unsafe fn present_renderbuffer(gles: &mut dyn GLES, window: &mut Window) {
     // This also sets the framebuffer bindings back to zero, so rendering
     // will go to the default framebuffer (the window).
     gles.DeleteFramebuffersOES(1, &src_framebuffer);
+    gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 1);
+    gles.BindRenderbufferOES(gles11::RENDERBUFFER_OES, 1);
 
     // Reset various things that could affect the quad or virtual cursor we're
     // going to draw. Back up the old state while doing so, so it can be

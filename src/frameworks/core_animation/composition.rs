@@ -154,6 +154,16 @@ pub fn recomposite_if_necessary(env: &mut Environment) -> Option<Instant> {
         unsafe {
             gles.GenTextures(1, &mut texture);
             gles.BindTexture(gles11::TEXTURE_2D, texture);
+            gles.TexParameteri(
+                gles11::TEXTURE_2D,
+                gles11::TEXTURE_MIN_FILTER,
+                gles11::LINEAR as _,
+            );
+            gles.TexParameteri(
+                gles11::TEXTURE_2D,
+                gles11::TEXTURE_MAG_FILTER,
+                gles11::LINEAR as _,
+            );
             gles.TexImage2D(
                 gles11::TEXTURE_2D,
                 0,
@@ -165,16 +175,7 @@ pub fn recomposite_if_necessary(env: &mut Environment) -> Option<Instant> {
                 gles11::UNSIGNED_BYTE,
                 std::ptr::null(),
             );
-            gles.TexParameteri(
-                gles11::TEXTURE_2D,
-                gles11::TEXTURE_MIN_FILTER,
-                gles11::LINEAR as _,
-            );
-            gles.TexParameteri(
-                gles11::TEXTURE_2D,
-                gles11::TEXTURE_MAG_FILTER,
-                gles11::LINEAR as _,
-            );
+            //gles.GenerateMipmapOES(gles11::TEXTURE_2D);
 
             gles.GenFramebuffersOES(1, &mut framebuffer);
             gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, framebuffer);
@@ -236,7 +237,8 @@ pub fn recomposite_if_necessary(env: &mut Environment) -> Option<Instant> {
     // default framebuffer (0) so we need to unbind our internal framebuffer.
     unsafe {
         gles.BindTexture(gles11::TEXTURE_2D, texture);
-        gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 0);
+        gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 1);
+        // gles.BindRenderbufferOES(gles11::RENDERBUFFER_OES, 1);
         present_frame(
             gles,
             present_frame_args.0,

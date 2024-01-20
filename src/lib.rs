@@ -92,7 +92,7 @@ pub extern "C" fn SDL_main(
     // }));
 
     // Empty args: brings up app picker.
-    match main([String::new()].into_iter()) {
+    match main([String::new(), "touchHLE_apps/Super Monkey Ball  v1.02 .ipa".to_string()].into_iter()) {
         Ok(_) => echo!("touchHLE finished"),
         Err(e) => echo!("touchHLE errored: {e:?}"),
     }

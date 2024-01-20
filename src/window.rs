@@ -24,6 +24,7 @@ use std::collections::{HashMap, VecDeque};
 use std::env;
 use std::f32::consts::FRAC_PI_2;
 use std::num::NonZeroU32;
+use std::ptr::null;
 use std::time::{Duration, Instant};
 
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -183,6 +184,24 @@ impl Window {
             // It's important to set context version BEFORE window creation
             // ref. https://wiki.libsdl.org/SDL2/SDL_GLattr
             let attr = video_ctx.gl_attr();
+            attr.set_red_size(8);
+            attr.set_green_size(8);
+            attr.set_blue_size(8);
+            attr.set_alpha_size(8);
+            attr.set_depth_size(0);
+            attr.set_accelerated_visual(true);
+            attr.set_double_buffer(false);
+
+            let result = unsafe { sdl2::sys::SDL_GL_SetAttribute(sdl2::sys::SDL_GLattr::SDL_GL_RETAINED_BACKING, 0) };
+            if result != 0 {
+                // Panic and print the attribute that failed.
+                panic!(
+                    "couldn't set attribute {}: {}",
+                    0,
+                    sdl2::get_error()
+                );
+            }
+
             attr.set_context_version(1, 1);
             attr.set_context_profile(sdl2::video::GLProfile::GLES);
         }
@@ -305,6 +324,27 @@ impl Window {
         gl_ctx.make_current(&window);
         log!("Driver info: {}", unsafe { gl_ctx.driver_description() });
         window.internal_gl_ctx = Some(gl_ctx);
+        
+        let mut tmp = sdl2::sys::SDL_RendererInfo{
+            name: null(),
+            flags: 0,
+            num_texture_formats: 0,
+            texture_formats: [0; 16],
+            max_texture_width: 0,
+            max_texture_height: 0,
+        };
+        let result = unsafe {
+            sdl2::sys::SDL_GetRenderDriverInfo(0, &mut tmp)
+        };
+        if result != 0 {
+            panic!(
+                "SDL_GetRenderDriverInfo failed: {}, {}",
+                result,
+                sdl2::get_error()
+            );
+        }
+        let c_str = unsafe { std::ffi::CStr::from_ptr(tmp.name) };
+        log!("VideoRenderDriver info: {}", c_str.to_str().unwrap());
 
         if window.splash_image.is_some() {
             window.display_splash();
@@ -921,9 +961,36 @@ impl Window {
         use crate::gles::gles11_raw as gles11; // constants only
 
         unsafe {
+            // gl_ctx.Disable(gles11::DEPTH_TEST);
+            // gl_ctx.Disable(gles11::CULL_FACE);
+            //
+            // gl_ctx.MatrixMode(gles11::MODELVIEW);
+            // gl_ctx.LoadIdentity();
+            //
+            // gl_ctx.EnableClientState(gles11::VERTEX_ARRAY);
+            // gl_ctx.DisableClientState(gles11::TEXTURE_COORD_ARRAY);
+            //
+            // gl_ctx.ClearColor(1.0, 1.0, 1.0, 1.0);
+            //
+            // gl_ctx.Enable(gles11::TEXTURE_2D);
+
+            let mut framebuffer = 0;
+            gl_ctx.GenFramebuffersOES(1, &mut framebuffer);
+            gl_ctx.BindFramebufferOES(gles11::FRAMEBUFFER_OES, framebuffer);
+            
             let mut texture = 0;
             gl_ctx.GenTextures(1, &mut texture);
             gl_ctx.BindTexture(gles11::TEXTURE_2D, texture);
+            gl_ctx.TexParameteri(
+                gles11::TEXTURE_2D,
+                gles11::TEXTURE_MIN_FILTER,
+                gles11::LINEAR as _,
+            );
+            gl_ctx.TexParameteri(
+                gles11::TEXTURE_2D,
+                gles11::TEXTURE_MAG_FILTER,
+                gles11::LINEAR as _,
+            );
             let (width, height) = image.dimensions();
             gl_ctx.TexImage2D(
                 gles11::TEXTURE_2D,
@@ -936,22 +1003,51 @@ impl Window {
                 gles11::UNSIGNED_BYTE,
                 image.pixels().as_ptr() as *const _,
             );
-            gl_ctx.TexParameteri(
+
+            gl_ctx.FramebufferTexture2DOES(
+                gles11::FRAMEBUFFER_OES,
+                gles11::COLOR_ATTACHMENT0_OES,
                 gles11::TEXTURE_2D,
-                gles11::TEXTURE_MIN_FILTER,
-                gles11::LINEAR as _,
+                texture,
+                0,
             );
-            gl_ctx.TexParameteri(
-                gles11::TEXTURE_2D,
-                gles11::TEXTURE_MAG_FILTER,
-                gles11::LINEAR as _,
+            assert_eq!(gl_ctx.GetError(), 0);
+            assert_eq!(
+                gl_ctx.CheckFramebufferStatusOES(gles11::FRAMEBUFFER_OES),
+                gles11::FRAMEBUFFER_COMPLETE_OES
             );
+
+            //gl_ctx.Disable(gles11::TEXTURE_2D);
+            //gl_ctx.GenerateMipmapOES(gles11::TEXTURE_2D);
+
+//            gl_ctx.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 1);
+//            gl_ctx.FramebufferTexture2DOES(
+//                gles11::FRAMEBUFFER_OES, gles11::COLOR_ATTACHMENT0_OES, gles11::TEXTURE_2D, texture, 0);
+//            assert_eq!(gl_ctx.GetError(), 0);
+//            assert_eq!(
+//                gl_ctx.CheckFramebufferStatusOES(gles11::FRAMEBUFFER_OES),
+//                gles11::FRAMEBUFFER_COMPLETE_OES
+//            );
 
             present_frame(
                 gl_ctx, viewport, matrix, /* virtual_cursor_visible_at: */ None,
             );
 
             gl_ctx.DeleteTextures(1, &texture);
+
+            //gl_ctx.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 1);
+//             gl_ctx.BindRenderbufferOES(gles11::RENDERBUFFER_OES, 1);
+//             gl_ctx.FramebufferRenderbufferOES(
+//                 gles11::FRAMEBUFFER_OES,
+//                 gles11::COLOR_ATTACHMENT0_OES,
+//                 gles11::RENDERBUFFER_OES,
+//                 1,
+//             );
+//            assert_eq!(gl_ctx.GetError(), 0);
+//            assert_eq!(
+//                gl_ctx.CheckFramebufferStatusOES(gles11::FRAMEBUFFER_OES),
+//                gles11::FRAMEBUFFER_COMPLETE_OES
+//            );
         };
 
         self.window.gl_swap_window();
