@@ -72,12 +72,22 @@ pub unsafe fn present_frame(
     ];
     gles.EnableClientState(gles11::VERTEX_ARRAY);
     gles.VertexPointer(2, gles11::FLOAT, 0, vertices.as_ptr() as *const GLvoid);
-    let tex_coords: [f32; 12] = [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0];
+    //let tex_coords: [f32; 12] = [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0];
+    // TODO: fix this properly
+    let tex_coords: [f32; 12] =  [
+        0.0, 1.0,
+        1.0, 1.0,
+        0.0, 0.0,
+        0.0, 0.0,
+        1.0, 1.0,
+        1.0, 0.0,
+    ];
     gles.EnableClientState(gles11::TEXTURE_COORD_ARRAY);
     gles.TexCoordPointer(2, gles11::FLOAT, 0, tex_coords.as_ptr() as *const GLvoid);
-    let matrix = Matrix::<4>::from(&rotation_matrix);
+    //let matrix = Matrix::<4>::from(&rotation_matrix);
     gles.MatrixMode(gles11::TEXTURE);
-    gles.LoadMatrixf(matrix.columns().as_ptr() as *const _);
+    //gles.LoadMatrixf(matrix.columns().as_ptr() as *const _);
+    gles.LoadIdentity();
     gles.Enable(gles11::TEXTURE_2D);
     gles.DrawArrays(gles11::TRIANGLES, 0, 6);
     // clean this up so we don't need to worry about it in e.g. Core Animation

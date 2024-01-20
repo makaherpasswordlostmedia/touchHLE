@@ -33,7 +33,7 @@
 
 # Super Monkey Ball and Super Monkey Ball Lite
 # B = speed up level intro, Start = pause
-com.ooi.supermonkeyball: --landscape-left --y-tilt-offset=24 --button-to-touch=B,470,160 --button-to-touch=Start,240,10
+com.ooi.supermonkeyball: --landscape-left --button-to-touch=B,470,160 --button-to-touch=Start,240,10
 smblite: --landscape-left --y-tilt-offset=24 --button-to-touch=B,470,160 --button-to-touch=Start,240,10
 
 # Crash Bandicoot Nitro Kart 3D

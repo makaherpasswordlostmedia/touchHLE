@@ -175,6 +175,8 @@ pub fn recomposite_if_necessary(env: &mut Environment) -> Option<Instant> {
                 gles11::TEXTURE_MAG_FILTER,
                 gles11::LINEAR as _,
             );
+            gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_WRAP_S, gles11::CLAMP_TO_EDGE as _);
+            gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_WRAP_T, gles11::CLAMP_TO_EDGE as _);
 
             gles.GenFramebuffersOES(1, &mut framebuffer);
             gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, framebuffer);
@@ -236,7 +238,9 @@ pub fn recomposite_if_necessary(env: &mut Environment) -> Option<Instant> {
     // default framebuffer (0) so we need to unbind our internal framebuffer.
     unsafe {
         gles.BindTexture(gles11::TEXTURE_2D, texture);
-        gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 0);
+        // TODO: use SDL_GetWindowWMInfo() to obtain default framebuffer/renderbuffer
+        gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 1);
+        gles.BindRenderbufferOES(gles11::RENDERBUFFER_OES, 1);
         present_frame(
             gles,
             present_frame_args.0,

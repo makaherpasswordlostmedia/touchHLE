@@ -507,11 +507,16 @@ unsafe fn present_renderbuffer(gles: &mut dyn GLES, window: &mut Window) {
         gles11::TEXTURE_MIN_FILTER,
         gles11::LINEAR as _,
     );
+    gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_WRAP_S, gles11::CLAMP_TO_EDGE as _);
+    gles.TexParameteri(gles11::TEXTURE_2D, gles11::TEXTURE_WRAP_T, gles11::CLAMP_TO_EDGE as _);
 
     // Clean up the framebuffer object since we no longer need it.
     // This also sets the framebuffer bindings back to zero, so rendering
     // will go to the default framebuffer (the window).
     gles.DeleteFramebuffersOES(1, &src_framebuffer);
+    // TODO: use SDL_GetWindowWMInfo() to obtain default framebuffer/renderbuffer
+    gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, 1);
+    gles.BindRenderbufferOES(gles11::RENDERBUFFER_OES, 1);
 
     // Reset various things that could affect the quad or virtual cursor we're
     // going to draw. Back up the old state while doing so, so it can be
@@ -640,6 +645,7 @@ unsafe fn present_renderbuffer(gles: &mut dyn GLES, window: &mut Window) {
     // Restore the other bindings
     gles.BindTexture(gles11::TEXTURE_2D, old_texture_2d);
     gles.BindFramebufferOES(gles11::FRAMEBUFFER_OES, old_framebuffer);
+    gles.BindRenderbufferOES(gles11::RENDERBUFFER_OES, renderbuffer);
 
     //{ let err = gl21::GetError(); if err != 0 { panic!("{:#x}", err); } }
 }
