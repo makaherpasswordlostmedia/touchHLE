@@ -15,8 +15,18 @@ fn AudioUnitGetProperty(_env: &mut Environment, inUnit: MutVoidPtr, inID: u32, i
     0 // success
 }
 
+fn AudioOutputUnitStart(env: &mut Environment, ci: MutVoidPtr) -> OSStatus {
+    0 // success
+}
+
+fn AudioOutputUnitStop(env: &mut Environment, ci: MutVoidPtr) -> OSStatus {
+    0 // success
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(AudioUnitInitialize(_)),
     export_c_func!(AudioUnitSetProperty(_, _, _, _, _, _)),
     export_c_func!(AudioUnitGetProperty(_, _, _, _, _, _)),
+    export_c_func!(AudioOutputUnitStart(_)),
+    export_c_func!(AudioOutputUnitStop(_)),
 ];
