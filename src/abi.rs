@@ -409,7 +409,7 @@ pub fn write_next_arg<T: GuestArg>(
 /// Represents variable arguments in a [CallFromGuest] function signature,
 /// like C `...`, e.g. in the signature of `printf()`. See also [VaList].
 #[derive(Debug)]
-pub struct DotDotDot(VaList);
+pub struct DotDotDot(pub VaList);
 impl DotDotDot {
     pub fn start(&self) -> VaList {
         self.0
@@ -422,8 +422,8 @@ impl DotDotDot {
 /// See also [DotDotDot].
 #[derive(Copy, Clone, Debug)]
 pub struct VaList {
-    reg_offset: usize,
-    stack_pointer: ConstVoidPtr,
+    pub reg_offset: usize,
+    pub stack_pointer: ConstVoidPtr,
 }
 impl VaList {
     /// Get the next argument, like C's `va_arg()`. Be careful as the type may

@@ -6,9 +6,11 @@
 //! `string.h`
 
 use crate::dyld::{export_c_func, FunctionExports};
-use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, MutPtr, MutVoidPtr, Ptr};
+use crate::mem::{ConstPtr, ConstVoidPtr, guest_size_of, GuestUSize, MutPtr, MutVoidPtr, Ptr};
 use crate::Environment;
 use std::cmp::Ordering;
+use crate::abi::{DotDotDot, VaList};
+use crate::libc::stdio::printf::snprintf;
 
 use super::generic_char::GenericChar;
 
@@ -64,6 +66,9 @@ fn strtok(env: &mut Environment, s: MutPtr<u8>, sep: ConstPtr<u8>) -> MutPtr<u8>
 
 // Functions shared with wchar.rs
 
+fn bzero(env: &mut Environment, dest: MutVoidPtr, count: GuestUSize) {
+    memset(env, dest, 0, count);
+}
 fn memset(env: &mut Environment, dest: MutVoidPtr, ch: i32, count: GuestUSize) -> MutVoidPtr {
     GenericChar::<u8>::memset(env, dest.cast(), ch as u8, count).cast()
 }
@@ -125,6 +130,24 @@ fn strncpy(
     size: GuestUSize,
 ) -> MutPtr<u8> {
     GenericChar::<u8>::strncpy(env, dest, src, size)
+}
+fn strlcpy(
+    env: &mut Environment,
+    dest: MutPtr<u8>,
+    src: ConstPtr<u8>,
+    size: GuestUSize,
+) -> i32 {
+    let format = env.mem.alloc_and_write_cstr(b"%s");
+    let fake_sp: MutPtr<ConstPtr<u8>> = env.mem.alloc(guest_size_of::<ConstPtr<u8>>()).cast();
+    env.mem.write(fake_sp, src);
+    let va_list = DotDotDot(VaList {
+        reg_offset: 4,
+        stack_pointer: fake_sp.cast_const().cast(),
+    });
+    let n = snprintf(env, dest, size, format.cast_const(), va_list);
+    env.mem.free(fake_sp.cast());
+    env.mem.free(format.cast());
+    n
 }
 fn strsep(env: &mut Environment, stringp: MutPtr<MutPtr<u8>>, delim: ConstPtr<u8>) -> MutPtr<u8> {
     let orig = env.mem.read(stringp);
@@ -226,6 +249,7 @@ fn strrchr(env: &mut Environment, path: ConstPtr<u8>, c: u8) -> ConstPtr<u8> {
 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(strtok(_, _)),
+    export_c_func!(bzero(_, _)),
     // Functions shared with wchar.rs
     export_c_func!(memset(_, _, _)),
     export_c_func!(memcpy(_, _, _)),
@@ -239,6 +263,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(strcspn(_, _)),
     export_c_func!(__strcat_chk(_, _, _)),
     export_c_func!(strncpy(_, _, _)),
+    export_c_func!(strlcpy(_, _, _)),
     export_c_func!(strsep(_, _)),
     export_c_func!(strdup(_)),
     export_c_func!(strcmp(_, _)),

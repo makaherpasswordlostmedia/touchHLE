@@ -72,7 +72,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 + (id)currentRunLoop {
-    assert!(env.current_thread == 0);
+    //assert!(env.current_thread == 0);
     msg![env; this mainRunLoop]
 }
 

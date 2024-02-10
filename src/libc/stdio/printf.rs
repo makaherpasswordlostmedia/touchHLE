@@ -220,7 +220,7 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
     res
 }
 
-fn snprintf(
+pub fn snprintf(
     env: &mut Environment,
     dest: MutPtr<u8>,
     n: GuestUSize,

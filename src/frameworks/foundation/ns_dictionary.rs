@@ -197,6 +197,23 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 @end
 
+// NSMutableDictionary is an abstract class. A subclass must provide everything
+// NSDictionary provides, plus:
+// - (void)setObject:(id)object forKey:(id)key;
+// - (void)removeObjectForKey:(id)key;
+// Note that it inherits from NSDictionary, so we must ensure we override any default
+// methods that would be inappropriate for mutability.
+@implementation NSMutableDictionary: NSDictionary
+
++ (id)allocWithZone:(NSZonePtr)zone {
+    // NSMutableDictionary might be subclassed by something which needs allocWithZone:
+    // to have the normal behaviour. Unimplemented: call superclass alloc then.
+    assert!(this == env.objc.get_known_class("NSMutableDictionary", &mut env.mem));
+    msg_class![env; _touchHLE_NSMutableDictionary allocWithZone:zone]
+}
+
+@end
+
 // Our private subclass that is the single implementation of NSDictionary for
 // the time being.
 @implementation _touchHLE_NSDictionary: NSDictionary
@@ -231,6 +248,102 @@ pub const CLASSES: ClassExports = objc_classes! {
     let res = host_obj.lookup(env, key);
     *env.objc.borrow_mut(this) = host_obj;
     res
+}
+- (id)valueForKey:(id)key {
+    let key_str = ns_string::to_rust_string(env, key);
+    assert!(!key_str.starts_with('@'));
+    msg![env; this objectForKey:key]
+}
+
+// FIXME: those are from NSUserDefaults!
+- (NSInteger)integerForKey:(id)defaultName {
+    let val: id = msg![env; this objectForKey:defaultName];
+    msg![env; val integerValue]
+}
+- (bool)boolForKey:(id)defaultName {
+    let val: id = msg![env; this objectForKey:defaultName];
+    msg![env; val boolValue]
+}
+
+- (id)dictionaryRepresentation {
+    this
+}
+- (id)dataForKey:(id)name {
+    msg![env; this objectForKey:name]
+}
+- (())registerDefaults:(id)dict {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(dict));
+    for (_, key_value) in host_obj.map {
+        let key = key_value[0].0;
+        let value = key_value[0].1;
+        let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+        host_obj.insert(env, key, value, false);
+        *env.objc.borrow_mut(this) = host_obj;
+    }
+}
+- (())synchronize {
+}
+- (())setObject:(id)value
+        forKey:(id)key { // NSString*
+    msg![env; this setValue:value forKey:key]
+}
+- (())setBool:(bool)value
+       forKey:(id)key { // NSString*
+    let num: id = msg_class![env; NSNumber numberWithBool:value];
+    msg![env; this setObject:num forKey:key]
+}
+- (())setInteger:(NSInteger)value forKey:(id)defaultName {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let value_id: id = msg_class![env; NSNumber numberWithInteger:value];
+    host_obj.insert(env, defaultName, value_id, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (())setValue:(id)value
+        forKey:(id)key { // NSString*
+    assert!(!key.is_null());
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert(env, key, value, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+@end
+
+@implementation _touchHLE_NSMutableDictionary: _touchHLE_NSDictionary
+
++ (id)allocWithZone:(NSZonePtr)_zone {
+    let host_object = Box::<DictionaryHostObject>::default();
+    env.objc.alloc_object(this, host_object, &mut env.mem)
+}
+
+- (id)init {
+    *env.objc.borrow_mut(this) = <DictionaryHostObject as Default>::default();
+    this
+}
+
+- (NSUInteger)count {
+    env.objc.borrow::<DictionaryHostObject>(this).count
+}
+
+- (id)objectForKey:(id)key {
+    let host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let res = host_obj.lookup(env, key);
+    *env.objc.borrow_mut(this) = host_obj;
+    res
+}
+
+- (())setValue:(id)value
+        forKey:(id)key { // NSString*
+    assert!(!key.is_null());
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert(env, key, value, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (id)allKeys {
+    let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let keys: Vec<id> = dict_host_obj.iter_keys().collect();
+    ns_array::from_vec(env, keys)
 }
 
 @end

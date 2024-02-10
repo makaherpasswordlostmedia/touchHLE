@@ -202,6 +202,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 }
 
+- (())setClipsToBounds:(bool)_clip {
+
+}
+
 - (())layoutSubviews {
     // On iOS 5.1 and earlier, the default implementation of this method does
     // nothing.

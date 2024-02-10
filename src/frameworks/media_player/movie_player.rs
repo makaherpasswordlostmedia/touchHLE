@@ -47,6 +47,8 @@ pub const UIKeyboardWillHideNotification: &str =
     "UIKeyboardWillHideNotification";
 pub const UIDeviceOrientationDidChangeNotification: &str =
     "UIDeviceOrientationDidChangeNotification";
+pub const UIApplicationLaunchOptionsRemoteNotificationKey: &str =
+    "UIApplicationLaunchOptionsRemoteNotificationKey";
 
 /// `NSNotificationName` values.
 pub const CONSTANTS: ConstantExports = &[
@@ -77,6 +79,10 @@ pub const CONSTANTS: ConstantExports = &[
     (
         "_UIDeviceOrientationDidChangeNotification",
         HostConstant::NSString(UIDeviceOrientationDidChangeNotification),
+    ),
+    (
+        "_UIApplicationLaunchOptionsRemoteNotificationKey",
+        HostConstant::NSString(UIApplicationLaunchOptionsRemoteNotificationKey),
     ),
 ];
 

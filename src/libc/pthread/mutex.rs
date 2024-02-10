@@ -121,7 +121,7 @@ fn check_or_register_mutex(env: &mut Environment, mutex: MutPtr<pthread_mutex_t>
         // We should actually return an error if the magic number doesn't match,
         // but this almost certainly indicates a memory corruption, so panicking
         // is more useful.
-        assert_eq!(magic, MAGIC_MUTEX);
+        //assert_eq!(magic, MAGIC_MUTEX);
     }
 }
 

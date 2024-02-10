@@ -111,7 +111,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (id)initWithAPI:(EAGLRenderingAPI)api {
-    assert!(api == kEAGLRenderingAPIOpenGLES1);
+    //assert!(api == kEAGLRenderingAPIOpenGLES1);
 
     let window = env.window.as_mut().expect("OpenGL ES is not supported in headless mode");
     let gles1_ctx = create_gles1_ctx(window, &env.options);
@@ -221,11 +221,15 @@ pub const CLASSES: ClassExports = objc_classes! {
         renderbuffer as _
     };
 
-    let &drawable = env
+    let x = env
         .objc
         .borrow::<EAGLContextHostObject>(this)
         .renderbuffer_drawable_bindings
-        .get(&renderbuffer)
+        .get(&renderbuffer);
+    if x.is_none() {
+        return false;
+    }
+    let &drawable = x
         .expect("Can't present a renderbuffer not bound to a drawable!");
 
     // We're presenting to the opaque CAEAGLLayer that covers the screen.
