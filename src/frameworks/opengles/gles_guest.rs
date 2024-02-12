@@ -118,6 +118,12 @@ fn glGetFloatv(env: &mut Environment, pname: GLenum, params: MutPtr<GLfloat>) {
     });
 }
 fn glGetIntegerv(env: &mut Environment, pname: GLenum, params: MutPtr<GLint>) {
+    log!("glGetIntegerv pname {:X}, params {:?}", pname, params);
+    let current_ctx = env.framework_state.opengles.current_ctx_for_thread(env.current_thread);
+    if current_ctx.is_none() && pname == gles11::MAX_TEXTURE_UNITS {
+        env.mem.write(params, 1);
+        return;
+    }
     with_ctx_and_mem(env, |gles, mem| {
         let params = mem.ptr_at_mut(params, 16 /* upper bound */);
         unsafe { gles.GetIntegerv(pname, params) };

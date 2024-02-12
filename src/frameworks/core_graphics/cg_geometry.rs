@@ -192,4 +192,8 @@ pub const CONSTANTS: ConstantExports = &[
         "_CGRectZero",
         HostConstant::Custom(|mem| mem.alloc_and_write(CGRectZero).cast().cast_const()),
     ),
+    (
+        "_kCLLocationAccuracyKilometer",
+        HostConstant::Custom(|mem| mem.alloc_and_write(0.1f32).cast().cast_const()),
+    ),
 ];

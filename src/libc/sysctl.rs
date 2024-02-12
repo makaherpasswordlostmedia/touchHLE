@@ -28,7 +28,7 @@ fn sysctl(
         newp,
         newlen
     );
-    assert!(!oldp.is_null() && !oldlenp.is_null()); // TODO
+    //assert!(!oldp.is_null() && !oldlenp.is_null()); // TODO
     assert!(newp.is_null()); // TODO
     env.mem.write(oldlenp, 0);
     0 // success

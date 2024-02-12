@@ -9,9 +9,10 @@ use crate::dyld::{export_c_func, FunctionExports};
 use crate::mem::{ConstPtr, MutVoidPtr, Ptr};
 use crate::Environment;
 
-const ALLOWED_LIBRARIES: [Result<&str, &[u8]>; 2] = [
+const ALLOWED_LIBRARIES: [Result<&str, &[u8]>; 3] = [
     Ok("/usr/lib/libSystem.B.dylib"),
     Ok("/System/Library/Frameworks/OpenAL.framework/OpenAL"),
+    Ok("d"),
 ];
 
 fn dlopen(env: &mut Environment, path: ConstPtr<u8>, _mode: i32) -> MutVoidPtr {
@@ -25,7 +26,8 @@ fn dlopen(env: &mut Environment, path: ConstPtr<u8>, _mode: i32) -> MutVoidPtr {
 }
 
 fn dlsym(env: &mut Environment, handle: MutVoidPtr, symbol: ConstPtr<u8>) -> MutVoidPtr {
-    assert!(ALLOWED_LIBRARIES.contains(&env.mem.cstr_at_utf8(handle.cast())));
+    let handle_val = env.mem.cstr_at_utf8(handle.cast());
+    assert!(ALLOWED_LIBRARIES.contains(&handle_val), "{:?}", handle_val);
     // For some reason, the symbols passed to dlsym() don't have the leading _.
     let symbol = format!("_{}", env.mem.cstr_at_utf8(symbol).unwrap());
     // TODO: error handling. dlsym() should just return NULL in this case, but
