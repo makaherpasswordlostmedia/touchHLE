@@ -337,6 +337,11 @@ fn _ZNK3irr17IReferenceCounted4dropEv(env: &mut Environment, ptr: MutVoidPtr) {
     func.call_from_host(env, (ptr,))
 }
 
+fn _ZNK4Body18isIslandGeneratingEv(env: &mut Environment, ptr: MutVoidPtr) {
+    let func = GuestFunction::from_addr_with_thumb_bit(0x007659d0);
+    func.call_from_host(env, (ptr,))
+}
+
 pub const CONSTANTS: ConstantExports = &[
     (
         "___stdinp",
@@ -385,4 +390,5 @@ pub const FUNCTIONS: FunctionExports = &[
     // POSIX-specific functions
     export_c_func!(fileno(_)),
     export_c_func!(_ZNK3irr17IReferenceCounted4dropEv(_)),
+    export_c_func!(_ZNK4Body18isIslandGeneratingEv(_)),
 ];

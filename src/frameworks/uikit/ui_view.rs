@@ -12,6 +12,8 @@ pub mod ui_alert_view;
 pub mod ui_control;
 pub mod ui_image_view;
 pub mod ui_label;
+pub mod ui_scroll_view;
+pub mod ui_text_view;
 pub mod ui_window;
 
 use super::ui_graphics::{UIGraphicsPopContext, UIGraphicsPushContext};
@@ -496,6 +498,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     true
 }
 
+@end
+
+@implementation UIToolbar: UIView
+- (())setItems:(id)items {
+
+}
 @end
 
 };

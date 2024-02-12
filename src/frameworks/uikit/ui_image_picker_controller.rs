@@ -7,6 +7,7 @@
 
 use crate::frameworks::foundation::NSInteger;
 use crate::objc::{objc_classes, ClassExports};
+use crate::objc::{id, SEL, nil};
 
 type UIImagePickerControllerSourceType = NSInteger;
 
@@ -24,6 +25,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     false
 }
 
+@end
+
+@implementation UIBarButtonItem: NSObject
+- (id)initWithBarButtonSystemItem:(NSInteger)item target:(id)target action:(SEL)action {
+    nil
+}
+- (id)initWithCustomView:(id)view {
+    nil
+}
 @end
 
 };

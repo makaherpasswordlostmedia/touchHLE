@@ -5,6 +5,7 @@
  */
 //! The `NSArray` class cluster, including `NSMutableArray`.
 
+use crate::abi::DotDotDot;
 use super::ns_property_list_serialization::deserialize_plist_from_file;
 use super::{ns_keyed_unarchiver, ns_string, ns_url, NSUInteger};
 use crate::fs::GuestPath;
@@ -58,20 +59,15 @@ pub const CLASSES: ClassExports = objc_classes! {
     let res = deserialize_plist_from_file(env, &path, /* array_expected: */ true);
     autorelease(env, res)
 }
-+ (id)arrayWithObjects:(id)firstObj, ...args {
-    retain(env, firstObj);
-    let mut objects = vec![firstObj];
-    let mut varargs = args.start();
-    loop {
-        let next_arg: id = varargs.next(env);
-        if next_arg.is_null() {
-            break;
-        }
-        retain(env, next_arg);
-        objects.push(next_arg);
-    }
-    let array = from_vec(env, objects);
-    autorelease(env, array)
++ (id)arrayWithObjects:(id)first, ...rest {
+    let new = msg_class![env; NSArray alloc];
+    from_va_args(env, new, first, rest);
+    autorelease(env, new)
+}
+
+- (id)initWithObjects:(id)first, ...rest {
+    from_va_args(env, this, first, rest);
+    this
 }
 
 // These probably comes from some category related to plists.
@@ -303,4 +299,17 @@ pub fn from_vec(env: &mut Environment, objects: Vec<id>) -> id {
     let array: id = msg_class![env; NSArray alloc];
     env.objc.borrow_mut::<ArrayHostObject>(array).array = objects;
     array
+}
+
+fn from_va_args(env: &mut Environment, array: id, first: id, rest: DotDotDot) {
+    let mut va_args = rest.start();
+    let mut v = vec![retain(env, first)];
+    loop {
+        let obj = va_args.next(env);
+        if obj == nil {
+            break;
+        }
+        v.push(retain(env, obj));
+    }
+    env.objc.borrow_mut::<ArrayHostObject>(array).array = v;
 }
