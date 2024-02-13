@@ -28,24 +28,28 @@ use crate::gles::gles11_raw::types::{GLintptr as HostGLintptr, GLsizeiptr as Hos
 type GuestGLsizeiptr = GuestISize;
 type GuestGLintptr = GuestISize;
 
-fn with_ctx_and_mem<T, U>(env: &mut Environment, f: T) -> U
+fn with_ctx_and_mem<T: Copy, U>(env: &mut Environment, f: T) -> U
 where
     T: FnOnce(&mut dyn GLES, &mut Mem) -> U,
 {
-    let gles = super::sync_context(
+    let mut res: Option<U> = None;
+    super::sync_context(
         &mut env.framework_state.opengles,
         &mut env.objc,
         env.window
             .as_mut()
             .expect("OpenGL ES is not supported in headless mode"),
         env.current_thread,
+        |gles, _, _| {
+            res = Some(f(gles, &mut env.mem));
+        }
     );
 
     //panic_on_gl_errors(&mut **gles);
-    let res = f(gles, &mut env.mem);
+    //let
     //panic_on_gl_errors(&mut **gles);
-    #[allow(clippy::let_and_return)]
-    res
+    //#[allow(clippy::let_and_return)]
+    res.unwrap()
 }
 
 /// Useful for debugging
