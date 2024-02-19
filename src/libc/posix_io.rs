@@ -235,6 +235,9 @@ pub fn read(
     buffer: MutVoidPtr,
     size: GuestUSize,
 ) -> GuestISize {
+    if buffer.is_null() {
+        return 0;
+    }
     // TODO: error handling for unknown fd?
     let mut file = env.libc_state.posix_io.file_for_fd(fd).unwrap();
 
@@ -315,6 +318,12 @@ pub(super) fn eof(env: &mut Environment, fd: FileDescriptor) -> i32 {
         0
     }
 }
+
+pub(super) fn clearerr(env: &mut Environment, fd: FileDescriptor) {
+    let mut file = env.libc_state.posix_io.file_for_fd(fd).unwrap();
+    file.reached_eof = false;
+}
+
 
 pub fn write(
     env: &mut Environment,

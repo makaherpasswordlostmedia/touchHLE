@@ -638,8 +638,10 @@ fn alGetInteger(_env: &mut Environment, _param: ALenum) -> ALint {
 fn alGetIntegerv(_env: &mut Environment, _param: ALenum, _values: MutPtr<ALint>) {
     todo!();
 }
-fn alGetProcAddress(_env: &mut Environment, _funcName: ConstPtr<u8>) -> MutVoidPtr {
-    todo!();
+fn alGetProcAddress(env: &mut Environment, funcName: ConstPtr<u8>) -> MutVoidPtr {
+    let fname = env.mem.cstr_at_utf8(funcName).unwrap();
+    log!("alGetProcAddress {}", fname);
+    Ptr::null()
 }
 fn alIsEnabled(_env: &mut Environment, _capability: ALenum) -> ALboolean {
     todo!();
