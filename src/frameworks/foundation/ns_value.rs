@@ -173,6 +173,22 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 // TODO: accessors etc
 
+- (NSInteger)integerValue {
+    let value = if let &NSNumberHostObject::Int(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
+}
+- (i32)intValue {
+    msg![env; this integerValue]
+}
+- (f32)floatValue {
+    let value = if let &NSNumberHostObject::Float(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
+}
+- (bool)boolValue {
+    let value = if let &NSNumberHostObject::Bool(value) = env.objc.borrow(this) { value } else { todo!() };
+    value
+}
+
 @end
 
 };
