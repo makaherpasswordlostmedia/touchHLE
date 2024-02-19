@@ -15,10 +15,12 @@
 //! See also: [crate::objc], especially the `objects` module.
 
 use super::ns_string::to_rust_string;
-use super::NSUInteger;
+use super::ns_run_loop::NSDefaultRunLoopMode;
+use super::{NSUInteger, ns_string};
+use super::ns_dictionary::dict_from_keys_and_objects;
 use crate::mem::MutVoidPtr;
 use crate::objc::{
-    id, msg, msg_class, msg_send, objc_classes, Class, ClassExports, NSZonePtr, ObjC,
+    id, nil, msg, msg_class, msg_send, objc_classes, Class, ClassExports, NSZonePtr, ObjC,
     TrivialHostObject, SEL,
 };
 
@@ -173,6 +175,45 @@ pub const CLASSES: ClassExports = objc_classes! {
            withObject:(id)o2 {
     assert!(!sel.is_null());
     msg_send(env, (this, sel, o1, o2))
+}
+
+- (())performSelectorOnMainThread:(SEL)sel withObject:(id)arg waitUntilDone:(bool)wait {
+    // // FIXME: main thread...
+    // () = msg_send(env, (this, sel, arg));
+
+    assert!(env.current_thread != 0);
+    log!("performSelectorOnMainThread:{} withObject:{:?} waitUntilDone:{}", sel.as_str(&env.mem), arg, wait);
+    assert!(!wait);
+
+    let sel_key: id = ns_string::get_static_str(env, "SEL");
+    let sel_str = ns_string::from_rust_string(env, sel.as_str(&env.mem).to_string());
+    let arg_key: id = ns_string::get_static_str(env, "arg");
+    let dict = dict_from_keys_and_objects(env, &[(sel_key, sel_str), (arg_key, arg)]);
+
+    let selector = env.objc.lookup_selector("timerFireMethod:").unwrap();
+    let timer:id = msg_class![env; NSTimer timerWithTimeInterval:0.0
+                                              target:this
+                                            selector:selector
+                                            userInfo:dict
+                                             repeats:false];
+
+    let run_loop: id = msg_class![env; NSRunLoop mainRunLoop];
+    let mode: id = ns_string::get_static_str(env, NSDefaultRunLoopMode);
+    let _: () = msg![env; run_loop addTimer:timer forMode:mode];
+}
+
+- (())timerFireMethod:(id)which { // NSTimer *
+    let dict: id = msg![env; which userInfo];
+
+    let sel_key: id = ns_string::get_static_str(env, "SEL");
+    let sel_str_id: id = msg![env; dict objectForKey:sel_key];
+    let sel_str = ns_string::to_rust_string(env, sel_str_id);
+    let sel = env.objc.lookup_selector(&sel_str).unwrap();
+
+    let arg_key: id = ns_string::get_static_str(env, "arg");
+    let arg: id = msg![env; dict objectForKey:arg_key];
+
+    () = msg_send(env, (this, sel, arg));
 }
 
 @end
