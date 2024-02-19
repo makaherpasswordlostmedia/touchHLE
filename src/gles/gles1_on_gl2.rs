@@ -1482,7 +1482,11 @@ impl GLES for GLES1OnGL2 {
                 assert!(pname == gl21::TEXTURE_LOD_BIAS_EXT);
                 gl21::TexEnvi(target, pname, param)
             }
-            _ => unimplemented!(),
+            gl21::TEXTURE_2D => {
+                assert_eq!(pname, gl21::TEXTURE_ENV_MODE);
+                gl21::TexEnvi(target, pname, param)
+            }
+            _x => unimplemented!("{:X}", _x),
         }
     }
     unsafe fn TexEnvfv(&mut self, target: GLenum, pname: GLenum, params: *const GLfloat) {

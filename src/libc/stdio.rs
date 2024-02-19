@@ -242,6 +242,11 @@ fn ftell(env: &mut Environment, file_ptr: MutPtr<FILE>) -> i32 {
     }
 }
 
+fn rewind(env: &mut Environment, file_ptr: MutPtr<FILE>)  {
+    // TODO: the error indicator for the stream should be also cleared
+    fseek(env, file_ptr, 0, SEEK_SET);
+}
+
 fn fclose(env: &mut Environment, file_ptr: MutPtr<FILE>) -> i32 {
     let FILE { fd } = env.mem.read(file_ptr);
 
@@ -379,6 +384,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fwrite(_, _, _, _)),
     export_c_func!(fseek(_, _, _)),
     export_c_func!(ftell(_)),
+    export_c_func!(rewind(_)),
     export_c_func!(fsetpos(_, _)),
     export_c_func!(fgetpos(_, _)),
     export_c_func!(feof(_)),

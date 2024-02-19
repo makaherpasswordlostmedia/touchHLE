@@ -240,6 +240,10 @@ fn __fpclassifyf(_env: &mut Environment, arg: f32) -> GuestFPCategory {
     }
 }
 
+fn fesetround(_env: &mut Environment, round: i32) {
+    // TODO
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     // Trigonometric functions
     export_c_func!(sin(_)),
@@ -308,4 +312,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fmin(_, _)),
     export_c_func!(fminf(_, _)),
     export_c_func!(__fpclassifyf(_)),
+    export_c_func!(fesetround(_)),
 ];
