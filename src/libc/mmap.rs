@@ -57,4 +57,12 @@ fn mmap(
     ptr
 }
 
-pub const FUNCTIONS: FunctionExports = &[export_c_func!(mmap(_, _, _, _, _, _))];
+fn munmap(env: &mut Environment, addr: MutVoidPtr, len: GuestUSize) -> i32 {
+    env.mem.free(addr);
+    0 // success
+}
+
+pub const FUNCTIONS: FunctionExports = &[
+    export_c_func!(mmap(_, _, _, _, _, _)),
+    export_c_func!(munmap(_, _)),
+];
