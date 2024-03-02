@@ -119,6 +119,7 @@ fn prng(state: u32) -> u32 {
 }
 
 const RAND_MAX: i32 = i32::MAX;
+const ULONG_MAX: u32 = u32::MAX;
 
 fn srand(env: &mut Environment, seed: u32) {
     env.libc_state.stdlib.rand = seed;
@@ -320,6 +321,19 @@ fn setlocale(env: &mut Environment, _category: i32, locale: ConstPtr<u8>) -> Mut
     }
 }
 
+pub fn strtoul(env: &mut Environment, str: ConstPtr<u8>, endptr: MutPtr<MutPtr<u8>>, base: i32) -> u32 {
+    let s = env.mem.cstr_at_utf8(str).unwrap();
+    log_dbg!("strtoul '{}'", s);
+    assert_eq!(base, 16);
+    let without_prefix = s.trim_start_matches("0x");
+    let res = u32::from_str_radix(without_prefix, 16).unwrap_or(ULONG_MAX);
+    if !endptr.is_null() {
+        let len: GuestUSize = s.len().try_into().unwrap();
+        env.mem.write(endptr, (str + len).cast_mut());
+    }
+    res
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(malloc(_)),
     export_c_func!(calloc(_, _)),
@@ -346,6 +360,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(mbstowcs(_, _, _)),
     export_c_func!(wcstombs(_, _, _)),
     export_c_func!(setlocale(_, _)),
+    export_c_func!(strtoul(_, _, _)),
 ];
 
 /// Returns a tuple containing the parsed number and the length of the number in

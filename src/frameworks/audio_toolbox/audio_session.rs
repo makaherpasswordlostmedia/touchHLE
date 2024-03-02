@@ -104,6 +104,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(AudioSessionInitialize(_, _, _, _)),
     export_c_func!(AudioSessionGetProperty(_, _, _)),
     export_c_func!(AudioSessionSetProperty(_, _, _)),
-    export_c_func!(AudioSessionAddPropertyListener(_, _, _)),
+    //export_c_func!(AudioSessionAddPropertyListener(_, _, _)),
     export_c_func!(AudioSessionSetActive(_)),
 ];

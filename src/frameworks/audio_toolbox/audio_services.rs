@@ -52,6 +52,6 @@ fn AudioComponentFindNext(_env: &mut Environment, inComponent: MutVoidPtr, inDes
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(AudioServicesGetProperty(_, _, _, _, _)),
     export_c_func!(AudioServicesPlaySystemSound(_)),
-    export_c_func!(AudioOutputUnitStop(_)),
-    export_c_func!(AudioComponentFindNext(_, _)),
+    // export_c_func!(AudioOutputUnitStop(_)),
+    // export_c_func!(AudioComponentFindNext(_, _)),
 ];
