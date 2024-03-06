@@ -9,7 +9,7 @@ use crate::abi::GuestFunction;
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::libc::errno::{EDEADLK, EINVAL};
 use crate::mem::{ConstPtr, ConstVoidPtr, GuestUSize, Mem, MutPtr, MutVoidPtr, SafeRead};
-use crate::{Environment, ThreadId};
+use crate::{Environment, mem, ThreadId};
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -299,6 +299,14 @@ fn pthread_detach(env: &mut Environment, thread: pthread_t) -> i32 {
     0
 }
 
+fn sched_get_priority_min(env: &mut Environment, policy: i32) -> i32 {
+    1
+}
+
+fn sched_get_priority_max(env: &mut Environment, policy: i32) -> i32 {
+    99
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_attr_init(_)),
     export_c_func!(pthread_attr_getdetachstate(_, _)),
@@ -317,4 +325,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_attr_setstacksize(_, _)),
     export_c_func!(pthread_get_stacksize_np(_)),
     export_c_func!(pthread_detach(_)),
+    export_c_func!(sched_get_priority_min(_)),
+    export_c_func!(sched_get_priority_max(_)),
 ];
