@@ -122,6 +122,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 }
 
+- (())drawAtPoint:(CGPoint)point {
+    msg![env; this drawAtPoint:point blendMode:0 alpha:1.0f32]
+}
+
 - (())drawAtPoint:(CGPoint)point
         blendMode:(i32)blend_mode // CGBlendMode
             alpha:(CGFloat)alpha {

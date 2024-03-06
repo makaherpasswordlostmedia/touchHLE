@@ -33,6 +33,8 @@ pub struct State {
     /// List of views for internal purposes. Non-retaining!
     pub(super) views: Vec<id>,
     pub ui_window: ui_window::State,
+    anim_delegate: id,
+    anim_selector: Option<SEL>,
 }
 
 pub(super) struct UIViewHostObject {
@@ -100,19 +102,53 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (())beginAnimations:(id)animId
               context:(MutVoidPtr)context {
+    assert!(context.is_null());
     log!("WARNING: Ignoring beginAnimations:context:");
 }
 + (())setAnimationDelegate:(id)delegate {
     log!("WARNING: Ignoring setAnimationDelegate:");
+    retain(env, delegate);
+    env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_delegate = delegate;
 }
 + (())setAnimationDidStopSelector:(SEL)selector {
-    log!("WARNING: Ignoring setAnimationDidStopSelector:");
+    log!("WARNING: Ignoring setAnimationDidStopSelector: {}", selector.as_str(&env.mem));
+    env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_selector = Some(selector);
 }
 + (())setAnimationDuration:(NSTimeInterval)duration {
     log!("WARNING: Ignoring setAnimationDuration:");
 }
 + (())commitAnimations {
     log!("WARNING: Ignoring commitAnimations");
+    let y = env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_delegate;
+    //release(env, y);
+    let x = env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_selector.unwrap();
+    // env
+    //     .framework_state
+    //     .uikit
+    //     .ui_view
+    //     .anim_delegate = nil;
+    // env
+    //     .framework_state
+    //     .uikit
+    //     .ui_view
+    //     .anim_selector = None;
+    let _: id = msg![env; y performSelector:x];
 }
 
 // TODO: accessors etc

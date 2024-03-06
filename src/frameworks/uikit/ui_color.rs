@@ -133,6 +133,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     CGContextSetRGBFillColor(env, context, r, g, b, a);
 }
 
+- (id)CGColor {
+    this
+}
+
 @end
 
 };
