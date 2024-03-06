@@ -507,6 +507,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 @end
 
 @implementation UIPickerView : UIView
+- (())setDataSource:(id)dataSource {
+}
+- (())setDelegate:(id)delegate {
+}
 @end
 
 @implementation UINavigationBar : UIView
