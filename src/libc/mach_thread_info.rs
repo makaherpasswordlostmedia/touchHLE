@@ -52,6 +52,11 @@ type mach_msg_timeout_t = natural_t;
 type exception_mask_t = u32;
 type exception_behavior_t = i32;
 
+type vm_offset_t = natural_t;
+type vm_size_t = natural_t;
+
+type vm_address_t = vm_offset_t;
+
 type policy_t = i32;
 const POLICY_TIMESHARE: policy_t = 1;
 
@@ -338,6 +343,30 @@ fn thread_get_state(
     0
 }
 
+fn vm_allocate(
+    env: &mut Environment,
+    target_task: task_t,
+    address: MutPtr<vm_address_t>,
+    size: vm_size_t,
+    anywhere: boolean_t
+) -> kern_return_t {
+    assert_eq!(anywhere, 1);
+    let ptr = env.mem.alloc(size);
+    env.mem.write(address, ptr.to_bits());
+    0
+}
+
+fn vm_protect(
+    env: &mut Environment,
+    target_task: task_t,
+    address: MutPtr<vm_address_t>,
+    size: vm_size_t,
+    set_maximum: boolean_t,
+    new_protection : natural_t
+) -> kern_return_t {
+    0
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(thread_info(_, _, _, _)),
     export_c_func!(thread_policy_set(_, _, _, _)),
@@ -353,4 +382,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(thread_suspend(_)),
     export_c_func!(thread_resume(_)),
     export_c_func!(thread_get_state(_, _, _, _)),
+    export_c_func!(vm_allocate(_, _, _, _)),
+    export_c_func!(vm_protect(_, _, _, _, _)),
 ];
