@@ -85,6 +85,9 @@ pub fn printf_inner<const NS_LOG: bool, F: Fn(&Mem, GuestUSize) -> u8>(
 
         let length_modifier = if get_format_char(&env.mem, format_char_idx) == b'l' {
             format_char_idx += 1;
+            if get_format_char(&env.mem, format_char_idx) == b'l' {
+                format_char_idx += 1;
+            }
             Some(b'l')
         } else {
             None

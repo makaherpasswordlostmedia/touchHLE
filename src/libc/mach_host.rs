@@ -18,6 +18,8 @@ type natural_t = u32;
 type mach_msg_type_number_t = natural_t;
 type kern_return_t = i32;
 
+type vm_size_t = natural_t;
+
 const HOST_SELF: host_t = 0x484F5354; // HOST
 const HOST_VM_INFO: host_flavor_t = 2;
 const KERN_SUCCESS: kern_return_t = 0;
@@ -87,7 +89,17 @@ fn host_statistics(
     KERN_SUCCESS
 }
 
+fn host_page_size(
+    env: &mut Environment,
+    _host_priv: host_t,
+    page_size: MutPtr<vm_size_t>
+) -> kern_return_t {
+    env.mem.write(page_size, 4096);
+    0 // Success
+}
+
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(mach_host_self()),
     export_c_func!(host_statistics(_, _, _, _)),
+    export_c_func!(host_page_size(_, _)),
 ];
