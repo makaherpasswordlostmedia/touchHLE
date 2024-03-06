@@ -506,4 +506,16 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 @end
 
+@implementation UIPickerView : UIView
+@end
+
+@implementation UINavigationBar : UIView
+@end
+
+@implementation UINavigationItem : NSObject
+- (id)initWithCoder:(id)coder {
+    nil
+}
+@end
+
 };
