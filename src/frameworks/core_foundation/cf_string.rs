@@ -13,7 +13,8 @@ use super::cf_dictionary::CFDictionaryRef;
 use crate::abi::{DotDotDot, VaList};
 use crate::dyld::{export_c_func, FunctionExports};
 use crate::frameworks::core_foundation::{CFIndex, CFOptionFlags};
-use crate::frameworks::foundation::{ns_string, NSInteger};
+use crate::frameworks::foundation::{ns_string, NSInteger, NSUInteger, unichar};
+use crate::frameworks::foundation::ns_string::NSUTF16LittleEndianStringEncoding;
 use crate::mem::{ConstPtr, MutPtr};
 use crate::objc::{id, msg, msg_class};
 use crate::Environment;
@@ -65,6 +66,24 @@ fn CFStringCreateWithCString(
     let encoding = CFStringConvertEncodingToNSStringEncoding(env, encoding);
     let ns_string: id = msg_class![env; NSString alloc];
     msg![env; ns_string initWithCString:c_string encoding:encoding]
+}
+
+fn CFStringCreateWithCharactersNoCopy(
+    env: &mut Environment,
+    allocator: CFAllocatorRef,
+    chars: MutPtr<unichar>,
+    num_chars: CFIndex,
+    deallocator: CFAllocatorRef
+) -> CFStringRef {
+    assert!(allocator.is_null());
+    assert!(deallocator.is_null());
+    let ns_string: id = msg_class![env; NSString alloc];
+    let chars: ConstPtr<u8> = chars.cast().cast_const();
+    let len: NSUInteger = (2*num_chars).try_into().unwrap();
+    let res = msg![env; ns_string initWithBytesNoCopy:chars length:len encoding:NSUTF16LittleEndianStringEncoding freeWhenDone:false];
+    let res_str = ns_string::to_rust_string(env, res);
+    log_dbg!("CFStringCreateWithCharactersNoCopy: {}", res_str);
+    res
 }
 
 fn CFStringCreateWithFormat(
@@ -144,4 +163,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFStringGetCString(_, _, _, _)),
     export_c_func!(CFStringCreateMutableCopy(_, _, _)),
     export_c_func!(CFStringNormalize(_, _)),
+    export_c_func!(CFStringCreateWithCharactersNoCopy(_, _, _, _)),
 ];

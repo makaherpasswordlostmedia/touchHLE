@@ -20,7 +20,7 @@ use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContext
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::core_graphics::cg_context::CGContextConcatCTM;
 use crate::frameworks::foundation::ns_string::get_static_str;
-use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger};
+use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger, NSTimeInterval};
 use crate::mem::MutVoidPtr;
 use crate::objc::{
     autorelease, id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject,
@@ -107,6 +107,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 + (())setAnimationDidStopSelector:(SEL)selector {
     log!("WARNING: Ignoring setAnimationDidStopSelector:");
+}
++ (())setAnimationDuration:(NSTimeInterval)duration {
+    log!("WARNING: Ignoring setAnimationDuration:");
 }
 + (())commitAnimations {
     log!("WARNING: Ignoring commitAnimations");
