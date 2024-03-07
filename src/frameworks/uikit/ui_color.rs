@@ -5,11 +5,11 @@
  */
 //! `UIColor`.
 
+use super::ui_graphics::UIGraphicsGetCurrentContext;
 use crate::frameworks::core_graphics::CGFloat;
+use crate::frameworks::core_graphics::cg_context::CGContextSetRGBFillColor;
 use crate::mem::MutPtr;
-use crate::objc::{
-    autorelease, id, msg, msg_class, objc_classes, ClassExports, HostObject, NSZonePtr, ObjC, SEL,
-};
+use crate::objc::{autorelease, id, msg, msg_class, objc_classes, ClassExports, HostObject, NSZonePtr, ObjC, SEL, nil};
 use crate::Environment;
 use std::collections::HashMap;
 
@@ -124,6 +124,13 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.mem.write(b, b_);
     env.mem.write(a, a_);
     true
+}
+
+- (())set {
+    let context = UIGraphicsGetCurrentContext(env);
+    assert_ne!(context, nil);
+    let (r, g, b, a) = env.objc.borrow::<UIColorHostObject>(this).rgba;
+    CGContextSetRGBFillColor(env, context, r, g, b, a);
 }
 
 @end
