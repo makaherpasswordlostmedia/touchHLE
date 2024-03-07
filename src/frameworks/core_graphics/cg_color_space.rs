@@ -11,6 +11,8 @@ use crate::frameworks::core_foundation::{CFRelease, CFRetain, CFTypeRef};
 use crate::frameworks::foundation::ns_string;
 use crate::objc::{msg, objc_classes, ClassExports, HostObject};
 use crate::Environment;
+use crate::frameworks::core_graphics::CGFloat;
+use crate::frameworks::uikit::ui_color;
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -114,6 +116,11 @@ pub fn CGColorSpaceGetModel(env: &mut Environment, cs: CGColorSpaceRef) -> CGCol
     }
 }
 
+fn CGColorGetAlpha(env: &mut Environment, color: crate::objc::id) -> CGFloat {
+    let (_, _, _, a) = ui_color::get_rgba(&env.objc, color);
+    a
+}
+
 pub const kCGColorSpaceGenericRGB: &str = "kCGColorSpaceGenericRGB";
 pub const kCGColorSpaceGenericGray: &str = "kCGColorSpaceGenericGray";
 
@@ -135,4 +142,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGColorSpaceRetain(_)),
     export_c_func!(CGColorSpaceRelease(_)),
     export_c_func!(CGColorSpaceGetModel(_)),
+    export_c_func!(CGColorGetAlpha(_)),
 ];
