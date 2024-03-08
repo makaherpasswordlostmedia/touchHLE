@@ -196,6 +196,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     contents
 }
 
+- (id)contentsAtPath:(id)path { // NSString *
+    msg_class![env; NSData dataWithContentsOfFile:path]
+}
+
 - (bool)copyItemAtPath:(id)src // NSString*
                 toPath:(id)dst // NSString*
                  error:(MutPtr<id>)_error { // NSError**
