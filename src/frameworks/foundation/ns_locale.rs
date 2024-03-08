@@ -13,10 +13,14 @@ use crate::Environment;
 use std::ffi::CStr;
 
 const NSLocaleCountryCode: &str = "NSLocaleCountryCode";
+const NSLocaleIdentifier: &str = "NSLocaleIdentifier";
 
 pub const CONSTANTS: ConstantExports = &[(
     "_NSLocaleCountryCode",
     HostConstant::NSString(NSLocaleCountryCode),
+), (
+    "_NSLocaleIdentifier",
+    HostConstant::NSString(NSLocaleIdentifier),
 )];
 
 #[derive(Default)]

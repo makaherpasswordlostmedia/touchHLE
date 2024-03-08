@@ -83,6 +83,7 @@ pub fn CGBitmapContextCreate(
         // TODO: is this the correct default?
         rgb_fill_color: (0.0, 0.0, 0.0, 0.0),
         transform: CGAffineTransformIdentity,
+        state_stack: Vec::new()
     };
     let isa = env
         .objc
@@ -114,12 +115,10 @@ pub fn CGBitmapContextCreateImage(env: &mut Environment, context: CGContextRef) 
     // support any bitmap format.
     let host_obj = env.objc.borrow::<CGContextHostObject>(context);
     let CGContextSubclass::CGBitmapContext(bitmap_data) = host_obj.subclass;
-    assert!(
-        bitmap_data.bits_per_component == 8
-            && bitmap_data.bytes_per_row == bitmap_data.width * 4
-            && bitmap_data.color_space == kCGColorSpaceGenericRGB
-            && bitmap_data.alpha_info == kCGImageAlphaPremultipliedLast
-    );
+    assert_eq!(bitmap_data.bits_per_component, 8);
+    assert_eq!(bitmap_data.bytes_per_row, bitmap_data.width * 4);
+    assert_eq!(bitmap_data.color_space, kCGColorSpaceGenericRGB);
+    assert_eq!(bitmap_data.alpha_info, kCGImageAlphaPremultipliedLast);
     let pixels = env
         .mem
         .bytes_at(
@@ -364,6 +363,7 @@ impl CGBitmapContextDrawer<'_> {
             subclass: CGContextSubclass::CGBitmapContext(bitmap_info),
             rgb_fill_color,
             transform,
+            ..
         } = objc.borrow(context);
 
         let pixels = get_pixels(&bitmap_info, mem);

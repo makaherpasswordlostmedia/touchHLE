@@ -269,7 +269,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(pthread_setcanceltype(_, _)),
     export_c_func!(pthread_testcancel()),
     export_c_func!(pthread_mach_thread_np(_)),
-    export_c_func!(pthread_getschedparam(_, _, _)),
-    export_c_func!(pthread_setschedparam(_, _, _)),
+    // export_c_func!(pthread_getschedparam(_, _, _)),
+    // export_c_func!(pthread_setschedparam(_, _, _)),
     export_c_func!(pthread_get_stackaddr_np(_)),
 ];

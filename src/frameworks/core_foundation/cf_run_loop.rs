@@ -82,7 +82,7 @@ pub const CONSTANTS: ConstantExports = &[
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFRunLoopGetCurrent()),
     export_c_func!(CFRunLoopGetMain()),
-    export_c_func!(CFRunLoopRunInMode(_, _, _)),
+    //export_c_func!(CFRunLoopRunInMode(_, _, _)),
     export_c_func!(CFPreferencesCopyAppValue(_, _)),
     export_c_func!(CFPreferencesSetAppValue(_, _, _)),
     export_c_func!(CFPreferencesAppSynchronize(_)),

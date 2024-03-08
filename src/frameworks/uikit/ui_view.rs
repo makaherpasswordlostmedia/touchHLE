@@ -286,6 +286,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 }
 
+- (())insertSubview:(id)view belowSubview:(id)sibling {
+    msg![env; this addSubview:view]
+}
+
 - (())bringSubviewToFront:(id)subview {
     if subview == nil {
         // This happens in Touch & Go LITE. It's probably due to the ad classes
@@ -401,6 +405,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (())setNeedsDisplay {
     let layer = env.objc.borrow::<UIViewHostObject>(this).layer;
     msg![env; layer setNeedsDisplay]
+}
+- (())setNeedsDisplayInRect:(CGRect)_rect {
+    msg![env; this setNeedsDisplay]
 }
 
 - (CGRect)bounds {

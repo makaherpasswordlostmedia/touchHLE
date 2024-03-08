@@ -96,25 +96,25 @@ impl GuestFunction {
         // Create a new guest stack frame. This is redundant considering we are
         // storing this data on the host stack, but this makes stack traces work
         // nicely. :)
-        let (old_sp, old_fp) = {
-            let regs = env.cpu.regs_mut();
-            let old_sp = regs[Cpu::SP];
-            let old_fp = regs[FRAME_POINTER];
-            regs[Cpu::SP] -= 8;
-            regs[FRAME_POINTER] = old_sp;
-            env.mem
-                .write(Ptr::from_bits(regs[Cpu::SP]), regs[FRAME_POINTER]);
-            env.mem.write(Ptr::from_bits(regs[Cpu::SP] + 4), old_lr);
-            (old_sp, old_fp)
-        };
+        // let (old_sp, old_fp) = {
+        //     let regs = env.cpu.regs_mut();
+        //     let old_sp = regs[Cpu::SP];
+        //     let old_fp = regs[FRAME_POINTER];
+        //     regs[Cpu::SP] -= 8;
+        //     regs[FRAME_POINTER] = old_sp;
+        //     env.mem
+        //         .write(Ptr::from_bits(regs[Cpu::SP]), regs[FRAME_POINTER]);
+        //     env.mem.write(Ptr::from_bits(regs[Cpu::SP] + 4), old_lr);
+        //     (old_sp, old_fp)
+        // };
 
         env.run_call();
 
         env.cpu.branch(old_pc);
         let regs = env.cpu.regs_mut();
         regs[Cpu::LR] = old_lr.addr_with_thumb_bit();
-        regs[Cpu::SP] = old_sp;
-        regs[FRAME_POINTER] = old_fp;
+        // regs[Cpu::SP] = old_sp;
+        // regs[FRAME_POINTER] = old_fp;
 
         log_dbg!("End call to guest function {:?}", self);
     }
@@ -238,6 +238,8 @@ impl_CallFromGuest!(0 => P0, 1 => P1, 2 => P2, 3 => P3, 4 => P4, 5 => P5);
 impl_CallFromGuest!(0 => P0, 1 => P1, 2 => P2, 3 => P3, 4 => P4, 5 => P5, 6 => P6);
 impl_CallFromGuest!(0 => P0, 1 => P1, 2 => P2, 3 => P3, 4 => P4, 5 => P5, 6 => P6, 7 => P7);
 impl_CallFromGuest!(0 => P0, 1 => P1, 2 => P2, 3 => P3, 4 => P4, 5 => P5, 6 => P6, 7 => P7, 8 => P8);
+impl_CallFromGuest!(0 => P0, 1 => P1, 2 => P2, 3 => P3, 4 => P4, 5 => P5, 6 => P6, 7 => P7, 8 => P8, 9 => P9);
+impl_CallFromGuest!(0 => P0, 1 => P1, 2 => P2, 3 => P3, 4 => P4, 5 => P5, 6 => P6, 7 => P7, 8 => P8, 9 => P9, 10 => P10);
 
 /// This trait represents a guest or host function that can be called from host
 /// code, but using the guest ABI. See [CallFromGuest], which this is the

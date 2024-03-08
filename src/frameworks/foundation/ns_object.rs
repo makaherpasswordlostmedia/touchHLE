@@ -29,7 +29,13 @@ pub const CLASSES: ClassExports = objc_classes! {
 @implementation NSObject
 
 + (id)alloc {
-    msg![env; this allocWithZone:(MutVoidPtr::null())]
+    let obj = msg![env; this allocWithZone:(MutVoidPtr::null())];
+    if let Some(cxx_construct_sel) = env.objc.lookup_selector(".cxx_construct") {
+        if msg![env; obj respondsToSelector:cxx_construct_sel] {
+            let _: id = msg![env; obj performSelector:cxx_construct_sel];
+        }
+    }
+    obj
 }
 + (id)allocWithZone:(NSZonePtr)_zone { // struct _NSZone*
     log_dbg!("[{:?} allocWithZone:]", this);
@@ -83,6 +89,11 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 - (())dealloc {
     log_dbg!("[{:?} dealloc]", this);
+    if let Some(cxx_destruct_sel) = env.objc.lookup_selector(".cxx_destruct") {
+        if msg![env; this respondsToSelector:cxx_destruct_sel] {
+            let _: () = msg![env; this performSelector:cxx_destruct_sel];
+        }
+    }
     env.objc.dealloc_object(this, &mut env.mem)
 }
 

@@ -10,10 +10,10 @@ use crate::abi::{CallFromHost, GuestFunction};
 use crate::dyld::FunctionExports;
 use crate::export_c_func;
 use crate::frameworks::core_foundation::cf_allocator::kCFAllocatorDefault;
-use crate::frameworks::core_foundation::cf_data::{CFDataCreate, CFDataRef};
+use crate::frameworks::core_foundation::cf_data::{CFDataCreate, CFDataGetBytePtr, CFDataGetLength, CFDataRef};
 use crate::frameworks::core_foundation::{CFRelease, CFRetain, CFTypeRef};
 use crate::frameworks::foundation::NSUInteger;
-use crate::mem::{ConstVoidPtr, GuestUSize, MutVoidPtr};
+use crate::mem::{ConstVoidPtr, GuestUSize, MutVoidPtr, Ptr};
 use crate::objc::{id, msg, msg_class, objc_classes, ClassExports, HostObject};
 use crate::Environment;
 
@@ -112,6 +112,18 @@ fn CGDataProviderCreateWithData(
     )
 }
 
+fn CGDataProviderCreateWithCFData(env: &mut Environment, data: CFDataRef) -> CGDataProviderRef {
+    let byte_ptr = CFDataGetBytePtr(env, data);
+    let length = CFDataGetLength(env, data);
+    CGDataProviderCreateWithData(
+        env,
+        Ptr::null(),
+        byte_ptr.cast(),
+        length.try_into().unwrap(),
+        GuestFunction::from_addr_with_thumb_bit(0)
+    )
+}
+
 #[allow(rustdoc::broken_intra_doc_links)] // https://github.com/rust-lang/rust/issues/83049
 /// This is for use by [super::cg_image::CGImageGetDataProvider].
 pub(super) fn from_cg_image(env: &mut Environment, cg_image: CGImageRef) -> CGDataProviderRef {
@@ -167,5 +179,6 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGDataProviderRetain(_)),
     export_c_func!(CGDataProviderRelease(_)),
     export_c_func!(CGDataProviderCreateWithData(_, _, _, _)),
+    export_c_func!(CGDataProviderCreateWithCFData(_)),
     export_c_func!(CGDataProviderCopyData(_)),
 ];
