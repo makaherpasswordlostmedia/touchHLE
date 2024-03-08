@@ -10,9 +10,10 @@ use crate::frameworks::core_foundation::cf_string::CFStringRef;
 use crate::frameworks::core_foundation::{CFRelease, CFRetain, CFTypeRef};
 use crate::frameworks::foundation::ns_string;
 use crate::objc::{msg, objc_classes, ClassExports, HostObject};
-use crate::Environment;
+use crate::{Environment, msg_class};
 use crate::frameworks::core_graphics::CGFloat;
 use crate::frameworks::uikit::ui_color;
+use crate::mem::MutPtr;
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -48,6 +49,7 @@ pub(super) struct CGColorSpaceHostObject {
 impl HostObject for CGColorSpaceHostObject {}
 
 pub type CGColorSpaceRef = CFTypeRef;
+pub type CGColorRef = CFTypeRef;
 
 pub fn CGColorSpaceCreateWithName(env: &mut Environment, name: CFStringRef) -> CGColorSpaceRef {
     let generic_rgb = ns_string::get_static_str(env, kCGColorSpaceGenericRGB);
@@ -121,6 +123,16 @@ fn CGColorGetAlpha(env: &mut Environment, color: crate::objc::id) -> CGFloat {
     a
 }
 
+fn CGColorCreate(env: &mut Environment, cs: CGColorSpaceRef, components: MutPtr<CGFloat>) -> CGColorRef {
+    let color_space = env.objc.borrow::<CGColorSpaceHostObject>(cs).name;
+    assert_eq!(color_space, kCGColorSpaceGenericRGB);
+    let r = env.mem.read(components);
+    let g = env.mem.read(components + 1);
+    let b = env.mem.read(components + 2);
+    let a = env.mem.read(components + 3);
+    msg_class![env; UIColor colorWithRed:r green:g blue:b alpha:a]
+}
+
 pub const kCGColorSpaceGenericRGB: &str = "kCGColorSpaceGenericRGB";
 pub const kCGColorSpaceGenericGray: &str = "kCGColorSpaceGenericGray";
 
@@ -143,4 +155,5 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CGColorSpaceRelease(_)),
     export_c_func!(CGColorSpaceGetModel(_)),
     export_c_func!(CGColorGetAlpha(_)),
+    export_c_func!(CGColorCreate(_, _)),
 ];
