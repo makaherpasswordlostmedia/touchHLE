@@ -171,7 +171,7 @@ impl ClassHostObject {
         objc: &mut ObjC,
     ) {
         let ivar_list_t { entsize, count } = mem.read(ivar_list_ptr);
-        assert!(entsize >= guest_size_of::<ivar_t>());
+        assert!(entsize == guest_size_of::<ivar_t>());
 
         let ivars_base_ptr: ConstPtr<ivar_t> = (ivar_list_ptr + 1).cast();
 

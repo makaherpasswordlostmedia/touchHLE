@@ -10,6 +10,7 @@ use crate::frameworks::core_foundation::time::apple_epoch;
 use crate::objc::{autorelease, id, objc_classes, ClassExports, HostObject};
 
 use std::time::SystemTime;
+use crate::{msg, msg_class};
 
 struct NSDateHostObject {
     time_interval: NSTimeInterval,
@@ -54,11 +55,16 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new)
 }
 
++ (NSTimeInterval)timeIntervalSinceReferenceDate {
+    let now: id = msg_class![env; NSDate date];
+    msg![env; now timeIntervalSinceReferenceDate]
+}
+
 - (NSTimeInterval)timeIntervalSinceDate:(id)anotherDate {
     assert!(!anotherDate.is_null());
     let host_object = env.objc.borrow::<NSDateHostObject>(this);
     let another_date_host_object = env.objc.borrow::<NSDateHostObject>(anotherDate);
-    let result = another_date_host_object.time_interval - host_object.time_interval;
+    let result = host_object.time_interval - another_date_host_object.time_interval;
     log_dbg!("[(NSDate*){:?} timeIntervalSinceDate:{:?}]: result {} seconds", this, anotherDate, result);
     result
 }
