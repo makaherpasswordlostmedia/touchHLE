@@ -435,6 +435,7 @@ fn is_supported_audio_format(format: &AudioStreamBasicDescription) -> bool {
         format_flags,
         channels_per_frame,
         bits_per_channel,
+        bytes_per_frame,
         ..
     } = format;
     match format_id {
@@ -443,7 +444,8 @@ fn is_supported_audio_format(format: &AudioStreamBasicDescription) -> bool {
             // TODO: support more PCM formats
             (channels_per_frame == 1 || channels_per_frame == 2)
                 && (bits_per_channel == 8 || bits_per_channel == 16)
-                && (format_flags & kAudioFormatFlagIsPacked) != 0
+                && ((format_flags & kAudioFormatFlagIsPacked) != 0
+                    || ((bits_per_channel / 8) * channels_per_frame) == bytes_per_frame)
                 && (format_flags & kAudioFormatFlagIsBigEndian) == 0
                 && (format_flags & kAudioFormatFlagIsFloat) == 0
         }

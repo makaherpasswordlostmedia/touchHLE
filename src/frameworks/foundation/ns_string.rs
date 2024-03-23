@@ -339,6 +339,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     utf16[index as usize]
 }
 
+- (NSRange)rangeOfString:(id)search_string {
+    msg![env; this rangeOfString:search_string options:0u32]
+}
+
 - (NSRange)rangeOfString:(id)search_string
                  options:(NSStringCompareOptions)options { // NSString *
     // TODO: search options
@@ -485,6 +489,12 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (id)copyWithZone:(NSZonePtr)_zone {
     // TODO: override this once we have NSMutableString!
     retain(env, this)
+}
+
+- (ConstPtr<u8>)fileSystemRepresentation {
+    let src = to_rust_string(env, this);
+    log!("fsr {}", src);
+    msg![env; this UTF8String]
 }
 
 - (bool)getCString:(MutPtr<u8>)buffer
@@ -895,6 +905,34 @@ pub const CLASSES: ClassExports = objc_classes! {
     success
 }
 
+- (f32)floatValue {
+    let st = to_rust_string(env, this);
+    let st = st.trim_start();
+    let mut cutoff = st.len();
+    for (i, c) in st.char_indices() {
+        if !c.is_ascii_digit() && c != '.' && c != '+' && c != '-' {
+            cutoff = i;
+            break;
+        }
+    }
+    // TODO: handle over/underflow properly
+    st[..cutoff].parse().unwrap_or(0.0)
+}
+
+- (i32)intValue {
+    let st = to_rust_string(env, this);
+    let st = st.trim_start();
+    let mut cutoff = st.len();
+    for (i, c) in st.char_indices() {
+        if !c.is_ascii_digit() && c != '+' && c != '-' {
+            cutoff = i;
+            break;
+        }
+    }
+    // TODO: handle over/underflow properly
+    st[..cutoff].parse().unwrap_or(0)
+}
+
 // FIXME: this should be a NSMutableString method
 -(())setString:(id)aString { // NSString*
     let str = to_rust_string(env, aString);
@@ -980,7 +1018,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 - (id)initWithCString:(ConstPtr<u8>)c_string
              encoding:(NSStringEncoding)encoding {
-    assert!(C_STRING_FRIENDLY_ENCODINGS.contains(&encoding));
+    //assert!(C_STRING_FRIENDLY_ENCODINGS.contains(&encoding), "{}", encoding);
+    if !C_STRING_FRIENDLY_ENCODINGS.contains(&encoding) {
+        return nil;
+    }
     let len: NSUInteger = env.mem.cstr_at(c_string).len().try_into().unwrap();
     msg![env; this initWithBytes:c_string length:len encoding:encoding]
 }
@@ -1019,6 +1060,11 @@ pub const CLASSES: ClassExports = objc_classes! {
         .next()
         .map(|c| matching_values.contains(c))
         .unwrap_or(false)
+}
+
+- (id)dataUsingEncoding:(NSStringEncoding)encoding
+   allowLossyConversion:(bool)_lossy {
+    msg![env; this dataUsingEncoding:encoding]
 }
 
 - (id)dataUsingEncoding:(NSStringEncoding)encoding {

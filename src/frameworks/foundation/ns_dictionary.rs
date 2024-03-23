@@ -51,9 +51,12 @@ impl DictionaryHostObject {
         } else {
             retain(env, key)
         };
-        let hash: Hash = msg![env; key hash];
-
         let value = retain(env, value);
+        self.insert_non_retaining(env, key, value);
+    }
+
+    fn insert_non_retaining(&mut self, env: &mut Environment, key: id, value: id) {
+        let hash: Hash = msg![env; key hash];
 
         let Some(collisions) = self.map.get_mut(&hash) else {
             self.map.insert(hash, vec![(key, value)]);
@@ -251,6 +254,23 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 @end
 
+// NSMutableDictionary is an abstract class. A subclass must provide everything
+// NSDictionary provides, plus:
+// - (void)setObject:(id)object forKey:(id)key;
+// - (void)removeObjectForKey:(id)key;
+// Note that it inherits from NSDictionary, so we must ensure we override any default
+// methods that would be inappropriate for mutability.
+@implementation NSMutableDictionary: NSDictionary
+
++ (id)allocWithZone:(NSZonePtr)zone {
+    // NSMutableDictionary might be subclassed by something which needs allocWithZone:
+    // to have the normal behaviour. Unimplemented: call superclass alloc then.
+    assert!(this == env.objc.get_known_class("NSMutableDictionary", &mut env.mem));
+    msg_class![env; _touchHLE_NSMutableDictionary allocWithZone:zone]
+}
+
+@end
+
 // Our private subclass that is the single implementation of NSDictionary for
 // the time being.
 @implementation _touchHLE_NSDictionary: NSDictionary
@@ -288,6 +308,63 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 - (id)stringForKey:(id)defaultName {
     msg![env; this objectForKey:defaultName]
+}
+
+@end
+
+@implementation _touchHLE_NSMutableDictionary: NSMutableDictionary
+
++ (id)allocWithZone:(NSZonePtr)_zone {
+    let host_object = Box::<DictionaryHostObject>::default();
+    env.objc.alloc_object(this, host_object, &mut env.mem)
+}
+
+- (id)init {
+    *env.objc.borrow_mut(this) = <DictionaryHostObject as Default>::default();
+    this
+}
+
+- (NSUInteger)count {
+    env.objc.borrow::<DictionaryHostObject>(this).count
+}
+
+- (())setValue:(id)value
+        forKey:(id)key { // NSString*
+    assert!(!key.is_null());
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert(env, key, value, false);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (id)allKeys {
+    let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let keys: Vec<id> = dict_host_obj.iter_keys().collect();
+    ns_array::from_vec(env, keys)
+}
+
+@end
+
+// Special variant for use by CFDictionary with NULL callbacks: objects aren't
+// necessarily Objective-C objects and won't be retained/released.
+@implementation _touchHLE_NSMutableDictionary_non_retaining: _touchHLE_NSMutableDictionary
+
+- (())dealloc {
+    env.objc.dealloc_object(this, &mut env.mem)
+}
+
+- (())setValue:(id)value
+        forKey:(id)key { // NSString*
+    assert!(!key.is_null());
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.insert_non_retaining(env, key, value);
+    *env.objc.borrow_mut(this) = host_obj;
+}
+
+- (id)valueForKey:(id)key {
+    let host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let res = host_obj.lookup(env, key);
+    *env.objc.borrow_mut(this) = host_obj;
+    res
 }
 
 @end

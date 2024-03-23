@@ -143,11 +143,17 @@ pub const CLASSES: ClassExports = objc_classes! {
         "set{}{}:",
         key_string.as_bytes()[0].to_ascii_uppercase() as char,
         &key_string[1..],
-    )).or_else(|| env.objc.lookup_selector(&format!(
+    )) {
+        if env.objc.class_has_method(class, sel) {
+            () = msg_send(env, (this, sel, value));
+            return;
+        }
+    }
+    if let Some(sel) = env.objc.lookup_selector(&format!(
         "_set{}{}:",
         key_string.as_bytes()[0].to_ascii_uppercase() as char,
         &key_string[1..],
-    ))) {
+    )) {
         if env.objc.class_has_method(class, sel) {
             () = msg_send(env, (this, sel, value));
             return;
@@ -168,22 +174,45 @@ pub const CLASSES: ClassExports = objc_classes! {
         if let Some(sel) = env.objc.lookup_selector(&format!(
                 "_{}",
                 &key_string
-            ))
-            .or_else(|| env.objc.lookup_selector(&format!(
+        )) {
+            if let Some(ivar_offset_ptr) = env.objc.class_has_ivar(class, sel) {
+                let ivar_offset = env.mem.read(ivar_offset_ptr);
+                // TODO: Use host_object's _instance_start property?
+                let ivar_ptr = MutVoidPtr::from_bits(this.to_bits() + ivar_offset);
+                env.mem.write(ivar_ptr.cast(), value);
+                return;
+            }
+        }
+        if let Some(sel) = env.objc.lookup_selector(&format!(
                 "_is{}{}:",
                 key_string.as_bytes()[0].to_ascii_uppercase() as char,
                 &key_string[1..],
-            )))
-            .or_else(|| env.objc.lookup_selector(&format!(
+        )) {
+            if let Some(ivar_offset_ptr) = env.objc.class_has_ivar(class, sel) {
+                let ivar_offset = env.mem.read(ivar_offset_ptr);
+                // TODO: Use host_object's _instance_start property?
+                let ivar_ptr = MutVoidPtr::from_bits(this.to_bits() + ivar_offset);
+                env.mem.write(ivar_ptr.cast(), value);
+                return;
+            }
+        }
+        if let Some(sel) = env.objc.lookup_selector(&format!(
                 "{}",
                 key_string,
-            )))
-            .or_else(|| env.objc.lookup_selector(&format!(
+        )) {
+            if let Some(ivar_offset_ptr) = env.objc.class_has_ivar(class, sel) {
+                let ivar_offset = env.mem.read(ivar_offset_ptr);
+                // TODO: Use host_object's _instance_start property?
+                let ivar_ptr = MutVoidPtr::from_bits(this.to_bits() + ivar_offset);
+                env.mem.write(ivar_ptr.cast(), value);
+                return;
+            }
+        }
+        if let Some(sel) = env.objc.lookup_selector(&format!(
                 "is{}{}:",
                 key_string.as_bytes()[0].to_ascii_uppercase() as char,
                 &key_string[1..],
-            ))
-        ) {
+        )) {
             if let Some(ivar_offset_ptr) = env.objc.class_has_ivar(class, sel) {
                 let ivar_offset = env.mem.read(ivar_offset_ptr);
                 // TODO: Use host_object's _instance_start property?

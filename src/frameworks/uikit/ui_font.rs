@@ -107,6 +107,18 @@ pub const CLASSES: ClassExports = objc_classes! {
     autorelease(env, new)
 }
 
+- (CGFloat)ascender {
+    1.5 * env.objc.borrow::<UIFontHostObject>(this).size
+}
+
+- (CGFloat)descender {
+    0.0f32
+}
+
+- (CGFloat)xHeight {
+    env.objc.borrow::<UIFontHostObject>(this).size
+}
+
 @end
 
 };

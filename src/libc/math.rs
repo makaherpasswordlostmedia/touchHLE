@@ -223,6 +223,10 @@ fn fminf(_env: &mut Environment, arg1: f32, arg2: f32) -> f32 {
     arg1.min(arg2)
 }
 
+fn lrintf(_env: &mut Environment, arg1: f32) -> i32 {
+    arg1.max(i32::MIN as f32).min(i32::MAX as f32).round() as i32
+}
+
 type GuestFPCategory = i32;
 const FP_NAN: GuestFPCategory = 1;
 const FP_INFINITE: GuestFPCategory = 1;
@@ -379,6 +383,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(fmaxf(_, _)),
     export_c_func!(fmin(_, _)),
     export_c_func!(fminf(_, _)),
+    export_c_func!(lrintf(_)),
     export_c_func!(__fpclassifyf(_)),
     export_c_func!(fesetround(_)),
     // Atomic ops (libkern)

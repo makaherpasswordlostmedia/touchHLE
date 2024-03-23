@@ -226,7 +226,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (())addSubview:(id)view {
-    log_dbg!("[(UIView*){:?} addSubview:{:?}] => ()", this, view);
+    log!("[(UIView*){:?} addSubview:{:?}] => ()", this, view);
 
     if view == nil {
         log_dbg!("Tolerating [(UIView*){:?} addSubview:nil]", this);
