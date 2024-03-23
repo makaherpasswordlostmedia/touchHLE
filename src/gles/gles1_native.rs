@@ -677,4 +677,8 @@ impl GLES for GLES1Native {
     unsafe fn IsTexture(&mut self, texture: GLuint) -> GLboolean {
         gles11::IsTexture(texture)
     }
+
+    unsafe fn ClipPlanef(&mut self, pname: GLenum, params: *const GLfloat) {
+        gles11::ClipPlanef(pname, params);
+    }
 }

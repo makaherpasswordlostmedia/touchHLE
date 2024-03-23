@@ -1736,4 +1736,12 @@ impl GLES for GLES1OnGL2 {
     unsafe fn IsTexture(&mut self, texture: GLuint) -> GLboolean {
         gl21::IsTexture(texture)
     }
+
+    unsafe fn ClipPlanef(&mut self, pname: GLenum, params: *const GLfloat) {
+        let mut params_double: [f64; 4] = [0.0; 4];
+        for i in 0..4 {
+            params_double[i] = *params.wrapping_add(i) as f64;
+        }
+        gl21::ClipPlane(pname, &params_double as _);
+    }
 }
