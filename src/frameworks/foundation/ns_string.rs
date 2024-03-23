@@ -447,7 +447,7 @@ pub const CLASSES: ClassExports = objc_classes! {
                 }
             }
         },
-        _ => unimplemented!("Other masks"),
+        _x => unimplemented!("Other masks: {_x}"),
     }
 }
 
