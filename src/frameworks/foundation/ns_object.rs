@@ -184,8 +184,11 @@ pub const CLASSES: ClassExports = objc_classes! {
                 &key_string[1..],
             ))
         ) {
-            if env.objc.class_has_method(class, sel) || env.objc.class_has_ivar(class, sel) {
-                () = msg_send(env, (this, sel, value));
+            if let Some(ivar_offset_ptr) = env.objc.class_has_ivar(class, sel) {
+                let ivar_offset = env.mem.read(ivar_offset_ptr);
+                // TODO: Use host_object's _instance_start property?
+                let ivar_ptr = MutVoidPtr::from_bits(this.to_bits() + ivar_offset);
+                env.mem.write(ivar_ptr.cast(), value);
                 return;
             }
         }

@@ -279,7 +279,7 @@ impl ObjC {
 
     /// Checks if the provided class has an ivar in it's class chain (that is
     /// to say, objects of the given class respond to a selector).
-    pub fn class_has_ivar(&self, class: Class, sel: SEL) -> bool {
+    pub fn class_has_ivar(&self, class: Class, sel: SEL) -> Option<ConstPtr<GuestUSize>> {
         let mut class = class;
         loop {
             let &ClassHostObject {
@@ -288,9 +288,9 @@ impl ObjC {
                 ..
             } = self.borrow(class);
             if ivars.contains_key(&sel) {
-                return true;
+                return ivars.get(&sel).copied();
             } else if superclass == nil {
-                return false;
+                return None;
             } else {
                 class = superclass;
             }
@@ -298,10 +298,6 @@ impl ObjC {
     }
 
     /// Checks if a given object has a ivar (responds to a selector).
-    #[allow(dead_code)]
-    pub fn object_has_ivar(&self, mem: &Mem, obj: id, sel: SEL) -> bool {
-        self.class_has_ivar(ObjC::read_isa(obj, mem), sel)
-    }
 
     pub fn all_class_selectors_as_strings(&self, mem: &Mem, class: Class) -> Vec<String> {
         let mut class = class;
