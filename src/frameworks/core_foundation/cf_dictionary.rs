@@ -39,6 +39,20 @@ fn CFDictionaryCreateMutable(
     msg_class![env; _touchHLE_NSMutableDictionary_non_retaining new]
 }
 
+fn CFDictionaryAddValue(
+    env: &mut Environment,
+    dict: CFMutableDictionaryRef,
+    key: ConstVoidPtr,
+    value: ConstVoidPtr
+) {
+    let key: id = key.cast().cast_mut();
+    let res: id = msg![env; dict valueForKey:key];
+    if res == nil {
+        let value: id = value.cast().cast_mut();
+        msg![env; dict setValue:value forKey:key]
+    }
+}
+
 fn CFDictionarySetValue(
     env: &mut Environment,
     dict: CFMutableDictionaryRef,
@@ -71,18 +85,26 @@ fn CFDictionaryGetKeysAndValues(
     dict: CFDictionaryRef,
     keys: ConstPtr<MutVoidPtr>,
     values: ConstPtr<MutVoidPtr>) {
-    assert!(values.is_null());
     let mut key_ptr = keys.cast_mut();
+    let mut val_ptr = values.cast_mut();
     let keys_arr: id = msg![env; dict allKeys];
     let enumerator: id = msg![env; keys_arr objectEnumerator];
     let mut key: id;
+    let mut val: id;
     loop {
         key = msg![env; enumerator nextObject];
         if key == nil {
             break;
         }
-        env.mem.write(key_ptr, key.cast());
-        key_ptr += 1;
+        if !key_ptr.is_null() {
+            env.mem.write(key_ptr, key.cast());
+            key_ptr += 1;
+        }
+        if !val_ptr.is_null() {
+            val = msg![env; dict valueForKey:key];
+            env.mem.write(val_ptr, val.cast());
+            val_ptr += 1;
+        }
     }
 }
 
@@ -112,6 +134,7 @@ fn CFDictionaryGetKeysAndValues(
 
 pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFDictionaryCreateMutable(_, _, _, _)),
+    export_c_func!(CFDictionaryAddValue(_, _, _)),
     export_c_func!(CFDictionarySetValue(_, _, _)),
     export_c_func!(CFDictionaryGetValue(_, _)),
     export_c_func!(CFDictionaryGetCount(_)),
