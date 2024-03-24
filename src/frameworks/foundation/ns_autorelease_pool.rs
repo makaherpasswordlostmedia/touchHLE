@@ -101,9 +101,9 @@ pub const CLASSES: ClassExports = objc_classes! {
     assert!(pop_res == Some(this));
     let objects = std::mem::take(&mut host_obj.objects);
     env.objc.dealloc_object(this, &mut env.mem);
-    // for object in objects {
-    //     release(env, object);
-    // }
+    for object in objects {
+        release(env, object);
+    }
 }
 
 @end

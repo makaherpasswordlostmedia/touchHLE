@@ -12,6 +12,7 @@ use crate::frameworks::foundation::NSUInteger;
 #[derive(Default)]
 struct UINavigationControllerHostObject {
     superclass: UIViewControllerHostObject,
+    delegate: id,
     stack: Vec<id>,
     nav_bar_hidden: bool,
 }
@@ -40,7 +41,7 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 
 - (())setDelegate:(id)delegate {
-    
+    env.objc.borrow_mut::<UINavigationControllerHostObject>(this).delegate = delegate;
 }
 
 - (())setViewControllers:(id)controllers { // NSArray *
@@ -57,6 +58,10 @@ pub const CLASSES: ClassExports = objc_classes! {
     let myView = msg![env; this view];
     let subView: id = msg![env; controller view];
     () = msg![env; myView addSubview:subView];
+    
+    let delegate = env.objc.borrow::<UINavigationControllerHostObject>(this).delegate;
+    () = msg![env; delegate navigationController:this willShowViewController:controller animated:false];
+    () = msg![env; delegate navigationController:this didShowViewController:controller animated:false];
 }
 
 - (())setNavigationBarHidden:(bool)hidden {

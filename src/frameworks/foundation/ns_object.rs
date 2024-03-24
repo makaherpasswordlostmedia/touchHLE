@@ -23,6 +23,7 @@ use crate::objc::{
     id, nil, msg, msg_class, msg_send, objc_classes, Class, ClassExports, NSZonePtr, ObjC,
     TrivialHostObject, SEL,
 };
+use crate::frameworks::foundation::NSTimeInterval;
 
 pub const CLASSES: ClassExports = objc_classes! {
 
@@ -60,6 +61,14 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (bool)instancesRespondToSelector:(SEL)selector {
     env.objc.class_has_method(this, selector)
+}
+
++ (bool)conformsToProtocol:(MutVoidPtr)protocol {
+    true
+}
+
++ (())cancelPreviousPerformRequestsWithTarget:(id)target {
+    
 }
 
 + (bool)accessInstanceVariablesDirectly {
@@ -102,6 +111,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 - (bool)isKindOfClass:(Class)class {
     let this_class: Class = msg![env; this class];
     env.objc.class_is_subclass_of(this_class, class)
+}
+
+- (bool)conformsToProtocol:(MutVoidPtr)protocol {
+    true
 }
 
 - (NSUInteger)hash {
@@ -261,6 +274,12 @@ forUndefinedKey:(id)key { // NSString*
            withObject:(id)o2 {
     assert!(!sel.is_null());
     msg_send(env, (this, sel, o1, o2))
+}
+
+- (())performSelector:(SEL)aSelector 
+           withObject:(id)anArgument 
+           afterDelay:(NSTimeInterval)delay {
+    
 }
 
 - (())performSelectorOnMainThread:(SEL)sel withObject:(id)arg waitUntilDone:(bool)wait {

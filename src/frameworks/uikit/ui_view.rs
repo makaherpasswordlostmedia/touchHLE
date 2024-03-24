@@ -25,7 +25,7 @@ use crate::frameworks::foundation::ns_string::get_static_str;
 use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger, NSTimeInterval};
 use crate::mem::MutVoidPtr;
 use crate::objc::{
-    autorelease, id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject,
+    autorelease, id, msg, msg_class, nil, objc_classes, release, retain, Class, ClassExports, HostObject,
     NSZonePtr, SEL,
 };
 use crate::Environment;
@@ -146,33 +146,26 @@ pub const CLASSES: ClassExports = objc_classes! {
         .ui_view
         .anim_delegate;
     //release(env, y);
-    let sel = env
+    if let Some(sel) = env
         .framework_state
         .uikit
         .ui_view
-        .anim_selector.unwrap();
-    let anim_id = env
-        .framework_state
-        .uikit
-        .ui_view
-        .anim_id;
-    let context = env
-        .framework_state
-        .uikit
-        .ui_view
-        .anim_context;
-    // env
-    //     .framework_state
-    //     .uikit
-    //     .ui_view
-    //     .anim_delegate = nil;
-    // env
-    //     .framework_state
-    //     .uikit
-    //     .ui_view
-    //     .anim_selector = None;
-    //let _: id = msg![env; y performSelector:x];
-    crate::objc::msg_send(env, (delegate, sel, anim_id, true, context))
+        .anim_selector {
+        let anim_id = env
+            .framework_state
+            .uikit
+            .ui_view
+            .anim_id;
+        let context = env
+            .framework_state
+            .uikit
+            .ui_view
+            .anim_context;
+        crate::objc::msg_send(env, (delegate, sel, anim_id, true, context))
+    }
+    // let ui_application: id = msg_class![env; UIApplication sharedApplication];
+    // let delegate: id = msg![env; ui_application delegate];
+    // () = msg![env; delegate unlockTouch];
 }
 
 // TODO: accessors etc
@@ -284,6 +277,21 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
     let subs = ns_array::from_vec(env, views);
     autorelease(env, subs)
+}
+
+- (id)window {
+    let mut window: id = env.objc.borrow::<UIViewHostObject>(this).superview;
+    let window_class = env.objc.get_known_class("UIWindow", &mut env.mem);
+    while (window != nil) {
+        let current_class: Class = msg![env; window class];
+        log!("window {:?} curr class {}", window, env.objc.get_class_name(current_class));
+        if current_class == window_class {
+            break;
+        }
+        window = env.objc.borrow::<UIViewHostObject>(window).superview;
+    }
+    log!("view {:?} has window {:?}", this, window);
+    window
 }
 
 - (())addSubview:(id)view {
