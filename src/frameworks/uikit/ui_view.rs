@@ -22,7 +22,7 @@ use crate::frameworks::core_graphics::cg_context::{CGContextClearRect, CGContext
 use crate::frameworks::core_graphics::{CGFloat, CGPoint, CGRect};
 use crate::frameworks::core_graphics::cg_context::CGContextConcatCTM;
 use crate::frameworks::foundation::ns_string::get_static_str;
-use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger};
+use crate::frameworks::foundation::{ns_array, NSInteger, NSUInteger, NSTimeInterval};
 use crate::mem::MutVoidPtr;
 use crate::objc::{
     autorelease, id, msg, nil, objc_classes, release, retain, Class, ClassExports, HostObject,
@@ -35,6 +35,10 @@ pub struct State {
     /// List of views for internal purposes. Non-retaining!
     pub(super) views: Vec<id>,
     pub ui_window: ui_window::State,
+    anim_delegate: id,
+    anim_selector: Option<SEL>,
+    anim_id: id,
+    anim_context: id,
 }
 
 pub(super) struct UIViewHostObject {
@@ -102,16 +106,73 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (())beginAnimations:(id)animId
               context:(MutVoidPtr)context {
-    log!("WARNING: Ignoring beginAnimations:context:");
+    log!("WARNING: Ignoring beginAnimations:{:?} context:{:?}", animId, context);
+    env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_id = animId;
+    env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_context = context.cast();
 }
 + (())setAnimationDelegate:(id)delegate {
     log!("WARNING: Ignoring setAnimationDelegate:");
+    retain(env, delegate);
+    env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_delegate = delegate;
 }
 + (())setAnimationDidStopSelector:(SEL)selector {
-    log!("WARNING: Ignoring setAnimationDidStopSelector:");
+    log!("WARNING: Ignoring setAnimationDidStopSelector: {}", selector.as_str(&env.mem));
+    env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_selector = Some(selector);
+}
++ (())setAnimationDuration:(NSTimeInterval)duration {
+    log!("WARNING: Ignoring setAnimationDuration:");
 }
 + (())commitAnimations {
     log!("WARNING: Ignoring commitAnimations");
+    let delegate = env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_delegate;
+    //release(env, y);
+    let sel = env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_selector.unwrap();
+    let anim_id = env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_id;
+    let context = env
+        .framework_state
+        .uikit
+        .ui_view
+        .anim_context;
+    // env
+    //     .framework_state
+    //     .uikit
+    //     .ui_view
+    //     .anim_delegate = nil;
+    // env
+    //     .framework_state
+    //     .uikit
+    //     .ui_view
+    //     .anim_selector = None;
+    //let _: id = msg![env; y performSelector:x];
+    crate::objc::msg_send(env, (delegate, sel, anim_id, true, context))
 }
 
 // TODO: accessors etc

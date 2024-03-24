@@ -93,8 +93,21 @@ pub const CLASSES: ClassExports = objc_classes! {
     }
 }
 
+- (())setTitle:(id)title {
+    let title = to_rust_string(env, title);
+    log!("TODO: [(UIViewController*){:?} setTitle:{}]", this, title); // TODO
+}
+
 - (())setEditing:(bool)editing {
     log!("TODO: [(UIViewController*){:?} setEditing:{}]", this, editing); // TODO
+}
+
+- (())viewWillAppear:(bool)animated {
+    log!("TODO: [(UIViewController*){:?} viewWillAppear:{}]", this, animated); // TODO
+}
+
+- (())viewDidAppear:(bool)animated {
+    log!("TODO: [(UIViewController*){:?} viewDidAppear:{}]", this, animated); // TODO
 }
 
 @end
