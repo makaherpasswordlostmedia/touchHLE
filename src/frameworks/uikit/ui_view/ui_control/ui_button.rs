@@ -194,6 +194,8 @@ pub const CLASSES: ClassExports = objc_classes! {
 }
 - (())setFont:(id)_font {
 }
+- (())setShowsTouchWhenHighlighted:(bool)shows {
+}
 // TODO: observe focussing somehow
 
 - (id)currentTitle {

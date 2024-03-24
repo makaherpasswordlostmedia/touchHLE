@@ -27,27 +27,31 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.alloc_object(this, host_object, &mut env.mem)
 }
 
-- (())setNavigationBarHidden:(bool)hidden {
-    let host = env.objc.borrow_mut::<UINavigationControllerHostObject>(this);
-    host.nav_bar_hidden = hidden;
-}
-
--(id)topViewController {
-    env.objc.borrow::<UINavigationControllerHostObject>(this).stack.last().cloned().unwrap_or(nil)
-}
-
--(id)initWithRootViewController:(id)controller {
+- (id)initWithRootViewController:(id)controller {
     retain(env, controller);
     let host = env.objc.borrow_mut::<UINavigationControllerHostObject>(this);
     host.stack.push(controller);
     let myView = msg![env; this view];
     let subView: id = msg![env; controller view];
-    () = msg![env; myView addSubview: subView];
+    () = msg![env; myView addSubview:subView];
 
     this
 }
 
--(())dealloc {
+- (())setDelegate:(id)delegate {
+    
+}
+
+- (())setNavigationBarHidden:(bool)hidden {
+    let host = env.objc.borrow_mut::<UINavigationControllerHostObject>(this);
+    host.nav_bar_hidden = hidden;
+}
+
+- (id)topViewController {
+    env.objc.borrow::<UINavigationControllerHostObject>(this).stack.last().cloned().unwrap_or(nil)
+}
+
+- (())dealloc {
     let mut stack = std::mem::take(&mut env.objc.borrow_mut::<UINavigationControllerHostObject>(this).stack);
     for controller in stack.drain(..) {
         release(env, controller);

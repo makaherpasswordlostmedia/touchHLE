@@ -502,7 +502,8 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 @implementation UIToolbar: UIView
 - (())setItems:(id)items {
-
+}
+- (())setItems:(id)items animated:(bool)animated {
 }
 @end
 

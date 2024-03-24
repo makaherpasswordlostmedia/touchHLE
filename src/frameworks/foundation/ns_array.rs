@@ -64,6 +64,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     from_va_args(env, new, first, rest);
     autorelease(env, new)
 }
++ (id)arrayWithObject:(id)object {
+    retain(env, object);
+    let v = vec![object];
+    let new = from_vec(env, v);
+    autorelease(env, new)
+}
 
 - (id)initWithObjects:(id)first, ...rest {
     from_va_args(env, this, first, rest);

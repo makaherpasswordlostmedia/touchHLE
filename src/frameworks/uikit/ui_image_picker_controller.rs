@@ -28,6 +28,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 @end
 
 @implementation UIBarButtonItem: NSObject
+- (id)initWithTitle:(id)title style:(NSInteger)style target:(id)target action:(SEL)action {
+    nil
+}
 - (id)initWithBarButtonSystemItem:(NSInteger)item target:(id)target action:(SEL)action {
     nil
 }
