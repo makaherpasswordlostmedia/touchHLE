@@ -36,7 +36,9 @@ fn CFDictionaryCreateMutable(
     assert!(keyCallbacks.is_null()); // TODO: support retaining etc
     assert!(valueCallbacks.is_null()); // TODO: support retaining etc
 
-    msg_class![env; _touchHLE_NSMutableDictionary_non_retaining new]
+    //let new: id = msg_class![env; _touchHLE_NSMutableDictionary_non_retaining alloc];
+    let new: id = msg_class![env; _touchHLE_NSMutableDictionary alloc];
+    msg![env; new init]
 }
 
 fn CFDictionaryAddValue(
@@ -47,6 +49,7 @@ fn CFDictionaryAddValue(
 ) {
     let key: id = key.cast().cast_mut();
     let res: id = msg![env; dict valueForKey:key];
+    log!("CFDictionaryAddValue dict {:?} k {:?} v {:?}; res {:?}", dict, key, value, res);
     if res == nil {
         let value: id = value.cast().cast_mut();
         msg![env; dict setValue:value forKey:key]
@@ -59,9 +62,20 @@ fn CFDictionarySetValue(
     key: ConstVoidPtr,
     value: ConstVoidPtr
 ) {
+    log!("CFDictionarySetValue k {:?} v {:?}", key, value);
     let key: id = key.cast().cast_mut();
     let value: id = value.cast().cast_mut();
     msg![env; dict setValue:value forKey:key]
+}
+
+fn CFDictionaryRemoveValue(
+    env: &mut Environment,
+    dict: CFMutableDictionaryRef,
+    key: ConstVoidPtr
+) {
+    let key: id = key.cast().cast_mut();
+    log!("CFDictionaryRemoveValue dict {:?} key {:?}", dict, key);
+    () = msg![env; dict removeObjectForKey:key];
 }
 
 fn CFDictionaryGetValue(
@@ -76,6 +90,7 @@ fn CFDictionaryGetValue(
 
 fn CFDictionaryGetCount(env: &mut Environment, dict: CFDictionaryRef) -> CFIndex {
     let count: NSUInteger = msg![env; dict count];
+    log!("CFDictionaryGetCount dict {:?} {}", dict, count);
     count.try_into().unwrap()
 }
 
@@ -102,6 +117,7 @@ fn CFDictionaryGetKeysAndValues(
         }
         if !val_ptr.is_null() {
             val = msg![env; dict valueForKey:key];
+            log!("CFDictionaryGetKeysAndValues dict {:?} key {:?} val {:?}", dict, key, val);
             env.mem.write(val_ptr, val.cast());
             val_ptr += 1;
         }
@@ -136,6 +152,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFDictionaryCreateMutable(_, _, _, _)),
     export_c_func!(CFDictionaryAddValue(_, _, _)),
     export_c_func!(CFDictionarySetValue(_, _, _)),
+    export_c_func!(CFDictionaryRemoveValue(_, _)),
     export_c_func!(CFDictionaryGetValue(_, _)),
     export_c_func!(CFDictionaryGetCount(_)),
     export_c_func!(CFDictionaryGetKeysAndValues(_, _, _)),

@@ -85,6 +85,7 @@ impl DictionaryHostObject {
         release(env, existing_key);
         release(env, value);
         collisions.remove(idx);
+        self.count -= 1;
     }
     pub(super) fn release(&mut self, env: &mut Environment) {
         for collisions in self.map.values() {
@@ -205,8 +206,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 // TODO
 
 - (id)allKeys {
-    let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
-    let keys: Vec<id> = dict_host_obj.iter_keys().collect();
+    let host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let keys: Vec<id> = host_obj.iter_keys().collect();
+    *env.objc.borrow_mut(this) = host_obj;
     ns_array::from_vec(env, keys)
 }
 
@@ -241,11 +243,7 @@ pub const CLASSES: ClassExports = objc_classes! {
     host_obj.insert(env, defaultName, value_id, false);
     *env.objc.borrow_mut(this) = host_obj;
 }
-- (())removeObjectForKey:(id)defaultName {
-    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
-    host_obj.remove(env, defaultName);
-    *env.objc.borrow_mut(this) = host_obj;
-}
+
 - (id)dictionaryRepresentation {
     this
 }
@@ -336,10 +334,17 @@ pub const CLASSES: ClassExports = objc_classes! {
     *env.objc.borrow_mut(this) = host_obj;
 }
 
-- (id)allKeys {
-    let dict_host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
-    let keys: Vec<id> = dict_host_obj.iter_keys().collect();
-    ns_array::from_vec(env, keys)
+- (id)valueForKey:(id)key {
+    let host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    let res = host_obj.lookup(env, key);
+    *env.objc.borrow_mut(this) = host_obj;
+    res
+}
+
+- (())removeObjectForKey:(id)aKey {
+    let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
+    host_obj.remove(env, aKey);
+    *env.objc.borrow_mut(this) = host_obj;
 }
 
 @end
@@ -358,13 +363,6 @@ pub const CLASSES: ClassExports = objc_classes! {
     let mut host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
     host_obj.insert_non_retaining(env, key, value);
     *env.objc.borrow_mut(this) = host_obj;
-}
-
-- (id)valueForKey:(id)key {
-    let host_obj: DictionaryHostObject = std::mem::take(env.objc.borrow_mut(this));
-    let res = host_obj.lookup(env, key);
-    *env.objc.borrow_mut(this) = host_obj;
-    res
 }
 
 @end
