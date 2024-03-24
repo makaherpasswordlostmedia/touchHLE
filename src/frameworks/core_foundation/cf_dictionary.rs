@@ -78,6 +78,22 @@ fn CFDictionaryRemoveValue(
     () = msg![env; dict removeObjectForKey:key];
 }
 
+fn CFDictionaryRemoveAllValues(
+    env: &mut Environment,
+    dict: CFMutableDictionaryRef
+) {
+    let keys_arr: id = msg![env; dict allKeys];
+    let enumerator: id = msg![env; keys_arr objectEnumerator];
+    let mut key: id;
+    loop {
+        key = msg![env; enumerator nextObject];
+        if key == nil {
+            break;
+        }
+        CFDictionaryRemoveValue(env, dict, key.cast().cast_const());
+    }
+}
+
 fn CFDictionaryGetValue(
     env: &mut Environment,
     dict: CFMutableDictionaryRef,
@@ -153,6 +169,7 @@ pub const FUNCTIONS: FunctionExports = &[
     export_c_func!(CFDictionaryAddValue(_, _, _)),
     export_c_func!(CFDictionarySetValue(_, _, _)),
     export_c_func!(CFDictionaryRemoveValue(_, _)),
+    export_c_func!(CFDictionaryRemoveAllValues(_)),
     export_c_func!(CFDictionaryGetValue(_, _)),
     export_c_func!(CFDictionaryGetCount(_)),
     export_c_func!(CFDictionaryGetKeysAndValues(_, _, _)),
