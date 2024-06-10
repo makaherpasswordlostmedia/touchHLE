@@ -32,6 +32,7 @@ mod app_picker;
 mod audio;
 mod bundle;
 mod cpu;
+mod debug;
 mod dyld;
 mod environment;
 mod font;
@@ -71,6 +72,8 @@ pub extern "C" fn SDL_main(
     _argc: std::ffi::c_int,
     _argv: *const *const std::ffi::c_char,
 ) -> std::ffi::c_int {
+    unsafe { log::setup_log_file() };
+
     // Rust's default panic handler prints to stderr, but on Android that just
     // gets discarded, so we set a custom hook to make debugging easier.
     std::panic::set_hook(Box::new(|info| {
@@ -134,10 +137,10 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
     for arg in args {
         if arg == "--help" {
             echo!("{}", USAGE);
-            echo!("{}", options::DOCUMENTATION);
+            echo!("{}", options::OPTIONS_HELP);
             return Ok(());
         } else if arg == "--copyright" {
-            licenses::print();
+            echo!("{}", licenses::get_text());
             return Ok(());
         } else if arg == "--info" {
             just_info = true;
@@ -150,7 +153,7 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
             bundle_path = Some(PathBuf::from(arg));
         } else {
             echo!("{}", USAGE);
-            echo!("{}", options::DOCUMENTATION);
+            echo!("{}", options::OPTIONS_HELP);
             return Err(format!("Unexpected argument: {:?}", arg));
         }
     }
@@ -186,7 +189,10 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
 
     let bundle_data = fs::BundleData::open_any(&bundle_path)
         .map_err(|e| format!("Could not open app bundle: {e}"))?;
-    let (bundle, fs) = match bundle::Bundle::new_bundle_and_fs_from_host_path(bundle_data) {
+    let (bundle, fs) = match bundle::Bundle::new_bundle_and_fs_from_host_path(
+        bundle_data,
+        /* read_only_mode: */ false,
+    ) {
         Ok(bundle) => bundle,
         Err(err) => {
             return Err(format!("Application bundle error: {err}. Check that the path is to an .app directory or an .ipa file."));
@@ -212,10 +218,14 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
     echo!();
 
     if let Some(version) = minimum_os_version {
-        let (major, _minor_etc) = version.split_once('.').unwrap();
+        let (major, minor_etc) = version.split_once('.').unwrap();
+        let minor = minor_etc
+            .split_once('.')
+            .map_or(minor_etc, |(minor, _etc)| minor);
         let major: u32 = major.parse().unwrap();
-        if major > 2 {
-            echo!("Warning: app requires OS version {}. Only iPhone OS 2 apps are currently supported.", version);
+        let minor: u32 = minor.parse().unwrap();
+        if major > 3 || (major == 3 && minor > 0) {
+            echo!("Warning: app requires OS version {}. Only iPhone OS 2.x and iPhone OS 3.0 apps are currently supported.", version);
         }
     }
 
