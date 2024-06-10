@@ -108,8 +108,10 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 /// [super::handle_events] will forward touch events to this function.
 pub fn handle_event(env: &mut Environment, event: Event) {
-    match event {
-        Event::TouchDown(coords) => {
+}
+ match event {
+ }    
+Event::TouchDown(coords) => {
             if env.framework_state.uikit.ui_touch.current_touch.is_some() {
                 log!("Warning: New touch initiated but current touch did not end yet, treating as movement.");
                 return handle_event(env, Event::TouchMove(coords));
@@ -288,6 +290,7 @@ pub const FUNCTIONS: FunctionExports = &[
             let _: () = msg![env; view touchesMoved:touches withEvent:event];
 
             release(env, pool);
+    {
         }
         Event::TouchUp(coords) => {
             let Some(touch) = env.framework_state.uikit.ui_touch.current_touch else {
@@ -301,4 +304,3 @@ pub const FUNCTIONS: FunctionExports = &[
                 x: coords.0,
                 y: coords.1,
             };
-
