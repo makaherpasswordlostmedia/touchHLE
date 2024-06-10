@@ -38,7 +38,6 @@ mod font;
 mod frameworks;
 mod fs;
 mod gdb;
-mod gles;
 mod image;
 mod libc;
 mod licenses;
