@@ -32,7 +32,6 @@ mod app_picker;
 mod audio;
 mod bundle;
 mod cpu;
-mod debug;
 mod dyld;
 mod environment;
 mod font;
