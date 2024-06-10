@@ -28,6 +28,7 @@
 #[macro_use]
 mod log;
 mod abi;
+mod app_picker;
 mod audio;
 mod bundle;
 mod cpu;
@@ -37,23 +38,26 @@ mod font;
 mod frameworks;
 mod fs;
 mod gdb;
+mod gles;
 mod image;
 mod libc;
 mod licenses;
 mod mach_o;
+mod matrix;
 mod mem;
 mod objc;
 mod options;
+mod paths;
 mod stack;
 mod window;
 
-// These are very frequently used and used to be in this module, so they are
-// re-exported to avoid having to update lots of imports.
+// Environment is used very frequently used and used to be in this module, so
+// it is re-exported to avoid having to update lots of imports. The other things
+// probably shouldn't be, but they need a new home (TODO).
 // Unlike its siblings, this module should be considered private and only used
 // via re-exports.
-use environment::{Environment, ThreadID};
+use environment::{Environment, MutexId, MutexType, ThreadId, PTHREAD_MUTEX_DEFAULT};
 
-use std::ffi::OsStr;
 use std::path::PathBuf;
 
 /// Current version. See `build.rs` for how this is generated.
@@ -109,102 +113,17 @@ Special options:
         Print basic information about the app bundle without running the app.
 ";
 
-fn app_picker(title: &str) -> Result<PathBuf, String> {
-    let apps_dir = format!("{}{}", fs::files_prefix(), "touchHLE_apps");
-
-    fn enumerate_apps(apps_dir: &str) -> Result<Vec<PathBuf>, std::io::Error> {
-        let mut app_paths = Vec::new();
-        for app in std::fs::read_dir(apps_dir)? {
-            let app_path = app?.path();
-            if app_path.extension() != Some(OsStr::new("app"))
-                && app_path.extension() != Some(OsStr::new("ipa"))
-            {
-                continue;
-            }
-            if app_path.to_str().is_none() {
-                continue;
-            }
-            app_paths.push(app_path);
-        }
-        Ok(app_paths)
-    }
-
-    let app_paths: Result<Vec<PathBuf>, String> = if !std::path::Path::new(&apps_dir).is_dir() {
-        Err(format!("The {} directory couldn't be found. Check you're running touchHLE from the right directory.", apps_dir))
-    } else {
-        enumerate_apps(&apps_dir).map_err(|err| {
-            format!(
-                "Couldn't get list of apps in the {} directory: {}.",
-                apps_dir, err
-            )
-        })
-    };
-
-    let is_error = app_paths.is_err();
-    let (app_paths, mut message): (&[PathBuf], String) = match app_paths {
-        Ok(ref paths) => (
-            paths,
-            if !paths.is_empty() {
-                "Select an app:".to_string()
-            } else {
-                format!("No apps were found in the {} directory.", apps_dir)
-            },
-        ),
-        Err(err) => (&[], err),
-    };
-
-    let mut app_buttons: Vec<(i32, &str)> = app_paths
-        .iter()
-        .enumerate()
-        .map(|(idx, path)| {
-            let name = path.file_name().unwrap().to_str().unwrap();
-            (
-                idx.try_into().unwrap(),
-                // On Windows, the buttons are too small to display a full app
-                // name, so it's more practical to use a short symbol and put
-                // the full name in the message.
-                // As for Android, there's not enough horizontal space for
-                // multiple buttons if we don't do this.
-                if cfg!(target_os = "windows") || cfg!(target_os = "android") {
-                    // TODO: hopefully we'll have a better app picker before we
-                    // have more than twenty supported apps? ^^;
-                    let symbols = [
-                        "(1)", "(2)", "(3)", "(4)", "(5)", "(6)", "(7)", "(8)", "(9)", "(10)",
-                        "(11)", "(12)", "(13)", "(14)", "(15)", "(16)", "(17)", "(18)", "(19)",
-                        "(20)",
-                    ];
-                    let symbol = symbols[idx % symbols.len()];
-                    use std::fmt::Write;
-                    write!(message, "\n{} {}", symbol, name).unwrap();
-                    symbol
-                } else {
-                    name
-                },
-            )
-        })
-        .chain([(-1, "Exit")])
-        .collect();
-    // On Windows, the buttons are laid out from right to left, but users
-    // will presumably expect the opposite. Do in-place reverse so the order
-    // of lines in the message isn't affected.
-    if cfg!(target_os = "windows") {
-        app_buttons.reverse();
-    }
-
-    loop {
-        match window::show_message_with_options(title, &message, is_error, &app_buttons) {
-            Some(app_idx @ 0..) => return Ok(app_paths[app_idx as usize].clone()),
-            None | Some(-1) => return Err("No app was selected".to_string()),
-            _ => unreachable!(),
-        }
-    }
-}
-
 pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
-    let long_title = format!("touchHLE {} — https://touchhle.org/", VERSION);
-
-    echo!("{}", long_title);
+    echo!("touchHLE {} — https://touchhle.org/", VERSION);
     echo!();
+
+    {
+        let base_path = paths::user_data_base_path().to_str().unwrap();
+        if !base_path.is_empty() {
+            log!("Base path for touchHLE files: {}", base_path);
+        }
+        paths::prepopulate_user_data_dir();
+    }
 
     let _ = args.next().unwrap(); // skip argv[0]
 
@@ -236,13 +155,25 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
         }
     }
 
-    let bundle_path = if let Some(bundle_path) = bundle_path {
-        bundle_path
+    let (bundle_path, env_for_salvage) = if let Some(bundle_path) = bundle_path {
+        (bundle_path, None)
     } else {
+        let mut options = options::Options::default();
+        // Apply command-line options only (no app-specific options apply)
+        for option_arg in &option_args {
+            let parse_result = options.parse_argument(option_arg);
+            assert!(parse_result == Ok(true));
+        }
+        if options.headless {
+            return Err(
+                "No app specified. Use the --help flag to see command-line usage.".to_string(),
+            );
+        }
         echo!(
             "No app specified, opening app picker. Use the --help flag to see command-line usage."
         );
-        app_picker(&long_title)?
+        let (bundle_path, env_for_salvage) = app_picker::app_picker(options)?;
+        (bundle_path, Some(env_for_salvage))
     };
 
     // When PowerShell does tab-completion on a directory, for some reason it
@@ -295,12 +226,17 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
     let mut options = options::Options::default();
 
     // Apply options from files
-    for filename in [options::DEFAULTS_FILENAME, options::USER_FILENAME] {
-        match options::get_options_from_file(filename, app_id) {
+    fn apply_options<F: std::io::Read, P: std::fmt::Display>(
+        file: F,
+        path: P,
+        options: &mut options::Options,
+        app_id: &str,
+    ) -> Result<(), String> {
+        match options::get_options_from_file(file, app_id) {
             Ok(Some(options_string)) => {
                 echo!(
                     "Using options from {} for this app: {}",
-                    filename,
+                    path,
                     options_string
                 );
                 for option_arg in options_string.split_ascii_whitespace() {
@@ -314,12 +250,27 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
                 }
             }
             Ok(None) => {
-                echo!("No options found for this app in {}", filename);
+                echo!("No options found for this app in {}", path);
             }
             Err(e) => {
                 echo!("Warning: {}", e);
             }
         }
+        Ok(())
+    }
+    let default_options_path = paths::DEFAULT_OPTIONS_FILE;
+    match paths::ResourceFile::open(default_options_path) {
+        Ok(mut file) => apply_options(file.get(), default_options_path, &mut options, app_id)?,
+        Err(err) => echo!("Warning: Could not open {}: {}", default_options_path, err),
+    }
+    let user_options_path = paths::user_data_base_path().join(paths::USER_OPTIONS_FILE);
+    match std::fs::File::open(&user_options_path) {
+        Ok(file) => apply_options(file, user_options_path.display(), &mut options, app_id)?,
+        Err(err) => echo!(
+            "Warning: Could not open {}: {}",
+            user_options_path.display(),
+            err
+        ),
     }
     echo!();
 
@@ -329,7 +280,7 @@ pub fn main<T: Iterator<Item = String>>(mut args: T) -> Result<(), String> {
         assert!(parse_result == Ok(true));
     }
 
-    let mut env = Environment::new(bundle, fs, options)?;
+    let mut env = Environment::new(bundle, fs, options, env_for_salvage)?;
     env.run();
     Ok(())
 }
