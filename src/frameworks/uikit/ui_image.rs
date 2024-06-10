@@ -5,10 +5,9 @@
  */
 //! `UIImage`.
 
-use crate::frameworks::core_graphics::cg_image::{self, CGImageRef, CGImageRelease};
+use crate::frameworks::core_graphics::cg_image::{self, CGImageRef, CGImageRelease, CGImageRetain};
 use crate::frameworks::core_graphics::CGSize;
-use crate::frameworks::foundation::ns_data::to_rust_slice;
-use crate::frameworks::foundation::{ns_string, NSInteger};
+use crate::frameworks::foundation::{ns_data, ns_string, NSInteger};
 use crate::fs::GuestPath;
 use crate::image::Image;
 use crate::objc::{
@@ -32,6 +31,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     env.objc.alloc_object(this, host_object, &mut env.mem)
 }
 
++ (id)imageWithCGImage:(CGImageRef)cg_image {
+    let new: id = msg![env; this alloc];
+    let new: id = msg![env; new initWithCGImage:cg_image];
+    autorelease(env, new)
+}
+
 + (id)imageNamed:(id)name { // NSString*
     // TODO: figure out whether this is actually correct in all cases
     let bundle: id = msg_class![env; NSBundle mainBundle];
@@ -47,9 +52,9 @@ pub const CLASSES: ClassExports = objc_classes! {
 
 + (id)imageWithData:(id)data { // NSData*
     let new: id = msg![env; this alloc];
-    let slice = to_rust_slice(env, data);
+    let slice = ns_data::to_rust_slice(env, data);
     // TODO: refactor common parts
-    let image = Image::from_bytes(&slice).unwrap();
+    let image = Image::from_bytes(slice).unwrap();
     let cg_image = cg_image::from_image(env, image);
     env.objc.borrow_mut::<UIImageHostObject>(new).cg_image = cg_image;
     autorelease(env, new)
@@ -60,6 +65,12 @@ pub const CLASSES: ClassExports = objc_classes! {
     CGImageRelease(env, cg_image);
 
     env.objc.dealloc_object(this, &mut env.mem)
+}
+
+- (id)initWithCGImage:(CGImageRef)cg_image {
+    CGImageRetain(env, cg_image);
+    env.objc.borrow_mut::<UIImageHostObject>(this).cg_image = cg_image;
+    this
 }
 
 - (id)initWithContentsOfFile:(id)path { // NSString*
